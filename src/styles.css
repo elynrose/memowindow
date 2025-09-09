@@ -1,0 +1,465 @@
+/* MemoWindow Application Styles */
+
+/* Base styles */
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
+  background: #f5f7fb;
+  color: #0b0d12;
+  margin: 0;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: auto;
+  padding: 24px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e6e9f2;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Form elements */
+label {
+  font-size: 13px;
+  opacity: .85;
+}
+
+input[type="file"] {
+  accent-color: #2a4df5;
+}
+
+/* File upload area */
+.file-upload-area {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 2px dashed #e6e9f2;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafbfc;
+}
+
+.file-upload-area:hover {
+  border-color: #2a4df5;
+  background: #f0f4ff;
+}
+
+.file-upload-area.has-file {
+  border-color: #10b981;
+  background: #ecfdf5;
+  border-style: solid;
+}
+
+.file-upload-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.file-upload-icon {
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.file-upload-area:hover .file-upload-icon {
+  color: #2a4df5;
+}
+
+.file-upload-area.has-file .file-upload-icon {
+  color: #10b981;
+}
+
+.file-upload-text {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.file-upload-area.has-file .file-upload-text {
+  color: #065f46;
+}
+
+/* Buttons */
+button {
+  background: #2a4df5;
+  border: none;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Utility classes */
+.muted {
+  opacity: .7;
+  font-size: 12px;
+}
+
+.hidden {
+  display: none;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e6e9f2;
+}
+
+a.secondary {
+  background: #eef2ff;
+  color: #1b2a63;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+/* Auth styles */
+.auth-card {
+  text-align: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #e6e9f2;
+}
+
+.btn-auth {
+  background: #4285f4;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-logout {
+  background: #dc3545;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Modal styles */
+.auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-modal-content {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.auth-modal h2 {
+  color: #0b0d12;
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.auth-modal p {
+  color: #6b7280;
+  margin: 0 0 32px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.auth-modal .btn-auth {
+  justify-content: center;
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.page-disabled {
+  pointer-events: none;
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+/* Image modal styles */
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.image-modal-content {
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+}
+
+.image-modal img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.image-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #0b0d12;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.image-modal-close:hover {
+  background: white;
+}
+
+/* Voice recorder modal styles */
+.recorder-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.recorder-modal-content {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.recorder-modal h2 {
+  color: #0b0d12;
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.recorder-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.record-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.3s ease;
+}
+
+.record-btn.record {
+  background: #dc2626;
+  color: white;
+}
+
+.record-btn.record:hover {
+  background: #b91c1c;
+  transform: scale(1.1);
+}
+
+.record-btn.stop {
+  background: #059669;
+  color: white;
+}
+
+.record-btn.stop:hover {
+  background: #047857;
+}
+
+.record-btn.play {
+  background: #2563eb;
+  color: white;
+}
+
+.record-btn.play:hover {
+  background: #1d4ed8;
+}
+
+.record-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.recording-indicator {
+  color: #dc2626;
+  font-weight: 600;
+  margin: 16px 0;
+  animation: pulse 1s infinite;
+}
+
+.audio-preview {
+  width: 100%;
+  margin: 16px 0;
+}
+
+.timer {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin: 16px 0;
+  font-family: monospace;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Layout grids */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 768px) and (min-width: 641px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Performance optimizations */
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Improved loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #e6e9f2;
+  border-top: 2px solid #2a4df5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

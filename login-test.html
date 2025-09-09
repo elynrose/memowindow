@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test - MemoWindow</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        .status { padding: 10px; margin: 10px; border-radius: 4px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d2e; }
+        .info { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Auth Test</h1>
+    <div id="status" class="status info">Initializing...</div>
+    
+    <button id="testGoogleLogin">Test Google Login</button>
+    <button id="testEmailLogin">Test Email Login</button>
+    
+    <h2>Debug Info:</h2>
+    <pre id="debug"></pre>
+
+    <!-- Load the same bundles -->
+    <script src="dist/bundle.874b55151c9f182f3eeb.js"></script>
+    <script src="dist/bundle.08d0e26b28d4875fb53b.js"></script>
+
+    <script>
+        let debug = document.getElementById('debug');
+        let status = document.getElementById('status');
+        
+        function log(message) {
+            console.log(message);
+            debug.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        function setStatus(message, type = 'info') {
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        // Check if Firebase loaded
+        setTimeout(() => {
+            log('Checking Firebase availability...');
+            
+            if (typeof window.getCurrentUser === 'function') {
+                log('✅ getCurrentUser function available');
+            } else {
+                log('❌ getCurrentUser function not available');
+            }
+
+            // Try to get current auth state
+            try {
+                const user = window.getCurrentUser();
+                log('Current user: ' + (user ? user.email || user.displayName || 'Anonymous' : 'Not logged in'));
+                setStatus('Firebase initialized - Ready for login test', 'success');
+            } catch (e) {
+                log('❌ Error getting current user: ' + e.message);
+                setStatus('Firebase initialization error', 'error');
+            }
+
+        }, 2000);
+
+        // Test Google login
+        document.getElementById('testGoogleLogin').addEventListener('click', async () => {
+            log('Testing Google login...');
+            setStatus('Testing Google login...', 'info');
+            
+            try {
+                // Try to trigger the login by finding the actual button
+                const loginBtn = document.querySelector('#btnLogin');
+                if (loginBtn) {
+                    log('Found login button, clicking it...');
+                    loginBtn.click();
+                } else {
+                    log('❌ Login button not found');
+                    setStatus('Login button not found in DOM', 'error');
+                }
+            } catch (e) {
+                log('❌ Google login error: ' + e.message);
+                setStatus('Google login failed: ' + e.message, 'error');
+            }
+        });
+
+        // Test email login
+        document.getElementById('testEmailLogin').addEventListener('click', () => {
+            log('Email login test - checking form elements...');
+            
+            const emailInput = document.querySelector('#emailInput');
+            const passwordInput = document.querySelector('#passwordInput');
+            const btnEmailLogin = document.querySelector('#btnEmailLogin');
+            
+            log('Email input found: ' + !!emailInput);
+            log('Password input found: ' + !!passwordInput);
+            log('Email login button found: ' + !!btnEmailLogin);
+        });
+
+        // Listen for any auth state changes
+        window.addEventListener('load', () => {
+            log('Window loaded, checking for auth modal...');
+            const authModal = document.querySelector('#authModal');
+            log('Auth modal found: ' + !!authModal);
+            
+            // Check if modal is visible
+            if (authModal) {
+                const isVisible = !authModal.classList.contains('hidden') && 
+                                authModal.style.display !== 'none';
+                log('Auth modal visible: ' + isVisible);
+            }
+        });
+
+    </script>
+</body>
+</html>

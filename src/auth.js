@@ -1,0 +1,409 @@
+// Authentication functionality
+import { signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, googleProvider, emailProvider } from '../firebase-config.php';
+
+let currentUser = null;
+
+// Function to load user's waveforms with pagination
+async function loadUserWaveforms(offset = 0, append = false) {
+  if (!currentUser) {
+    const waveformsList = document.getElementById('waveformsList');
+    if (waveformsList) {
+      waveformsList.classList.add('hidden');
+    }
+    return;
+  }
+  
+  try {
+    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
+    
+    if (!response.ok) throw new Error('Failed to load waveforms');
+    
+    const data = await response.json();
+    console.log('🔍 Raw waveforms data:', data);
+    
+    // Handle both new paginated format and old direct array format
+    let waveforms, hasMore, total;
+    
+    if (Array.isArray(data)) {
+      // Old format - direct array
+      waveforms = data;
+      hasMore = false;
+      total = data.length;
+    } else {
+      // New format - paginated object
+      waveforms = data.waveforms || [];
+      hasMore = data.has_more || false;
+      total = data.total || 0;
+    }
+    
+    console.log('🔍 Processed waveforms:', waveforms.length, 'items, hasMore:', hasMore, 'total:', total);
+    
+    // Get DOM elements
+    const waveformsList = document.getElementById('waveformsList');
+    const waveformsContainer = document.getElementById('waveformsContainer');
+    
+    if (!waveformsList || !waveformsContainer) {
+      return;
+    }
+    
+    // Display waveforms
+    if (waveforms.length === 0 && offset === 0) {
+      waveformsContainer.innerHTML = '<div class="muted" style="text-align: center; padding: 20px;">No MemoWindows yet. Create your first one above!</div>';
+    } else if (waveforms.length > 0) {
+      const waveformItems = waveforms.map(waveform => {
+        const title = waveform.title || waveform.original_name || 'Untitled';
+        const date = new Date(waveform.created_at).toLocaleDateString();
+        const time = new Date(waveform.created_at).toLocaleTimeString();
+        
+        return `
+          <div class="waveform-item" style="border: 1px solid #e6e9f2; border-radius: 8px; padding: 12px; margin-bottom: 8px; background: #fafbfc;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: #0b0d12;">${title}</strong>
+                <div class="muted" style="font-size: 12px; margin-top: 2px;">
+                  ${waveform.original_name} • ${date} ${time}
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="showMemoryModal('${waveform.image_url}', '${title.replace(/'/g, "\\'")}', '${waveform.qr_url}')" class="secondary" style="font-size: 12px; padding: 4px 8px; border: none; cursor: pointer;">View</button>
+                <a href="${waveform.qr_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">QR</a>
+                <button onclick="showOrderOptions(${waveform.id}, '${waveform.image_url}', '${title.replace(/'/g, "\\'")}', this)" style="background: #2a4df5; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Order Print</button>
+                <button onclick="deleteMemory(${waveform.id}, '${title.replace(/'/g, "\\'")}', this)" class="btn-delete" style="background: #dc3545; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      if (append) {
+        // Append to existing content
+        const loadMoreBtn = waveformsContainer.querySelector('#loadMoreBtn');
+        if (loadMoreBtn) {
+          loadMoreBtn.remove();
+        }
+        waveformsContainer.insertAdjacentHTML('beforeend', waveformItems);
+      } else {
+        // Replace content
+        waveformsContainer.innerHTML = waveformItems;
+      }
+      
+      // Add load more button if there are more memories
+      if (hasMore) {
+        const loadMoreBtn = document.createElement('div');
+        loadMoreBtn.id = 'loadMoreBtn';
+        loadMoreBtn.style.cssText = 'text-align: center; margin-top: 16px;';
+        loadMoreBtn.innerHTML = `
+          <button onclick="loadMoreMemories()" style="background: #6b7280; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500;">
+            Load More (${total - offset - waveforms.length} remaining)
+          </button>
+        `;
+        waveformsContainer.appendChild(loadMoreBtn);
+      }
+    }
+    
+    waveformsList.classList.remove('hidden');
+    waveformsList.style.display = 'block';
+    
+    // Store current offset for load more functionality
+    window.currentWaveformsOffset = offset + waveforms.length;
+    
+  } catch (error) {
+    console.error('Error loading waveforms:', error);
+    const waveformsContainer = document.getElementById('waveformsContainer');
+    const waveformsList = document.getElementById('waveformsList');
+    
+    if (waveformsContainer) {
+      waveformsContainer.innerHTML = '<div class="muted" style="text-align: center; padding: 20px;">Error loading waveforms</div>';
+    }
+    if (waveformsList) {
+      waveformsList.classList.remove('hidden');
+    }
+  }
+}
+
+// Get DOM elements
+const getElements = () => ({
+  authModal: document.getElementById('authModal'),
+  mainContent: document.getElementById('mainContent'),
+  userInfo: document.getElementById('userInfo'),
+  btnLogin: document.getElementById('btnLogin'),
+  btnLogout: document.getElementById('btnLogout'),
+  userName: document.getElementById('userName'),
+  userAvatar: document.getElementById('userAvatar'),
+  btnCreate: document.getElementById('btnCreate'),
+  status: document.getElementById('status'),
+  // Email auth elements
+  emailInput: document.getElementById('emailInput'),
+  passwordInput: document.getElementById('passwordInput'),
+  btnEmailLogin: document.getElementById('btnEmailLogin'),
+  btnEmailRegister: document.getElementById('btnEmailRegister'),
+});
+
+// Show login modal
+function showLoginCard() {
+  const els = getElements();
+  // Force show modal with multiple methods (reverse of hide)
+  els.authModal.classList.remove('hidden');
+  els.authModal.style.display = '';
+  els.authModal.style.visibility = '';
+  
+  // Force disable main content (reverse of enable)
+  els.mainContent.classList.add('page-disabled');
+  els.mainContent.style.filter = '';
+  els.mainContent.style.opacity = '';
+  els.mainContent.style.pointerEvents = '';
+  
+  els.userInfo.classList.add('hidden');
+  els.btnCreate.disabled = true;
+  
+  // Reset login button state
+  els.btnLogin.disabled = false;
+  els.btnLogin.innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Sign in with Google
+  `;
+  
+  // Hide waveforms list when not authenticated
+  const waveformsList = document.getElementById('waveformsList');
+  if (waveformsList) {
+    waveformsList.classList.add('hidden');
+  }
+  
+}
+
+// Show user info
+async function showUserInfo(user) {
+  const els = getElements();
+  
+  // Force hide modal with multiple methods
+  els.authModal.classList.add('hidden');
+  els.authModal.style.display = 'none';
+  els.authModal.style.visibility = 'hidden';
+  
+  
+  // Force enable main content with multiple methods
+  els.mainContent.classList.remove('page-disabled');
+  els.mainContent.style.filter = 'none';
+  els.mainContent.style.opacity = '1';
+  els.mainContent.style.pointerEvents = 'auto';
+  
+  els.userInfo.classList.remove('hidden');
+  els.userName.textContent = user.displayName || user.email;
+  els.userAvatar.src = user.photoURL || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="%23ccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+  
+  // Update orders link with user ID
+  const ordersLink = document.getElementById('ordersLink');
+  if (ordersLink) {
+    ordersLink.href = `orders.php?user_id=${encodeURIComponent(user.uid)}`;
+  }
+  
+  // Check if user is admin and add admin link
+  checkAdminStatus(user.uid);
+  
+  currentUser = user;
+  
+  // Update create button state based on all requirements
+  if (window.updateCreateButtonState) {
+    window.updateCreateButtonState();
+  }
+  
+  // Load user's waveforms automatically when they sign in
+  await loadUserWaveforms();
+}
+
+// Initialize authentication
+export function initAuth() {
+  console.log('🔥 Initializing Firebase Auth...');
+  const els = getElements();
+  
+  // Check if required elements exist
+  if (!els.btnLogin) {
+    console.error('❌ Login button not found! DOM might not be ready.');
+    // Retry after a short delay
+    setTimeout(() => {
+      console.log('🔄 Retrying auth initialization...');
+      initAuth();
+    }, 1000);
+    return;
+  }
+  
+  console.log('✅ Auth elements found, setting up listeners...');
+  
+  // Mark button as initialized
+  els.btnLogin.dataset.initialized = 'true';
+  
+  // Set up auth state listener
+  onAuthStateChanged(auth, (user) => {
+    console.log('🔥 Auth state changed:', user ? 'Logged in' : 'Logged out');
+    if (user) {
+      showUserInfo(user);
+    } else {
+      showLoginCard();
+    }
+  });
+
+  // Login button
+  els.btnLogin.addEventListener('click', async () => {
+    console.log('🔥 Google login button clicked...');
+    try {
+      els.btnLogin.disabled = true;
+      els.btnLogin.textContent = 'Signing in...';
+      
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // The onAuthStateChanged listener handles the UI update automatically
+      
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('Login failed: ' + error.message);
+      els.btnLogin.disabled = false;
+      els.btnLogin.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      `;
+    }
+  });
+
+  // Logout button
+  els.btnLogout.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  });
+
+  // Email login button
+  els.btnEmailLogin.addEventListener('click', async () => {
+    try {
+      const email = els.emailInput.value.trim();
+      const password = els.passwordInput.value;
+      
+      if (!email || !password) {
+        alert('Please enter both email and password');
+        return;
+      }
+      
+      els.btnEmailLogin.disabled = true;
+      els.btnEmailLogin.textContent = 'Signing in...';
+      
+      await signInWithEmailAndPassword(auth, email, password);
+      
+    } catch (error) {
+      console.error('Email login failed:', error);
+      let errorMessage = 'Login failed';
+      
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later';
+      }
+      
+      alert(errorMessage);
+      
+      els.btnEmailLogin.disabled = false;
+      els.btnEmailLogin.textContent = 'Sign In';
+    }
+  });
+
+  // Email register button
+  els.btnEmailRegister.addEventListener('click', async () => {
+    try {
+      const email = els.emailInput.value.trim();
+      const password = els.passwordInput.value;
+      
+      if (!email || !password) {
+        alert('Please enter both email and password');
+        return;
+      }
+      
+      if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+      
+      els.btnEmailRegister.disabled = true;
+      els.btnEmailRegister.textContent = 'Creating account...';
+      
+      await createUserWithEmailAndPassword(auth, email, password);
+      
+    } catch (error) {
+      console.error('Email registration failed:', error);
+      let errorMessage = 'Registration failed';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'An account with this email already exists';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please choose a stronger password';
+      }
+      
+      alert(errorMessage);
+      
+      els.btnEmailRegister.disabled = false;
+      els.btnEmailRegister.textContent = 'Register';
+    }
+  });
+
+  // Add Enter key support for email login
+  els.passwordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      els.btnEmailLogin.click();
+    }
+  });
+}
+
+// Function to check if user is admin and add admin link
+async function checkAdminStatus(userUID) {
+  try {
+    const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
+    const data = await response.json();
+    
+    if (data.is_admin) {
+      // Add admin link to user info area
+      const userInfo = document.getElementById('userInfo');
+      if (userInfo && !userInfo.querySelector('.admin-link')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = `admin.php?user_id=${encodeURIComponent(userUID)}`;
+        adminLink.className = 'admin-link';
+        adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
+        adminLink.textContent = 'Admin';
+        
+        // Insert before orders link
+        const ordersLink = userInfo.querySelector('#ordersLink');
+        if (ordersLink) {
+          userInfo.insertBefore(adminLink, ordersLink);
+        } else {
+          userInfo.appendChild(adminLink);
+        }
+      }
+    }
+  } catch (error) {
+    // Silently fail - not critical functionality
+    console.log('Admin check failed:', error);
+  }
+}
+
+// Get current user
+export function getCurrentUser() {
+  return currentUser;
+}
+
+// Export loadUserWaveforms function
+export { loadUserWaveforms };

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Production Storage Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Storage Production Test</h1>
+    
+    <div id="authStatus" class="status info">Checking authentication...</div>
+    
+    <button id="testStorageBtn" disabled>Test Storage Upload</button>
+    <button id="signInBtn" style="display: none;">Sign In First</button>
+    
+    <div id="results"></div>
+    
+    <script src="dist/bundle.js"></script>
+    <script>
+        const authStatus = document.getElementById('authStatus');
+        const testBtn = document.getElementById('testStorageBtn');
+        const signInBtn = document.getElementById('signInBtn');
+        const results = document.getElementById('results');
+        
+        // Check auth state
+        function checkAuthState() {
+            const user = window.getCurrentUser ? window.getCurrentUser() : null;
+            
+            if (user) {
+                authStatus.className = 'status success';
+                authStatus.textContent = `✅ Signed in as: ${user.displayName || user.email}`;
+                testBtn.disabled = false;
+                signInBtn.style.display = 'none';
+            } else {
+                authStatus.className = 'status error';
+                authStatus.textContent = '❌ Not signed in';
+                testBtn.disabled = true;
+                signInBtn.style.display = 'inline-block';
+            }
+        }
+        
+        // Check auth state periodically
+        setInterval(checkAuthState, 1000);
+        checkAuthState();
+        
+        // Sign in button
+        signInBtn.addEventListener('click', () => {
+            window.location.href = '/';
+        });
+        
+        // Test storage upload
+        testStorageBtn.addEventListener('click', async () => {
+            results.innerHTML = '<div class="status info">Testing storage upload...</div>';
+            
+            try {
+                const user = window.getCurrentUser();
+                if (!user) {
+                    throw new Error('Not authenticated');
+                }
+                
+                // Create a test waveform image
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw a simple waveform pattern
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, 200, 100);
+                ctx.fillStyle = '#000';
+                for (let x = 0; x < 200; x += 2) {
+                    const height = Math.sin(x * 0.1) * 20 + 50;
+                    ctx.fillRect(x, height - 2, 1, 4);
+                }
+                
+                // Convert to blob
+                canvas.toBlob(async (blob) => {
+                    try {
+                        if (!window.uploadWaveformFiles) {
+                            throw new Error('Upload function not available');
+                        }
+                        
+                        const result = await window.uploadWaveformFiles(blob, 'test-audio.wav', user.uid);
+                        
+                        if (result.success) {
+                            results.innerHTML = `
+                                <div class="status success">
+                                    ✅ Storage upload successful!<br>
+                                    <strong>Waveform URL:</strong> <a href="${result.waveformUrl}" target="_blank">View Image</a><br>
+                                    <strong>QR URL:</strong> <a href="${result.qrUrl}" target="_blank">View QR</a>
+                                </div>
+                            `;
+                        } else {
+                            results.innerHTML = `<div class="status error">❌ Upload failed: ${result.error}</div>`;
+                        }
+                    } catch (error) {
+                        results.innerHTML = `<div class="status error">❌ Upload error: ${error.message}</div>`;
+                        console.error('Storage test error:', error);
+                    }
+                }, 'image/png');
+                
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ Test error: ${error.message}</div>`;
+                console.error('Test error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

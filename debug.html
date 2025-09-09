@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug MemoWindow</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>MemoWindow Debug Page</h1>
+    <div id="status">Loading...</div>
+    
+    <h2>Tests:</h2>
+    <div id="tests">
+        <div id="test-css" class="status info">CSS Loading: Testing...</div>
+        <div id="test-js" class="status info">JavaScript Bundles: Testing...</div>
+        <div id="test-firebase" class="status info">Firebase: Testing...</div>
+        <div id="test-functions" class="status info">Global Functions: Testing...</div>
+    </div>
+
+    <!-- Load the same assets as main page -->
+    <link rel="stylesheet" href="dist/main.07cc2b43c659bd54da23.css">
+    <script src="dist/bundle.874b55151c9f182f3eeb.js"></script>
+    <script src="dist/bundle.08d0e26b28d4875fb53b.js"></script>
+
+    <script>
+        function updateTest(id, success, message) {
+            const el = document.getElementById(id);
+            el.className = 'status ' + (success ? 'success' : 'error');
+            el.textContent = (success ? '✅ ' : '❌ ') + message;
+        }
+
+        // Test CSS
+        setTimeout(() => {
+            const cssTest = window.getComputedStyle(document.body).fontFamily.includes('system-ui');
+            updateTest('test-css', cssTest, cssTest ? 'CSS loaded successfully' : 'CSS failed to load');
+        }, 100);
+
+        // Test JavaScript bundles
+        setTimeout(() => {
+            const jsTest = typeof window !== 'undefined';
+            updateTest('test-js', jsTest, jsTest ? 'JavaScript bundles loaded' : 'JavaScript bundles failed');
+        }, 500);
+
+        // Test Firebase
+        setTimeout(() => {
+            const firebaseTest = window.getCurrentUser !== undefined;
+            updateTest('test-firebase', firebaseTest, firebaseTest ? 'Firebase functions available' : 'Firebase functions missing');
+        }, 1000);
+
+        // Test global functions
+        setTimeout(() => {
+            const functionsTest = window.showToast !== undefined && window.deleteMemory !== undefined;
+            updateTest('test-functions', functionsTest, functionsTest ? 'Global functions available' : 'Global functions missing');
+        }, 1500);
+
+        // Overall status
+        setTimeout(() => {
+            const status = document.getElementById('status');
+            status.textContent = 'Debug tests completed. Check results above.';
+        }, 2000);
+
+        // Log any errors
+        window.addEventListener('error', (e) => {
+            console.error('JavaScript Error:', e.error);
+            document.getElementById('status').innerHTML += '<br>❌ Error: ' + e.message;
+        });
+    </script>
+</body>
+</html>

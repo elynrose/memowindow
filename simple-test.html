@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 15px 30px; font-size: 16px; margin: 10px; cursor: pointer; }
+        #log { background: #f5f5f5; padding: 10px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Simple Firebase Login Test</h1>
+    
+    <!-- Simple test button -->
+    <button onclick="testLogin()">Test Login Button</button>
+    <button onclick="checkFirebase()">Check Firebase Status</button>
+    
+    <div id="log"></div>
+
+    <!-- Load Firebase directly -->
+    <script type="module">
+        // Import Firebase directly
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
+
+        // Your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUTI2-Ab0-ZKaV0kon_60Uoa6SqJuldjk",
+            authDomain: "leadlink-ai-api08.firebaseapp.com", 
+            projectId: "leadlink-ai-api08",
+            storageBucket: "leadlink-ai-api08.firebasestorage.app",
+            messagingSenderId: "365232756820",
+            appId: "1:365232756820:web:55fcb722110cd5480d35c1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            console.log(message);
+        }
+
+        // Make functions globally available
+        window.testLogin = async function() {
+            log('🔄 Testing Firebase login...');
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                log('✅ Login successful: ' + user.displayName + ' (' + user.email + ')');
+            } catch (error) {
+                log('❌ Login failed: ' + error.code + ' - ' + error.message);
+            }
+        };
+
+        window.checkFirebase = function() {
+            log('🔍 Checking Firebase status...');
+            log('Auth object: ' + (auth ? 'Available' : 'Not available'));
+            log('Provider: ' + (provider ? 'Available' : 'Not available'));
+            
+            const currentUser = auth.currentUser;
+            log('Current user: ' + (currentUser ? currentUser.email : 'Not logged in'));
+        };
+
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                log('🔥 User signed in: ' + user.displayName);
+            } else {
+                log('🔥 User signed out');
+            }
+        });
+
+        log('🚀 Firebase initialized successfully');
+    </script>
+</body>
+</html>

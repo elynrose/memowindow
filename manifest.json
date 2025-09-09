@@ -1,0 +1,45 @@
+{
+  "name": "MemoWindow - Voice Memory Creator",
+  "short_name": "MemoWindow",
+  "description": "Transform precious voice recordings into beautiful waveform art and create lasting visual memories",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#2a4df5",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities", "photo"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "images/screenshot-mobile.png",
+      "sizes": "400x800",
+      "type": "image/png"
+    },
+    {
+      "src": "images/screenshot-desktop.png",
+      "sizes": "1200x800",
+      "type": "image/png"
+    }
+  ],
+  "features": [
+    "Record voice memories",
+    "Generate waveform visualizations",
+    "Create print-ready memory frames",
+    "Secure user authentication",
+    "Personal memory collections"
+  ]
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Functions Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 8px 15px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Order Functions Test</h1>
+    
+    <div class="test-section">
+        <h2>Function Availability Test</h2>
+        <div id="function-test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Order Flow Test</h2>
+        <p>Test the order flow (these will show modals/alerts):</p>
+        <button onclick="testShowOrderOptions()">Test Order Options Modal</button>
+        <button onclick="testCloseOrderModal()">Test Close Order Modal</button>
+    </div>
+    
+    <!-- Include the bundle -->
+    <script src="dist/bundle.0831caa59b61a8784be1.js"></script>
+    
+    <script>
+        // Wait for bundle to load
+        setTimeout(() => {
+            testFunctionAvailability();
+        }, 1000);
+        
+        function testFunctionAvailability() {
+            const results = document.getElementById('function-test-results');
+            const functions = [
+                'orderProduct',
+                'showOrderOptions', 
+                'selectProduct',
+                'closeOrderModal',
+                'showMemoryModal',
+                'closeImageModal',
+                'loadMoreMemories',
+                'deleteMemory'
+            ];
+            
+            let html = '<h3>Global Function Availability:</h3>';
+            
+            functions.forEach(func => {
+                const exists = typeof window[func] === 'function';
+                const status = exists ? '<span class="success">✓ Available</span>' : '<span class="error">✗ Missing</span>';
+                html += `<div>${func}: ${status}</div>`;
+            });
+            
+            results.innerHTML = html;
+        }
+        
+        function testShowOrderOptions() {
+            if (typeof window.showOrderOptions === 'function') {
+                // Create a mock button element
+                const mockButton = document.createElement('button');
+                mockButton.textContent = 'Order Print';
+                
+                // Test with mock data
+                window.showOrderOptions(1, 'test-image.jpg', 'Test Memory', mockButton);
+            } else {
+                alert('showOrderOptions function not available');
+            }
+        }
+        
+        function testCloseOrderModal() {
+            if (typeof window.closeOrderModal === 'function') {
+                window.closeOrderModal();
+                alert('closeOrderModal called successfully');
+            } else {
+                alert('closeOrderModal function not available');
+            }
+        }
+    </script>
+</body>
+</html>
