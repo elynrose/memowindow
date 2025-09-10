@@ -331,7 +331,7 @@ async function createMemory() {
             // Upload audio file
             const audioResult = await uploadWaveformFiles(
                 null,
-                null,
+                file.name,
                 currentUser.uid,
                 file
             );

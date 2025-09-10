@@ -50,7 +50,7 @@ export async function uploadWaveformFiles(waveformBlob, originalFileName, userId
   try {
     // Generate unique filenames
     const timestamp = Date.now();
-    const baseName = originalFileName.replace(/\.[^.]+$/, '');
+    const baseName = originalFileName ? originalFileName.replace(/\.[^.]+$/, '') : 'waveform';
     const waveformFileName = `${userId}_${timestamp}_${baseName}_waveform.png`;
     const qrFileName = `${userId}_${timestamp}_${baseName}_qr.png`;
     
