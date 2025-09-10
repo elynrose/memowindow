@@ -572,7 +572,7 @@
       
       // Calculate layout areas
       const titleHeight = 30;
-      const qrSize = 40;
+      const qrSize = 320; // 8x larger (40 * 8 = 320)
       const padding = 15;
       const waveformWidth = W * 0.7;
       const waveformArea = {
@@ -786,8 +786,8 @@
           // Create play page URL
           const playPageUrl = `${window.location.origin}${window.location.pathname.replace(/\/[^\/]*$/, '')}/play.php?id=${uniqueId}`;
           
-          // Generate QR code URL (high resolution for print quality)
-          const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=1&data=${encodeURIComponent(playPageUrl)}`;
+          // Generate QR code URL (high resolution for print quality - larger size)
+          const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
           
           status.textContent = `Generating waveform with QR code for ${file.name}...`;
           
@@ -927,7 +927,7 @@
           
           // Calculate layout areas
           const titleHeight = 40;
-          const qrSize = 60;
+          const qrSize = 480; // 8x larger (60 * 8 = 480)
           const padding = 20;
           const waveformWidth = W * 0.7;
           const waveformArea = {
