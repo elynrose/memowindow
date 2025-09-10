@@ -17,6 +17,296 @@
   <link rel="apple-touch-icon" href="images/icon-192.png">
   
   <!-- Styles are now loaded from external CSS file -->
+  <style>
+    /* Mobile-first responsive design improvements */
+    
+    /* Base responsive improvements */
+    .wrap {
+      padding: 16px;
+      max-width: 100%;
+    }
+    
+    /* Mobile header improvements */
+    .row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+    
+    /* Logo responsive */
+    .row h1 img {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+    }
+    
+    /* User info responsive */
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+    }
+    
+    /* File upload area responsive */
+    .file-upload-area {
+      width: 100%;
+      justify-content: center;
+      padding: 16px;
+      min-height: 60px;
+    }
+    
+    /* Button responsive improvements */
+    button {
+      min-height: 44px; /* iOS touch target size */
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Input responsive improvements */
+    input[type="text"], input[type="email"], input[type="password"] {
+      min-height: 44px;
+      font-size: 16px; /* Prevent zoom on iOS */
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    /* Main creation row responsive */
+    .card .row {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .card .row > * {
+      width: 100%;
+      margin: 0;
+    }
+    
+    /* Auth modal responsive */
+    .auth-modal-content {
+      margin: 20px;
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    
+    .auth-modal-content h1 img {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+    }
+    
+    /* Recorder modal responsive */
+    .recorder-modal-content {
+      margin: 20px;
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    
+    .recorder-controls {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .record-btn {
+      width: 100%;
+      min-height: 60px;
+      font-size: 18px;
+    }
+    
+    /* Results responsive */
+    .results-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    .products-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    /* Waveform preview responsive */
+    #waveformPreview {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+    }
+    
+    /* Waveform list responsive */
+    .waveform-item {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    
+    .waveform-item > div:first-child {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    
+    .waveform-item > div:last-child {
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    /* Tablet styles */
+    @media (min-width: 768px) {
+      .wrap {
+        padding: 24px;
+        max-width: 900px;
+      }
+      
+      .row {
+        flex-direction: row;
+        align-items: center;
+      }
+      
+      .user-info {
+        flex-direction: row;
+        text-align: left;
+      }
+      
+      .card .row {
+        flex-direction: row;
+        align-items: center;
+      }
+      
+      .card .row > * {
+        width: auto;
+      }
+      
+      .file-upload-area {
+        width: auto;
+        min-width: 200px;
+      }
+      
+      .results-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .recorder-controls {
+        flex-direction: row;
+        justify-content: center;
+      }
+      
+      .record-btn {
+        width: auto;
+        min-width: 60px;
+      }
+      
+      .waveform-item > div:first-child {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+    
+    /* Desktop styles */
+    @media (min-width: 1024px) {
+      .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .auth-modal-content {
+        margin: 40px;
+        max-width: 500px;
+      }
+      
+      .recorder-modal-content {
+        margin: 40px;
+        max-width: 600px;
+      }
+    }
+    
+    /* Large desktop styles */
+    @media (min-width: 1200px) {
+      .wrap {
+        max-width: 1200px;
+      }
+    }
+    
+    /* Touch improvements */
+    @media (hover: none) and (pointer: coarse) {
+      button:hover {
+        transform: none;
+      }
+      
+      .file-upload-area:hover {
+        border-color: #e6e9f2;
+        background: #fafbfc;
+      }
+      
+      .file-upload-area:active {
+        border-color: #2a4df5;
+        background: #f0f4ff;
+      }
+    }
+    
+    /* High DPI displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .user-avatar {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+    }
+    
+    /* Landscape mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .auth-modal-content,
+      .recorder-modal-content {
+        max-height: calc(100vh - 20px);
+        margin: 10px;
+      }
+    }
+    
+    /* Accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      .card {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+      }
+      
+      .file-upload-area {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+      }
+      
+      input[type="text"], input[type="email"], input[type="password"] {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+      }
+      
+      input[type="text"]::placeholder,
+      input[type="email"]::placeholder,
+      input[type="password"]::placeholder {
+        color: #9ca3af;
+      }
+    }
+  </style>
 </head>
 <body>
 <!-- Auth Modal (shown when not authenticated) -->
