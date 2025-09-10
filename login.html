@@ -1055,8 +1055,8 @@ function computePeaksFromBuffer(buf, width=2000){
 function drawPreview(){
   if(!peaks) return;
   
-  // Show the preview canvas when drawing
-  els.preview.classList.remove('hidden');
+  // Keep canvas hidden during drawing - only show final result
+  // els.preview.classList.remove('hidden');
   
   const W=els.preview.width,H=els.preview.height;
   ctx.clearRect(0,0,W,H);
