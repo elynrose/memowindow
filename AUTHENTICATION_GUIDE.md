@@ -14,7 +14,8 @@ All pages in the MemoWindow application now require proper authentication. This 
 ### Authentication Levels
 
 #### 1. **Public Pages** (No authentication required)
-- `index.html` - Main application (handles login)
+- `index.html` - Marketing home page
+- `login.html` - Main application (handles login)
 - `firebase-config.php` - Firebase configuration
 - `stripe_webhook.php` - Stripe webhook (external access)
 - `order_success.php` - Order success page
@@ -56,7 +57,7 @@ $adminId = requireAdmin();
 ### Authentication Flow
 1. **User visits protected page**
 2. **Page checks for `user_id` parameter**
-3. **If missing**: Redirects to `index.html?error=login_required`
+3. **If missing**: Redirects to `login.html?error=login_required`
 4. **If present**: Verifies user exists and has required permissions
 5. **If admin required**: Checks `is_admin` flag in database
 6. **If unauthorized**: Redirects with appropriate error

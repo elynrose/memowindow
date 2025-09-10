@@ -70,7 +70,7 @@
         </p>
         
         <div style="margin-top: 32px;">
-            <a href="index.html" class="btn-primary">Back to MemoWindow</a>
+            <a href="login.html" class="btn-primary">Back to MemoWindow</a>
         </div>
         
         <div style="margin-top: 24px; font-size: 14px; color: #6b7280;">

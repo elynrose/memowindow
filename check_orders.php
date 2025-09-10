@@ -80,4 +80,4 @@ try {
 }
 ?>
 
-<p><a href="index.html">← Back to MemoWindow</a></p>
+<p><a href="login.html">← Back to MemoWindow</a></p>

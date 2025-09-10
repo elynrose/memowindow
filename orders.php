@@ -204,7 +204,7 @@ try {
         <div class="header">
             <h1>My Orders</h1>
             <p>Track your MemoryWave print orders</p>
-            <a href="index.html" class="nav-link">← Back to MemoWindow</a>
+            <a href="login.html" class="nav-link">← Back to MemoWindow</a>
         </div>
 
         <?php if (isset($error)): ?>
@@ -217,7 +217,7 @@ try {
                 <h3>No Orders Yet</h3>
                 <p>You haven't placed any print orders yet.</p>
                 <p>Create a MemoryWave and order a beautiful print to get started!</p>
-                <a href="index.html" class="nav-link">Create MemoryWave</a>
+                <a href="login.html" class="nav-link">Create MemoryWave</a>
             </div>
         <?php else: ?>
             <?php foreach ($orders as $order): 

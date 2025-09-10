@@ -257,7 +257,7 @@ try {
             <p>Manage MemoWindow users and their activity</p>
             <div class="nav-links">
                 <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
-                <a href="index.html" class="nav-link">MemoWindow</a>
+                <a href="login.html" class="nav-link">MemoWindow</a>
                 <a href="#" onclick="location.reload()" class="nav-link">Refresh</a>
             </div>
         </div>

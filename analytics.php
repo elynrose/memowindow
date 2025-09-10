@@ -249,7 +249,7 @@ for ($date = $startDate; $date <= $endDate; $date = date('Y-m-d', strtotime($dat
             <div class="nav-links">
                 <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
                 <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Users</a>
-                <a href="index.html" class="nav-link">MemoWindow</a>
+                <a href="login.html" class="nav-link">MemoWindow</a>
             </div>
         </div>
 
