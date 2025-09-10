@@ -351,7 +351,7 @@ async function createMemory() {
             throw new Error('Not authenticated');
         }
         
-        // Generate unique ID and play page URL
+        // Generate unique ID
         const uniqueId = 'mw_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         
         // Get the base URL from the server (uses production URL for QR codes)
@@ -359,18 +359,14 @@ async function createMemory() {
         const baseUrlData = await baseUrlResponse.json();
         const baseUrl = baseUrlData.base_url;
         
-        const playPageUrl = `${baseUrl}/play.php?id=${uniqueId}`;
-        
-        // Generate QR code URL
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
-        
         // Process each audio file
         for (let i = 0; i < selectedFiles.length; i++) {
             const file = selectedFiles[i];
             const baseName = file.name.replace(/\.[^/.]+$/, '');
             
-            // Create waveform from audio
-            const waveformBlob = await createWaveformFromAudio(file, qrApiUrl);
+            // Create waveform from audio (temporary QR URL for now)
+            const tempQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(baseUrl + '/play.php?id=TEMP')}`;
+            const waveformBlob = await createWaveformFromAudio(file, tempQrUrl);
             
             // Upload waveform image
             const waveformResult = await uploadWaveformFiles(
@@ -396,20 +392,31 @@ async function createMemory() {
                 throw new Error(audioResult.error || 'Audio upload failed');
             }
             
-            // Save to database
+            // Save to database first to get the memory ID
             const saveResult = await saveMemoryToDatabase({
                 title: title,
                 user_id: currentUser.uid,
                 image_url: waveformResult.waveformUrl,
-                qr_url: qrApiUrl,
+                qr_url: tempQrUrl, // Temporary QR URL
                 audio_url: audioResult.audioUrl,
                 original_name: file.name,
-                play_url: playPageUrl,
+                play_url: `${baseUrl}/play.php?id=TEMP`, // Temporary play URL
                 unique_id: uniqueId
             });
             
             if (!saveResult.success) {
                 throw new Error(saveResult.error || 'Failed to save memory');
+            }
+            
+            // Now generate the correct play URL and QR code with the actual memory ID
+            const memoryId = saveResult.id;
+            const playPageUrl = `${baseUrl}/play.php?id=${memoryId}`;
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
+            
+            // Update the database with the correct URLs
+            const updateResult = await updateMemoryUrls(memoryId, playPageUrl, qrApiUrl);
+            if (!updateResult.success) {
+                console.warn('Failed to update memory URLs:', updateResult.error);
             }
         }
         
@@ -612,6 +619,30 @@ async function saveMemoryToDatabase(memoryData) {
         
     } catch (error) {
         console.error('Error saving to database:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Update memory URLs after getting the memory ID
+async function updateMemoryUrls(memoryId, playUrl, qrUrl) {
+    try {
+        const response = await fetch('update_memory_urls.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                memory_id: memoryId,
+                play_url: playUrl,
+                qr_url: qrUrl
+            })
+        });
+        
+        const result = await response.json();
+        return result;
+        
+    } catch (error) {
+        console.error('Error updating memory URLs:', error);
         return { success: false, error: error.message };
     }
 }
