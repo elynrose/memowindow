@@ -259,6 +259,18 @@
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🔐 MemoWindow Login Initializing...');
+      
+      // Debug: Check if button exists
+      const btnLogin = document.getElementById('btnLogin');
+      console.log('🔍 Login button found:', !!btnLogin);
+      
+      // Debug: Check Firebase config
+      import('./firebase-config.php').then(config => {
+        console.log('🔍 Firebase config loaded:', config);
+      }).catch(error => {
+        console.error('❌ Firebase config error:', error);
+      });
+      
       initAuth();
     });
   </script>

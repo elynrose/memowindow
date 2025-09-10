@@ -200,16 +200,23 @@ export function initAuth() {
   // Login button
   els.btnLogin.addEventListener('click', async () => {
     console.log('🔥 Google login button clicked...');
+    console.log('🔍 Auth object:', auth);
+    console.log('🔍 Google provider:', googleProvider);
+    
     try {
       els.btnLogin.disabled = true;
       els.btnLogin.textContent = 'Signing in...';
       
+      console.log('🔍 Attempting sign in with popup...');
       const result = await signInWithPopup(auth, googleProvider);
+      console.log('✅ Sign in successful:', result);
       
       // The onAuthStateChanged listener handles the UI update automatically
       
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('❌ Login failed:', error);
+      console.error('❌ Error code:', error.code);
+      console.error('❌ Error message:', error.message);
       alert('Login failed: ' + error.message);
       resetLoginButton();
     }
