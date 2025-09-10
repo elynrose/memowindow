@@ -28,9 +28,9 @@ header('Content-Type: application/javascript');
 
 // Output Firebase configuration as JavaScript
 echo "// Firebase configuration loaded from .env file\n";
-echo "import { initializeApp } from 'firebase/app';\n";
-echo "import { getAuth, GoogleAuthProvider, EmailAuthProvider } from 'firebase/auth';\n";
-echo "import { getStorage } from 'firebase/storage';\n\n";
+echo "import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';\n";
+echo "import { getAuth, GoogleAuthProvider, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';\n";
+echo "import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';\n\n";
 
 echo "const firebaseConfig = {\n";
 echo "  apiKey: \"" . ($env['FIREBASE_API_KEY'] ?? '') . "\",\n";

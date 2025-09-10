@@ -1,5 +1,5 @@
 // App-specific authentication functionality
-import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { auth } from '../firebase-config.php';
 
 let currentUser = null;
