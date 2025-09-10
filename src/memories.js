@@ -77,7 +77,7 @@ async function loadMemories() {
         const data = await response.json();
         console.log('API Response data:', data);
         
-        if (data.success && data.waveforms && data.waveforms.length > 0) {
+        if (data.waveforms && data.waveforms.length > 0) {
             console.log(`Found ${data.waveforms.length} memories`);
             displayMemories(data.waveforms);
         } else {
