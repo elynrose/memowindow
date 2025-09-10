@@ -83,7 +83,7 @@ async function saveToLocalBackup(blob, fileName, folder) {
       throw new Error(result.error || 'Backup save failed');
     }
     
-    console.log(`✅ File backed up locally: ${result.relative_path}`);
+    // File backed up locally
     return result;
     
   } catch (error) {
@@ -185,7 +185,7 @@ async function deleteFromLocalBackup(storagePath) {
     
     const result = await response.json();
     if (result.success) {
-      console.log(`✅ File deleted from local backup: ${folder}/${fileName}`);
+      // File deleted from local backup
     }
     
     return result.success;

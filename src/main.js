@@ -8,11 +8,11 @@ import { showToast, showLoading, hideLoading, showConfirmDialog, handleError, fo
 
 // Initialize authentication when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 DOM loaded, initializing app...');
+  // DOM loaded, initializing app
   
   try {
     initAuth();
-    console.log('✅ Auth initialization started');
+    // Auth initialization started
   } catch (error) {
     console.error('❌ Auth initialization failed:', error);
     
@@ -32,12 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Also try to initialize when window loads (backup)
 window.addEventListener('load', () => {
-  console.log('🚀 Window loaded, checking if auth is initialized...');
+  // Window loaded, checking if auth is initialized
   
   // Check if login button exists and has event listener
   const loginBtn = document.getElementById('btnLogin');
   if (loginBtn && !loginBtn.dataset.initialized) {
-    console.log('🔄 Login button found but not initialized, retrying...');
+    // Login button found but not initialized, retrying
     try {
       initAuth();
     } catch (error) {

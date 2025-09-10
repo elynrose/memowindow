@@ -3,12 +3,12 @@ import { getCurrentUser } from './app-auth.js';
 
 // Initialize memories functionality
 export function initMemories() {
-    console.log('💕 Initializing memories functionality...');
+    // Initializing memories functionality
     
     // Wait for authentication to be ready, then load memories
     waitForAuthAndLoadMemories();
     
-    console.log('✅ Memories functionality initialized');
+    // Memories functionality initialized
 }
 
 // Wait for authentication and then load memories
@@ -21,13 +21,13 @@ function waitForAuthAndLoadMemories() {
         const currentUser = getCurrentUser();
         
         if (currentUser) {
-            console.log('✅ User authenticated, loading memories...');
+            // User authenticated, loading memories
             loadMemories();
         } else if (attempts >= maxAttempts) {
-            console.log('❌ Authentication timeout, showing login prompt');
+            // Authentication timeout, showing login prompt
             showLoginPrompt();
         } else {
-            console.log(`⏳ Waiting for authentication... (attempt ${attempts}/${maxAttempts})`);
+            // Waiting for authentication
             // Check again in 500ms
             setTimeout(checkAuth, 500);
         }
@@ -65,23 +65,23 @@ async function loadMemories() {
             return;
         }
         
-        console.log('Loading memories for user:', currentUser.uid);
+        // Loading memories for user
         
         const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
-        console.log('API Response status:', response.status);
+        // API Response received
         
         if (!response.ok) {
             throw new Error(`API request failed with status ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('API Response data:', data);
+        // API Response data received
         
         if (data.waveforms && data.waveforms.length > 0) {
-            console.log(`Found ${data.waveforms.length} memories`);
+            // Found memories
             displayMemories(data.waveforms);
         } else {
-            console.log('No memories found');
+            // No memories found
             showEmptyState();
         }
         

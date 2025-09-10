@@ -25,14 +25,14 @@ async function showUserInfo(user) {
   
   // Set user avatar with better fallback
   if (user.photoURL) {
-    console.log('Setting user avatar:', user.photoURL);
+    // Setting user avatar
     els.userAvatar.src = user.photoURL;
     els.userAvatar.onerror = () => {
-      console.log('Avatar failed to load, using fallback');
+      // Avatar failed to load, using fallback
       els.userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23667eea"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
     };
   } else {
-    console.log('No photoURL available, using fallback');
+    // No photoURL available, using fallback
     els.userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23667eea"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
   }
   
@@ -59,13 +59,13 @@ async function showUserInfo(user) {
 
 // Redirect to login if not authenticated
 function redirectToLogin() {
-  console.log('🔐 User not authenticated, redirecting to login...');
+  // User not authenticated, redirecting to login
   window.location.href = 'login.html';
 }
 
 // Initialize app authentication
 export function initAppAuth() {
-  console.log('🔥 Initializing App Auth...');
+  // Initializing App Auth
   const els = getElements();
   
   // Check if we have user data from sessionStorage
@@ -73,7 +73,7 @@ export function initAppAuth() {
   if (storedUser) {
     try {
       const userData = JSON.parse(storedUser);
-      console.log('📱 Found stored user data:', userData);
+      // Found stored user data
       // Create a mock user object for the app
       currentUser = userData;
       showUserInfo(userData);
@@ -84,11 +84,11 @@ export function initAppAuth() {
       return;
     }
   } else {
-    console.log('❌ No stored user data found, waiting for Firebase auth...');
+    // No stored user data found, waiting for Firebase auth
     // Set a timeout to redirect if Firebase auth doesn't respond
     setTimeout(() => {
       if (!currentUser) {
-        console.log('⏰ Firebase auth timeout, redirecting to login...');
+        // Firebase auth timeout, redirecting to login
         redirectToLogin();
       }
     }, 3000); // 3 second timeout
@@ -96,7 +96,7 @@ export function initAppAuth() {
   
   // Set up auth state listener
   onAuthStateChanged(auth, (user) => {
-    console.log('🔥 App auth state changed:', user ? 'Logged in' : 'Logged out');
+    // App auth state changed
     if (user) {
       // Update stored user data
       const userData = {
@@ -155,7 +155,7 @@ async function checkAdminStatus(userUID) {
     }
   } catch (error) {
     // Silently fail - not critical functionality
-    console.log('Admin check failed:', error);
+    // Admin check failed
   }
 }
 

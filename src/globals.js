@@ -166,11 +166,11 @@ window.showImageModal = function() {
 // Load more memories function
 window.loadMoreMemories = function() {
   const offset = window.currentWaveformsOffset || 0;
-  console.log('🔍 Load more clicked, current offset:', offset);
+  // Load more clicked
   
   const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
   if (!currentUser) {
-    console.log('🔍 No user for load more');
+    // No user for load more
     return;
   }
   
@@ -180,20 +180,20 @@ window.loadMoreMemories = function() {
 // Function to load additional waveforms (defined in HTML script)
 window.loadMoreWaveforms = async function(offset) {
   try {
-    console.log('🔍 Loading more waveforms from offset:', offset);
+    // Loading more waveforms
     const currentUser = window.getCurrentUser();
     const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
     
     if (!response.ok) throw new Error('Failed to load more waveforms');
     
     const data = await response.json();
-    console.log('🔍 Load more response:', data);
+    // Load more response received
     
     const waveforms = Array.isArray(data) ? data : (data.waveforms || []);
     const hasMore = data.has_more || false;
     const total = data.total || 0;
     
-    console.log('🔍 Additional waveforms:', waveforms.length, 'hasMore:', hasMore);
+    // Additional waveforms loaded
     
     if (waveforms.length > 0) {
       const waveformsContainer = document.getElementById('waveformsContainer');
@@ -249,7 +249,7 @@ window.loadMoreWaveforms = async function(offset) {
       
       // Update offset for next load more
       window.currentWaveformsOffset = offset + waveforms.length;
-      console.log('🔍 Updated offset to:', window.currentWaveformsOffset);
+      // Updated offset
     }
     
   } catch (error) {
@@ -270,7 +270,7 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
       return;
     }
     
-    console.log('Creating order for:', { productId, memoryId, imageUrl });
+    // Creating order
     
     // Create Stripe checkout session
     const response = await fetch('create_checkout.php', {
@@ -288,7 +288,7 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
       })
     });
     
-    console.log('Checkout response status:', response.status);
+    // Checkout response received
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -297,7 +297,7 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
     }
     
     const result = await response.json();
-    console.log('Checkout result:', result);
+    // Checkout result received
     
     if (result.success && result.checkout_url) {
       // Redirect to Stripe checkout
@@ -414,4 +414,4 @@ window.closeOrderModal = function() {
   }
 };
 
-console.log('🌟 Global functions loaded and available');
+// Global functions loaded and available

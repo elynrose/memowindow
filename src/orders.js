@@ -4,7 +4,7 @@ import { getCurrentUser } from './auth.js';
 let currentUser = null;
 
 export function initOrders() {
-    console.log('📦 Orders page loaded');
+    // Orders page loaded
     
     // Wait for authentication and then load orders
     waitForAuthAndLoadOrders();
@@ -17,7 +17,7 @@ async function waitForAuthAndLoadOrders() {
     while (attempts < maxAttempts) {
         currentUser = getCurrentUser();
         if (currentUser) {
-            console.log('✅ User authenticated, loading orders...');
+            // User authenticated, loading orders
             await loadOrders();
             return;
         }
@@ -28,7 +28,7 @@ async function waitForAuthAndLoadOrders() {
     }
     
     // If we get here, authentication timed out
-    console.log('⚠️ Authentication timeout, showing login prompt');
+    // Authentication timeout, showing login prompt
     showLoginPrompt();
 }
 
@@ -198,4 +198,4 @@ window.cancelOrder = async function(orderId) {
     }
 };
 
-console.log('✅ Orders functionality initialized');
+// Orders functionality initialized

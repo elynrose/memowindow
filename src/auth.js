@@ -20,7 +20,7 @@ async function loadUserWaveforms(offset = 0, append = false) {
     if (!response.ok) throw new Error('Failed to load waveforms');
     
     const data = await response.json();
-    console.log('🔍 Raw waveforms data:', data);
+    // Raw waveforms data received
     
     // Handle both new paginated format and old direct array format
     let waveforms, hasMore, total;
@@ -37,7 +37,7 @@ async function loadUserWaveforms(offset = 0, append = false) {
       total = data.total || 0;
     }
     
-    console.log('🔍 Processed waveforms:', waveforms.length, 'items, hasMore:', hasMore, 'total:', total);
+    // Processed waveforms data
     
     // Get DOM elements
     const waveformsList = document.getElementById('waveformsList');
@@ -151,7 +151,7 @@ function resetLoginButton() {
 
 // Show user info - redirect to app page
 async function showUserInfo(user) {
-  console.log('✅ User authenticated, redirecting to app...');
+  // User authenticated, redirecting to app
   
   // Store user data in sessionStorage for the app page
   sessionStorage.setItem('currentUser', JSON.stringify({
@@ -167,7 +167,7 @@ async function showUserInfo(user) {
 
 // Initialize authentication
 export function initAuth() {
-  console.log('🔥 Initializing Firebase Auth...');
+  // Initializing Firebase Auth
   const els = getElements();
   
   // Check if required elements exist
@@ -175,20 +175,20 @@ export function initAuth() {
     console.error('❌ Login button not found! DOM might not be ready.');
     // Retry after a short delay
     setTimeout(() => {
-      console.log('🔄 Retrying auth initialization...');
+      // Retrying auth initialization
       initAuth();
     }, 1000);
     return;
   }
   
-  console.log('✅ Auth elements found, setting up listeners...');
+  // Auth elements found, setting up listeners
   
   // Mark button as initialized
   els.btnLogin.dataset.initialized = 'true';
   
   // Set up auth state listener
   onAuthStateChanged(auth, (user) => {
-    console.log('🔥 Auth state changed:', user ? 'Logged in' : 'Logged out');
+    // Auth state changed
     currentUser = user; // Update the currentUser variable
     if (user) {
       showUserInfo(user);
@@ -200,17 +200,15 @@ export function initAuth() {
 
   // Login button
   els.btnLogin.addEventListener('click', async () => {
-    console.log('🔥 Google login button clicked...');
-    console.log('🔍 Auth object:', auth);
-    console.log('🔍 Google provider:', googleProvider);
+    // Google login button clicked
     
     try {
       els.btnLogin.disabled = true;
       els.btnLogin.textContent = 'Signing in...';
       
-      console.log('🔍 Attempting sign in with popup...');
+      // Attempting sign in with popup
       const result = await signInWithPopup(auth, googleProvider);
-      console.log('✅ Sign in successful:', result);
+      // Sign in successful
       
       // The onAuthStateChanged listener handles the UI update automatically
       
@@ -336,7 +334,7 @@ async function checkAdminStatus(userUID) {
     }
   } catch (error) {
     // Silently fail - not critical functionality
-    console.log('Admin check failed:', error);
+    // Admin check failed
   }
 }
 

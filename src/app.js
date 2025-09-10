@@ -14,7 +14,7 @@ let fileInput, fileUploadArea, btnRecord, btnCreate, titleInput, waveformList, m
 
 // Initialize app functionality
 export function initApp() {
-    console.log('🎵 Initializing app functionality...');
+    // Initializing app functionality
     
     // Get DOM elements
     fileInput = document.getElementById('fileInput');
@@ -38,7 +38,7 @@ export function initApp() {
     // Wait for authentication and then load user's waveforms
     waitForAuthAndLoadWaveforms();
     
-    console.log('✅ App functionality initialized');
+    // App functionality initialized
 }
 
 // Wait for authentication and then load waveforms
@@ -46,10 +46,10 @@ function waitForAuthAndLoadWaveforms() {
     const checkAuth = () => {
         const currentUser = getCurrentUser();
         if (currentUser) {
-            console.log('✅ User authenticated, loading waveforms...');
+            // User authenticated, loading waveforms
             loadUserWaveforms();
         } else {
-            console.log('⏳ Waiting for authentication...');
+            // Waiting for authentication
             // Check again in 500ms
             setTimeout(checkAuth, 500);
         }

@@ -21,7 +21,7 @@ export class PWAManager {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
         
-        console.log('Service Worker registered successfully:', registration);
+        // Service Worker registered successfully
 
         // Handle service worker updates
         registration.addEventListener('updatefound', () => {
@@ -55,14 +55,14 @@ export class PWAManager {
    */
   setupInstallPrompt() {
     window.addEventListener('beforeinstallprompt', (e) => {
-      console.log('PWA: Install prompt available');
+      // PWA: Install prompt available
       e.preventDefault();
       this.installPrompt = e;
       this.showInstallButton();
     });
 
     window.addEventListener('appinstalled', () => {
-      console.log('PWA: App was installed');
+      // PWA: App was installed
       this.hideInstallButton();
       this.trackEvent('pwa_installed');
     });
@@ -134,7 +134,7 @@ export class PWAManager {
 
     try {
       const result = await this.installPrompt.prompt();
-      console.log('PWA: Install prompt result:', result.outcome);
+      // PWA: Install prompt result
       
       if (result.outcome === 'accepted') {
         this.trackEvent('pwa_install_accepted');
@@ -171,14 +171,14 @@ export class PWAManager {
    */
   setupOnlineOfflineHandlers() {
     window.addEventListener('online', () => {
-      console.log('PWA: Back online');
+      // PWA: Back online
       this.isOnline = true;
       this.showOnlineStatus();
       this.handleBackOnline();
     });
 
     window.addEventListener('offline', () => {
-      console.log('PWA: Gone offline');
+      // PWA: Gone offline
       this.isOnline = false;
       this.showOfflineStatus();
     });
@@ -313,7 +313,7 @@ export class PWAManager {
         const perfData = performance.getEntriesByType('navigation')[0];
         if (perfData) {
           const loadTime = perfData.loadEventEnd - perfData.loadEventStart;
-          console.log(`PWA: Page load time: ${loadTime}ms`);
+          // PWA: Page load time measured
           this.trackPerformance('page_load_time', loadTime);
         }
       }
@@ -332,7 +332,7 @@ export class PWAManager {
     try {
       observer.observe({ entryTypes: ['resource'] });
     } catch (error) {
-      console.log('PWA: Performance Observer not supported');
+      // PWA: Performance Observer not supported
     }
   }
 
@@ -340,7 +340,7 @@ export class PWAManager {
    * Track PWA events
    */
   trackEvent(eventName, data = {}) {
-    console.log(`PWA Event: ${eventName}`, data);
+    // PWA Event tracked
     
     // You can integrate with analytics services here
     if (typeof gtag !== 'undefined') {
@@ -352,7 +352,7 @@ export class PWAManager {
    * Track performance metrics
    */
   trackPerformance(metric, value) {
-    console.log(`PWA Performance: ${metric} = ${value}`);
+    // PWA Performance tracked
     
     // You can send to analytics or monitoring service
     if (typeof gtag !== 'undefined') {
