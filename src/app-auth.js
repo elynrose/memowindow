@@ -38,7 +38,7 @@ async function showUserInfo(user) {
   
   // Update orders link with user ID
   if (els.ordersLink) {
-    els.ordersLink.href = `orders.php?user_id=${encodeURIComponent(user.uid)}`;
+    els.ordersLink.href = `orders.html`;
   }
   
   // Check if user is admin and add admin link

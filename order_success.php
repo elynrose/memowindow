@@ -146,7 +146,7 @@ try {
         <div style="margin-top: 32px;">
             <a href="login.html" class="btn-primary">Create Another Memory</a>
             <?php if (isset($session) && isset($session->metadata->user_id)): ?>
-                <a href="orders.php?user_id=<?php echo urlencode($session->metadata->user_id); ?>" class="btn-secondary">View Orders</a>
+                <a href="orders.html" class="btn-secondary">View Orders</a>
             <?php else: ?>
                 <a href="login.html" class="btn-secondary">Back to MemoWindow</a>
             <?php endif; ?>

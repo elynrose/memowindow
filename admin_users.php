@@ -343,7 +343,7 @@ try {
                     <div class="user-actions">
                         <a href="user_details.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=<?php echo urlencode($user['user_id']); ?>" 
                            class="btn btn-primary">View Details</a>
-                        <a href="orders.php?user_id=<?php echo urlencode($user['user_id']); ?>" 
+                        <a href="orders.html" 
                            class="btn btn-secondary">View Orders</a>
                         <?php if ($orders): ?>
                         <button onclick="exportUserData('<?php echo $user['user_id']; ?>')" 

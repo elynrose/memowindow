@@ -49,7 +49,7 @@ async function loadOrders() {
         `;
         
         // Fetch orders from server
-        const response = await fetch('get_orders.php');
+        const response = await fetch(`get_orders.php?user_id=${currentUser.uid}`);
         const data = await response.json();
         
         if (data.success) {

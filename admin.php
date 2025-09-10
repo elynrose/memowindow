@@ -242,7 +242,7 @@ try {
             <p>Manage users, orders, and analytics</p>
             <div class="nav-links">
                 <a href="login.html" class="nav-link">← Back to MemoWindow</a>
-                <a href="orders.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">My Orders</a>
+                <a href="orders.html" class="nav-link">My Orders</a>
                 <a href="#" onclick="location.reload()" class="nav-link">Refresh Data</a>
             </div>
         </div>

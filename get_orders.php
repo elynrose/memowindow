@@ -1,12 +1,24 @@
 <?php
 // get_orders.php - API endpoint to fetch user's orders
 header('Content-Type: application/json');
-require_once 'auth_check.php';
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET');
+header('Access-Control-Allow-Headers: Content-Type');
+
 require_once 'config.php';
 
 try {
-    // Require authentication
-    $userId = requireAuth();
+    // Validate user_id parameter
+    if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'user_id parameter required'
+        ]);
+        exit;
+    }
+    
+    $userId = $_GET['user_id'];
     
     // Connect to database
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
