@@ -365,7 +365,7 @@ async function createMemory() {
             const baseName = file.name.replace(/\.[^/.]+$/, '');
             
             // Create waveform from audio (temporary QR URL for now)
-            const tempQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(baseUrl + '/play.php?id=TEMP')}`;
+            const tempQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(baseUrl + '/play.php?uid=' + uniqueId)}`;
             const waveformBlob = await createWaveformFromAudio(file, tempQrUrl);
             
             // Upload waveform image
@@ -392,31 +392,24 @@ async function createMemory() {
                 throw new Error(audioResult.error || 'Audio upload failed');
             }
             
-            // Save to database first to get the memory ID
+            // Generate the final play URL and QR code with the unique_id (secure)
+            const playPageUrl = `${baseUrl}/play.php?uid=${uniqueId}`;
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
+            
+            // Save to database with correct URLs
             const saveResult = await saveMemoryToDatabase({
                 title: title,
                 user_id: currentUser.uid,
                 image_url: waveformResult.waveformUrl,
-                qr_url: tempQrUrl, // Temporary QR URL
+                qr_url: qrApiUrl, // Final QR URL
                 audio_url: audioResult.audioUrl,
                 original_name: file.name,
-                play_url: `${baseUrl}/play.php?id=TEMP`, // Temporary play URL
+                play_url: playPageUrl, // Final play URL
                 unique_id: uniqueId
             });
             
             if (!saveResult.success) {
                 throw new Error(saveResult.error || 'Failed to save memory');
-            }
-            
-            // Now generate the correct play URL and QR code with the actual memory ID
-            const memoryId = saveResult.id;
-            const playPageUrl = `${baseUrl}/play.php?id=${memoryId}`;
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
-            
-            // Update the database with the correct URLs
-            const updateResult = await updateMemoryUrls(memoryId, playPageUrl, qrApiUrl);
-            if (!updateResult.success) {
-                console.warn('Failed to update memory URLs:', updateResult.error);
             }
         }
         
@@ -623,29 +616,6 @@ async function saveMemoryToDatabase(memoryData) {
     }
 }
 
-// Update memory URLs after getting the memory ID
-async function updateMemoryUrls(memoryId, playUrl, qrUrl) {
-    try {
-        const response = await fetch('update_memory_urls.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                memory_id: memoryId,
-                play_url: playUrl,
-                qr_url: qrUrl
-            })
-        });
-        
-        const result = await response.json();
-        return result;
-        
-    } catch (error) {
-        console.error('Error updating memory URLs:', error);
-        return { success: false, error: error.message };
-    }
-}
 
 // Load user waveforms
 async function loadUserWaveforms() {
