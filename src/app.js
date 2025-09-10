@@ -359,7 +359,7 @@ async function createMemory() {
         const baseUrlData = await baseUrlResponse.json();
         const baseUrl = baseUrlData.base_url;
         
-        const playPageUrl = `${baseUrl}/play.html?id=${uniqueId}`;
+        const playPageUrl = `${baseUrl}/play.php?id=${uniqueId}`;
         
         // Generate QR code URL
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
