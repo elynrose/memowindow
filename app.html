@@ -231,6 +231,45 @@
       padding: 32px;
       min-height: 100px;
       margin: 2rem 0;
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      background: #f9fafb;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .file-upload-area:hover {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+    
+    .file-upload-area.has-files {
+      border-color: #10b981;
+      background: #ecfdf5;
+      border-style: solid;
+    }
+    
+    .file-upload-icon {
+      color: #6b7280;
+      transition: color 0.3s ease;
+    }
+    
+    .file-upload-area.has-files .file-upload-icon {
+      color: #10b981;
+    }
+    
+    .file-upload-text {
+      color: #6b7280;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    
+    .file-upload-area.has-files .file-upload-text {
+      color: #10b981;
+      font-weight: 600;
     }
     
     /* Button System */
@@ -505,12 +544,17 @@
     
     function updateFileDisplay() {
       const fileUploadText = document.getElementById('fileUploadText');
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      
       if (selectedFiles.length === 0) {
         fileUploadText.textContent = 'Upload Audio Files';
+        fileUploadArea.classList.remove('has-files');
       } else if (selectedFiles.length === 1) {
         fileUploadText.textContent = selectedFiles[0].name;
+        fileUploadArea.classList.add('has-files');
       } else {
         fileUploadText.textContent = `${selectedFiles.length} files selected`;
+        fileUploadArea.classList.add('has-files');
       }
     }
     
@@ -637,6 +681,12 @@
         updateFileDisplay();
         validateForm();
         status.textContent = '';
+        
+        // Clear file input
+        const fileInput = document.getElementById('file');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         
         // Reload waveforms list
         if (window.loadUserWaveforms) {
