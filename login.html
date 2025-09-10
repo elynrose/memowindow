@@ -1024,7 +1024,7 @@ function displayWaveforms(waveforms) {
   console.log('🔍 Generating HTML for', waveforms.length, 'waveforms');
   
   const waveformItems = waveforms.map(waveform => {
-    const title = waveform.title || waveform.original_name || 'Untitled';
+    const title = waveform.title || 'Untitled Memory';
     const date = new Date(waveform.created_at).toLocaleDateString();
     const time = new Date(waveform.created_at).toLocaleTimeString();
     
@@ -1470,7 +1470,7 @@ async function loadMoreWaveforms(offset) {
     if (waveforms.length > 0) {
       // Generate HTML for additional waveforms
       const waveformItems = waveforms.map(waveform => {
-        const title = waveform.title || waveform.original_name || 'Untitled';
+        const title = waveform.title || 'Untitled Memory';
         const date = new Date(waveform.created_at).toLocaleDateString();
         const time = new Date(waveform.created_at).toLocaleTimeString();
         
