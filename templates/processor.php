@@ -660,8 +660,13 @@ class TemplateProcessor {
         // Memories-specific initialization
         console.log("💕 Memories page loaded");
         
-        // Import and initialize memories functionality
-        import("./src/memories.js").then(module => {
+        // Import globals first (for order functionality)
+        import("./src/globals.js").then(() => {
+            console.log("✅ Globals module loaded successfully");
+            
+            // Import and initialize memories functionality
+            return import("./src/memories.js");
+        }).then(module => {
             console.log("✅ Memories module loaded successfully");
             module.initMemories();
         }).catch(error => {
