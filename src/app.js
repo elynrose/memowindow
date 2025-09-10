@@ -208,9 +208,9 @@ function drawPreview() {
     // Draw title
     const title = titleInput.value || 'Your Memory';
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 24px system-ui';
+    ctx.font = 'bold 240px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, 30);
+    ctx.fillText(title, W / 2, 150);
     
     // Draw QR placeholder
     const qrSize = 320; // 8x larger
@@ -436,9 +436,9 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     // Draw title
     const title = titleInput.value || 'Your Memory';
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 120px system-ui';
+    ctx.font = 'bold 1200px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, 150);
+    ctx.fillText(title, W / 2, 1200);
     
     // Draw QR code
     if (qrCodeUrl) {
