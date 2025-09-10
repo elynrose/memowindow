@@ -806,8 +806,9 @@
             // Check if user is authenticated
             auth.onAuthStateChanged(function(user) {
                 if (user) {
-                    // User is signed in, redirect to login.html (which is the app)
-                    window.location.href = 'login.html';
+                    // User is signed in, redirect to app.html
+                    console.log('User is logged in, redirecting to app.html');
+                    window.location.href = 'app.html';
                 }
             });
         });
