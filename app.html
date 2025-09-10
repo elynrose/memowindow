@@ -853,15 +853,24 @@
     
     async function saveMemoryToDatabase(memoryData) {
       try {
+        // Convert to form data since upload.php expects $_POST
+        const formData = new FormData();
+        formData.append('user_id', memoryData.user_id);
+        formData.append('title', memoryData.title);
+        formData.append('image_url', memoryData.image_url);
+        formData.append('qr_url', memoryData.qr_url);
+        formData.append('audio_url', memoryData.audio_url || '');
+        formData.append('original_name', memoryData.original_name);
+        formData.append('play_url', memoryData.play_page_url || '');
+        
         const response = await fetch('upload.php', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(memoryData)
+          body: formData
         });
         
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Upload response error:', errorText);
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         

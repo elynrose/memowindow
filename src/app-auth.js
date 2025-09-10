@@ -83,6 +83,15 @@ export function initAppAuth() {
       redirectToLogin();
       return;
     }
+  } else {
+    console.log('❌ No stored user data found, waiting for Firebase auth...');
+    // Set a timeout to redirect if Firebase auth doesn't respond
+    setTimeout(() => {
+      if (!currentUser) {
+        console.log('⏰ Firebase auth timeout, redirecting to login...');
+        redirectToLogin();
+      }
+    }, 3000); // 3 second timeout
   }
   
   // Set up auth state listener
