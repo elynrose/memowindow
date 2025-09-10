@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - MemoWindow</title>
+  <title>MemoWindow - Create Beautiful Waveform Memories</title>
   <meta name="description" content="Transform precious voice recordings into beautiful waveform art and create lasting visual memories">
-  <meta name="theme-color" content="#2a4df5">
+  <meta name="theme-color" content="#667eea">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="MemoWindow">
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -18,12 +21,135 @@
   
   <!-- Styles are now loaded from external CSS file -->
   <style>
+    /* Modern Clean Design System - Based on Home Page Theme */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f8fafc;
+      overflow-x: hidden;
+    }
+    
+    /* Modern Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #667eea;
+      text-decoration: none;
+    }
+    
+    .logo img {
+      height: 40px;
+      width: auto;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #667eea;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 6rem 0 4rem;
+      text-align: center;
+      margin-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      opacity: 0.3;
+    }
+    
+    .hero-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+    
+    .hero p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
     /* Mobile-first responsive design improvements */
     
-    /* Base responsive improvements */
+    /* Main Content */
     .wrap {
-      padding: 16px;
-      max-width: 100%;
+      padding: 2rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
     
     /* Mobile header improvements */
@@ -75,13 +201,14 @@
     
     /* Primary buttons */
     .btn-primary {
-      background: #2a4df5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       padding: 12px 20px;
     }
     
     .btn-primary:hover {
-      background: #1e3a8a;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     }
     
     /* Secondary buttons */
@@ -245,6 +372,30 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 8px;
+    }
+    
+    /* Mobile responsive design */
+    @media (max-width: 767px) {
+      .nav {
+        padding: 0 1rem;
+      }
+      
+      .hero {
+        padding: 4rem 0 3rem;
+      }
+      
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .hero p {
+        font-size: 1rem;
+      }
+      
+      .user-info {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
     }
     
     /* Tablet styles */
@@ -594,19 +745,32 @@
         </button>
     </div>
   </div>
-</div>
+  </div>
+
+  <!-- Modern Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+      </a>
+      <div id="userInfo" class="user-info hidden">
+        <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+        <span id="userName">Loading...</span>
+        <a id="ordersLink" href="#" class="btn btn-secondary btn-sm" style="text-decoration: none;">My Orders</a>
+        <button id="btnLogout" class="btn btn-secondary btn-sm">Sign Out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Create Beautiful Waveform Memories</h1>
+      <p>Transform precious voice recordings into stunning visual art that you can frame, share, and treasure forever.</p>
+    </div>
+  </section>
 
 <div id="mainContent" class="wrap">
-  <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h1 style="margin: 0;"><img src="images/logo.png" alt="MemoWindow" style="width: 280px; height: 50px;"></h1>
-    <!-- User info (shown when authenticated) -->
-    <div id="userInfo" class="user-info hidden">
-      <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
-      <span id="userName">Loading...</span>
-      <a id="ordersLink" href="#" class="btn-secondary btn-xs" style="text-decoration: none; margin-right: 8px;">My Orders</a>
-      <button id="btnLogout" class="btn-secondary btn-sm">Sign Out</button>
-    </div>
-  </div>
 
   <div class="card">
     <div class="row">
