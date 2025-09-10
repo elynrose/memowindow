@@ -353,7 +353,13 @@ async function createMemory() {
         
         // Generate unique ID and play page URL
         const uniqueId = 'mw_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        const playPageUrl = `${window.location.origin}/play.html?id=${uniqueId}`;
+        
+        // Get the base URL from the server (uses production URL for QR codes)
+        const baseUrlResponse = await fetch('get_base_url.php');
+        const baseUrlData = await baseUrlResponse.json();
+        const baseUrl = baseUrlData.base_url;
+        
+        const playPageUrl = `${baseUrl}/play.html?id=${uniqueId}`;
         
         // Generate QR code URL
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;

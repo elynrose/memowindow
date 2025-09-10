@@ -50,12 +50,22 @@ define('DB_NAME', 'elyayertey_memowindow');
 define('DB_USER', 'elyayertey_memowindow');
 define('DB_PASS', 'Sugarose227');
 */
-// Application URLs - Dynamic based on current domain and path
+// Application URLs - Use production URL for QR codes and external links
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
 $basePath = $scriptDir === '/' ? '' : $scriptDir;
-define('BASE_URL', $protocol . $host . $basePath);
+
+// Use production URL for QR codes and external links, local URL for internal operations
+if ($host === 'localhost' || $host === 'localhost:8000' || strpos($host, '127.0.0.1') !== false) {
+    // Development environment - use production URL for QR codes
+    define('BASE_URL', 'https://www.memowindow.com');
+    define('LOCAL_URL', $protocol . $host . $basePath);
+} else {
+    // Production environment
+    define('BASE_URL', $protocol . $host . $basePath);
+    define('LOCAL_URL', $protocol . $host . $basePath);
+}
 define('SUCCESS_URL', BASE_URL . '/order_success.php');
 define('CANCEL_URL', BASE_URL . '/order_cancelled.php');
 
