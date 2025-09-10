@@ -95,6 +95,15 @@
       color: #333;
     }
     
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
     /* Main Content */
     .wrap {
       padding: 4rem 1rem;
@@ -331,11 +340,13 @@
         <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
       </a>
       <div id="userInfo" class="user-info hidden">
-        <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
-        <span id="userName">Loading...</span>
-        <a href="app.html" class="header-link">Create Memory</a>
+        <a href="memories.html" class="header-link">My Memories</a>
         <a id="ordersLink" href="#" class="header-link">My Orders</a>
         <a id="btnLogout" href="#" class="header-link">Sign Out</a>
+        <div class="user-profile">
+          <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+          <span id="userName">Loading...</span>
+        </div>
       </div>
     </nav>
   </header>

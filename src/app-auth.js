@@ -144,10 +144,10 @@ async function checkAdminStatus(userUID) {
         adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
         adminLink.textContent = 'Admin';
         
-        // Insert before orders link
-        const ordersLink = userInfo.querySelector('#ordersLink');
-        if (ordersLink) {
-          userInfo.insertBefore(adminLink, ordersLink);
+        // Insert after user profile (at the end)
+        const userProfile = userInfo.querySelector('.user-profile');
+        if (userProfile) {
+          userInfo.insertBefore(adminLink, userProfile.nextSibling);
         } else {
           userInfo.appendChild(adminLink);
         }
