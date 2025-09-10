@@ -20,12 +20,22 @@ async function generateQRCode(imageUrl) {
   }
 }
 
-// Upload file to Firebase Storage
+// Upload file to Firebase Storage (primary) and local backup
 async function uploadToFirebaseStorage(blob, fileName, folder = 'waveforms') {
   try {
+    // Upload to Firebase Storage (primary)
     const storageRef = ref(storage, `${folder}/${fileName}`);
     const snapshot = await uploadBytes(storageRef, blob);
     const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    // Also save to local backup (non-blocking)
+    try {
+      await saveToLocalBackup(blob, fileName, folder);
+    } catch (backupError) {
+      console.warn('⚠️ Local backup failed (non-critical):', backupError.message);
+      // Don't throw - backup failure shouldn't break the main upload
+    }
+    
     return downloadURL;
   } catch (error) {
     console.error('Firebase Storage upload failed:', error);
@@ -42,6 +52,43 @@ async function uploadToFirebaseStorage(blob, fileName, folder = 'waveforms') {
     } else {
       throw new Error(`Firebase Storage error: ${error.message}`);
     }
+  }
+}
+
+// Save file to local backup storage
+async function saveToLocalBackup(blob, fileName, folder) {
+  try {
+    // Convert blob to base64 for transmission
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64Data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    
+    const response = await fetch('backup_storage.php?action=save_blob', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        blob_data: base64Data,
+        folder: folder,
+        filename: fileName
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backup API error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || 'Backup save failed');
+    }
+    
+    console.log(`✅ File backed up locally: ${result.relative_path}`);
+    return result;
+    
+  } catch (error) {
+    console.error('Local backup failed:', error);
+    throw error;
   }
 }
 
@@ -94,11 +141,21 @@ export async function uploadWaveformFiles(waveformBlob, originalFileName, userId
   }
 }
 
-// Delete file from Firebase Storage
+// Delete file from Firebase Storage and local backup
 export async function deleteFromFirebaseStorage(storagePath) {
   try {
+    // Delete from Firebase Storage (primary)
     const storageRef = ref(storage, storagePath);
     await deleteObject(storageRef);
+    
+    // Also delete from local backup (non-blocking)
+    try {
+      await deleteFromLocalBackup(storagePath);
+    } catch (backupError) {
+      console.warn('⚠️ Local backup delete failed (non-critical):', backupError.message);
+      // Don't throw - backup delete failure shouldn't break the main delete
+    }
+    
     return true;
   } catch (error) {
     console.error('❌ Failed to delete from Firebase Storage:', error);
@@ -108,6 +165,34 @@ export async function deleteFromFirebaseStorage(storagePath) {
     }
     
     return false;
+  }
+}
+
+// Delete file from local backup storage
+async function deleteFromLocalBackup(storagePath) {
+  try {
+    // Extract filename from storage path
+    const fileName = storagePath.split('/').pop();
+    const folder = storagePath.split('/')[0];
+    
+    const response = await fetch(`backup_storage.php?action=delete_file&path=backups/${folder}/${fileName}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backup delete API error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    if (result.success) {
+      console.log(`✅ File deleted from local backup: ${folder}/${fileName}`);
+    }
+    
+    return result.success;
+    
+  } catch (error) {
+    console.error('Local backup delete failed:', error);
+    throw error;
   }
 }
 
