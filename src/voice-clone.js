@@ -17,6 +17,9 @@ export function initVoiceClone() {
     addVoiceCloneButtons();
 }
 
+// Make function available globally
+window.initVoiceClone = initVoiceClone;
+
 // Add voice clone buttons to memory items
 function addVoiceCloneButtons() {
     const memoryItems = document.querySelectorAll('.memory-item');
@@ -394,8 +397,18 @@ async function generateAudio(voiceId, text, dialog) {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait a bit for memories to load
-    setTimeout(() => {
-        initVoiceClone();
-    }, 1000);
+    // Wait for memories to load, then initialize voice cloning
+    const checkForMemories = () => {
+        const memoryItems = document.querySelectorAll('.memory-item');
+        if (memoryItems.length > 0) {
+            console.log('🎤 Memories loaded, initializing voice clone...');
+            initVoiceClone();
+        } else {
+            // Keep checking every 500ms until memories are loaded
+            setTimeout(checkForMemories, 500);
+        }
+    };
+    
+    // Start checking after a short delay
+    setTimeout(checkForMemories, 1000);
 });
