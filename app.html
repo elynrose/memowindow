@@ -383,6 +383,13 @@
         <h2 class="card-title">Add Your Audio</h2>
         <p class="card-subtitle">Upload audio files or record your voice to create beautiful waveform art</p>
       </div>
+      
+      <!-- Memory Preview -->
+      <div id="memoryPreview" class="card hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border: 2px dashed #d1d5db; border-radius: 8px;">
+        <h3 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem;">Memory Preview</h3>
+        <canvas id="previewCanvas" width="400" height="200" style="max-width: 100%; height: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white;"></canvas>
+        <p id="previewStatus" style="margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9rem;">Upload audio files to see preview</p>
+      </div>
       <div class="upload-section">
         <label for="file" class="file-upload-area" id="fileUploadArea" style="cursor: pointer; width: 100%;">
           <input id="file" type="file" accept="audio/*" multiple style="display: none;">
@@ -460,6 +467,9 @@
     let isRecording = false;
     let mediaRecorder = null;
     let recordedChunks = [];
+    let currentPeaks = null;
+    let previewCanvas = null;
+    let previewCtx = null;
     
     // Initialize the app
     document.addEventListener('DOMContentLoaded', () => {
@@ -479,10 +489,18 @@
       const btnCreate = document.getElementById('btnCreate');
       const titleInput = document.getElementById('titleInput');
       const status = document.getElementById('status');
+      const memoryPreview = document.getElementById('memoryPreview');
+      previewCanvas = document.getElementById('previewCanvas');
       
       if (!fileInput || !fileUploadArea || !btnRecord || !btnCreate) {
         console.error('❌ Required DOM elements not found');
         return;
+      }
+      
+      // Set up preview canvas
+      if (previewCanvas) {
+        previewCtx = previewCanvas.getContext('2d');
+        console.log('✅ Preview canvas initialized');
       }
       
       // File upload functionality
@@ -498,9 +516,121 @@
       btnCreate.addEventListener('click', createMemory);
       
       // Title input validation
-      titleInput.addEventListener('input', validateForm);
+      titleInput.addEventListener('input', () => {
+        validateForm();
+        // Redraw preview when title changes
+        if (currentPeaks) {
+          drawPreview();
+        }
+      });
       
       console.log('✅ App functionality initialized');
+    }
+    
+    async function processFileForPreview(audioFile) {
+      const memoryPreview = document.getElementById('memoryPreview');
+      const previewStatus = document.getElementById('previewStatus');
+      
+      if (!memoryPreview || !previewStatus) return;
+      
+      try {
+        memoryPreview.classList.remove('hidden');
+        previewStatus.textContent = 'Processing audio for preview...';
+        
+        // Decode the audio file
+        const buf = await decode(audioFile);
+        currentPeaks = computePeaksFromBuffer(buf, 2000);
+        
+        // Draw the preview
+        drawPreview();
+        
+        previewStatus.textContent = `Preview ready - ${audioFile.name}`;
+        
+      } catch (error) {
+        console.error('Preview processing error:', error);
+        previewStatus.textContent = 'Error processing audio file';
+      }
+    }
+    
+    function drawPreview() {
+      if (!currentPeaks || !previewCtx || !previewCanvas) return;
+      
+      const W = previewCanvas.width;
+      const H = previewCanvas.height;
+      
+      // Clear canvas
+      previewCtx.clearRect(0, 0, W, H);
+      
+      // Draw white background
+      previewCtx.fillStyle = '#fff';
+      previewCtx.fillRect(0, 0, W, H);
+      
+      // Get title from input
+      const titleInput = document.getElementById('titleInput');
+      const title = titleInput ? titleInput.value.trim() || 'Untitled Memory' : 'Untitled Memory';
+      
+      // Calculate layout areas
+      const titleHeight = 30;
+      const qrSize = 40;
+      const padding = 15;
+      const waveformWidth = W * 0.7;
+      const waveformArea = {
+        x: (W - waveformWidth) / 2,
+        y: titleHeight + padding,
+        width: waveformWidth,
+        height: H - titleHeight - qrSize - (padding * 3)
+      };
+      
+      // Draw title at top center
+      previewCtx.fillStyle = '#0b0d12';
+      previewCtx.font = 'bold 12px system-ui, -apple-system, sans-serif';
+      previewCtx.textAlign = 'center';
+      previewCtx.textBaseline = 'middle';
+      
+      // Word wrap title if too long
+      const maxTitleWidth = W - (padding * 2);
+      const words = title.split(' ');
+      let line = '';
+      let lines = [];
+      
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = previewCtx.measureText(testLine);
+        const testWidth = metrics.width;
+        
+        if (testWidth > maxTitleWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      
+      // Draw title lines
+      const lineHeight = 15;
+      const titleStartY = titleHeight / 2 - ((lines.length - 1) * lineHeight / 2);
+      lines.forEach((line, index) => {
+        previewCtx.fillText(line.trim(), W / 2, titleStartY + (index * lineHeight));
+      });
+      
+      // Draw waveform in center area
+      previewCtx.fillStyle = '#000';
+      const waveformPad = waveformArea.height * 0.1;
+      function yMap(v) { 
+        return waveformArea.y + waveformArea.height - waveformPad - (v + 1) / 2 * (waveformArea.height - 2 * waveformPad); 
+      }
+      
+      for (let x = 0; x < waveformArea.width; x++) {
+        const i = Math.floor(x * currentPeaks.min.length / waveformArea.width);
+        const y1 = yMap(currentPeaks.max[i]);
+        const y2 = yMap(currentPeaks.min[i]);
+        const lineWidth = Math.max(1, Math.floor(waveformArea.width / 800));
+        previewCtx.fillRect(waveformArea.x + x, y1, lineWidth, Math.max(1, y2 - y1));
+      }
+      
+      // Add QR code placeholder
+      drawQRPlaceholder(previewCtx, padding, H - qrSize - padding, qrSize);
     }
     
     function handleFileSelect(event) {
@@ -540,6 +670,11 @@
       selectedFiles = [...selectedFiles, ...audioFiles];
       updateFileDisplay();
       validateForm();
+      
+      // Process the first file for preview
+      if (audioFiles.length > 0) {
+        processFileForPreview(audioFiles[0]);
+      }
     }
     
     function updateFileDisplay() {
@@ -678,6 +813,7 @@
         // Reset form
         titleInput.value = '';
         selectedFiles = [];
+        currentPeaks = null;
         updateFileDisplay();
         validateForm();
         status.textContent = '';
@@ -686,6 +822,12 @@
         const fileInput = document.getElementById('file');
         if (fileInput) {
           fileInput.value = '';
+        }
+        
+        // Hide preview
+        const memoryPreview = document.getElementById('memoryPreview');
+        if (memoryPreview) {
+          memoryPreview.classList.add('hidden');
         }
         
         // Reload waveforms list
