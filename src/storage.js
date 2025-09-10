@@ -21,7 +21,7 @@ async function generateQRCode(imageUrl) {
 }
 
 // Upload file to Firebase Storage (primary) and local backup
-async function uploadToFirebaseStorage(blob, fileName, folder = 'waveforms') {
+export async function uploadToFirebaseStorage(blob, fileName, folder = 'waveforms') {
   try {
     // Upload to Firebase Storage (primary)
     const storageRef = ref(storage, `${folder}/${fileName}`);
