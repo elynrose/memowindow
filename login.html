@@ -62,10 +62,99 @@
       min-height: 60px;
     }
     
-    /* Button responsive improvements */
+    /* Consistent Button System */
     button {
       min-height: 44px; /* iOS touch target size */
       font-size: 16px; /* Prevent zoom on iOS */
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    /* Primary buttons */
+    .btn-primary {
+      background: #2a4df5;
+      color: white;
+      padding: 12px 20px;
+    }
+    
+    .btn-primary:hover {
+      background: #1e3a8a;
+    }
+    
+    /* Secondary buttons */
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+      padding: 12px 20px;
+    }
+    
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+    
+    /* Small buttons */
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    
+    /* Extra small buttons */
+    .btn-xs {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+    }
+    
+    /* Success buttons */
+    .btn-success {
+      background: #10b981;
+      color: white;
+      padding: 12px 20px;
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+    }
+    
+    /* Danger buttons */
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+      padding: 12px 20px;
+    }
+    
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+    
+    /* Warning buttons */
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+      padding: 12px 20px;
+    }
+    
+    .btn-warning:hover {
+      background: #d97706;
+    }
+    
+    /* Full width buttons */
+    .btn-full {
+      width: 100%;
+    }
+    
+    /* Disabled state */
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    button:disabled:hover {
+      background: #9ca3af;
     }
     
     /* Input responsive improvements */
@@ -333,31 +422,17 @@
       align-items: center;
     }
     
+    /* Audio file action buttons */
     .play-audio-btn {
       background: #10b981;
       color: white;
-      border: none;
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 12px;
-      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
-    }
-    
-    .remove-audio-btn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 6px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
+      min-height: 32px;
     }
     
     .play-audio-btn:hover {
@@ -367,22 +442,34 @@
     .stop-audio-btn {
       background: #f59e0b;
       color: white;
-      border: none;
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 12px;
-      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 4px;
+      min-height: 32px;
     }
     
     .stop-audio-btn:hover {
       background: #d97706;
     }
     
+    .remove-audio-btn {
+      background: #dc3545;
+      color: white;
+      padding: 6px 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      min-height: 32px;
+    }
+    
     .remove-audio-btn:hover {
-      background: #dc2626;
+      background: #b91c1c;
     }
     
     /* Dark mode support */
@@ -446,10 +533,10 @@
       </div>
       
       <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <button id="btnEmailLogin" style="flex: 1; background: #2a4df5; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: 500;">
+        <button id="btnEmailLogin" class="btn-primary btn-full" style="flex: 1;">
           Sign In
         </button>
-        <button id="btnEmailRegister" style="flex: 1; background: #6b7280; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: 500;">
+        <button id="btnEmailRegister" class="btn-secondary btn-full" style="flex: 1;">
           Register
         </button>
       </div>
@@ -499,14 +586,12 @@
     <audio id="recordedAudio" class="audio-preview" controls style="display: none;"></audio>
     
     <div style="margin-top: 24px; display: flex; justify-content: center; gap: 12px;">
-      <button id="useRecordingBtn" disabled 
-              style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-        Use This Recording
-      </button>
-      <button id="cancelRecordingBtn" 
-              style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-        Cancel
-      </button>
+        <button id="useRecordingBtn" class="btn-success" disabled>
+          Use This Recording
+        </button>
+        <button id="cancelRecordingBtn" class="btn-secondary">
+          Cancel
+        </button>
     </div>
   </div>
 </div>
@@ -518,8 +603,8 @@
     <div id="userInfo" class="user-info hidden">
       <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
       <span id="userName">Loading...</span>
-      <a id="ordersLink" href="#" style="background: #6b7280; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;">My Orders</a>
-      <button id="btnLogout" class="btn-logout">Sign Out</button>
+      <a id="ordersLink" href="#" class="btn-secondary btn-xs" style="text-decoration: none; margin-right: 8px;">My Orders</a>
+      <button id="btnLogout" class="btn-secondary btn-sm">Sign Out</button>
     </div>
   </div>
 
@@ -534,14 +619,14 @@
         <span class="file-upload-text" id="fileUploadText">Upload Audio Files</span>
       </label>
       <span style="color: #6b7280; font-size: 14px; margin: 0 8px;">or</span>
-      <button id="btnRecord" type="button" style="background: #dc2626; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+      <button id="btnRecord" type="button" class="btn-danger" style="display: flex; align-items: center; gap: 6px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
         </svg>
         Record Voice
       </button>
       <input id="titleInput" type="text" placeholder="Memory title (e.g., 'Mom's Laughter', 'Dad's Bedtime Story')" required style="flex: 1; padding: 8px; border: 1px solid #e6e9f2; border-radius: 6px; margin: 0 8px;">
-      <button id="btnCreate" disabled style="display: flex; align-items: center; gap: 6px;">
+      <button id="btnCreate" class="btn-primary" disabled style="display: flex; align-items: center; gap: 6px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
           <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z" />
@@ -577,9 +662,9 @@
           <img id="waveformPreview" src="" alt="Complete memory composition" style="width: 100%; height: auto; border-radius: 8px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
         </div>
         <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-          <button onclick="showImageModal()" class="secondary" style="font-size: 14px; padding: 8px 16px; border: none; cursor: pointer;">View Full Size</button>
-          <a id="imageLink" class="secondary" href="#" target="_blank" style="font-size: 14px; padding: 8px 16px;">Download Image</a>
-          <a id="qrLink" class="secondary" href="#" target="_blank" style="font-size: 14px; padding: 8px 16px;">Play Audio</a>
+          <button onclick="showImageModal()" class="btn-secondary btn-sm">View Full Size</button>
+          <a id="imageLink" class="btn-secondary btn-sm" href="#" target="_blank" style="text-decoration: none;">Download Image</a>
+          <a id="qrLink" class="btn-secondary btn-sm" href="#" target="_blank" style="text-decoration: none;">Play Audio</a>
         </div>
         <p style="margin: 16px 0 0 0; color: #6b7280; font-size: 13px; text-align: center;">
           This complete frame includes your title, waveform visualization, and QR code for audio playback
@@ -746,9 +831,9 @@ function displayWaveforms(waveforms) {
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
-            <a href="${waveform.image_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">View</a>
-            <a href="${waveform.qr_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">QR</a>
-            <button onclick="deleteMemory(${waveform.id}, '${waveform.title.replace(/'/g, "\\'")}', this)" class="btn-delete" style="background: #dc3545; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
+            <a href="${waveform.image_url}" target="_blank" class="btn-secondary btn-xs" style="text-decoration: none;">View</a>
+            <a href="${waveform.qr_url}" target="_blank" class="btn-secondary btn-xs" style="text-decoration: none;">QR</a>
+            <button onclick="deleteMemory(${waveform.id}, '${waveform.title.replace(/'/g, "\\'")}', this)" class="btn-danger btn-xs">Delete</button>
           </div>
         </div>
       </div>
@@ -763,7 +848,7 @@ function displayWaveforms(waveforms) {
     loadMoreBtn.id = 'loadMoreBtn';
     loadMoreBtn.style.cssText = 'text-align: center; margin-top: 16px;';
     loadMoreBtn.innerHTML = `
-      <button onclick="loadMoreMemories()" style="background: #6b7280; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500;">
+      <button onclick="loadMoreMemories()" class="btn-secondary btn-sm">
         Load More
       </button>
     `;
@@ -916,9 +1001,9 @@ async function loadOrderProducts(memoryId, imageUrl) {
         <div style="font-size: 18px; font-weight: 600; color: #0b0d12; margin-bottom: 8px;">${product.price_formatted}</div>
         <div style="font-size: 12px; color: #6b7280; margin-bottom: 16px; flex-grow: 1; display: flex; align-items: center; justify-content: center; line-height: 1.4;">${product.description}</div>
         <button onclick="orderProduct('${product.id}', ${memoryId}, '${imageUrl}')" 
-                style="background: #2a4df5; border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 500; margin-top: auto;">
-          Order Now
-        </button>
+                 class="btn-primary btn-full" style="margin-top: auto;">
+            Order Now
+          </button>
       </div>
     `).join('');
     
@@ -1034,9 +1119,9 @@ async function showOrderOptions(memoryId, imageUrl, title, buttonElement) {
         </div>
         
         <div style="text-align: center;">
-          <button onclick="closeOrderModal()" style="background: #6b7280; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-            Cancel
-          </button>
+           <button onclick="closeOrderModal()" class="btn-secondary">
+              Cancel
+            </button>
         </div>
       </div>
     `;
@@ -1177,10 +1262,10 @@ async function loadMoreWaveforms(offset) {
                 </div>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="showMemoryModal('${waveform.image_url}', '${title.replace(/'/g, "\\'")}', '${waveform.qr_url}')" class="secondary" style="font-size: 12px; padding: 4px 8px; border: none; cursor: pointer;">View</button>
-                <a href="${waveform.qr_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">QR</a>
-                <button onclick="showOrderOptions(${waveform.id}, '${waveform.image_url}', '${title.replace(/'/g, "\\'")}', this)" style="background: #2a4df5; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Order Print</button>
-                <button onclick="deleteMemory(${waveform.id}, '${title.replace(/'/g, "\\'")}', this)" class="btn-delete" style="background: #dc3545; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
+                <button onclick="showMemoryModal('${waveform.image_url}', '${title.replace(/'/g, "\\'")}', '${waveform.qr_url}')" class="btn-secondary btn-xs">View</button>
+                <a href="${waveform.qr_url}" target="_blank" class="btn-secondary btn-xs" style="text-decoration: none;">QR</a>
+                <button onclick="showOrderOptions(${waveform.id}, '${waveform.image_url}', '${title.replace(/'/g, "\\'")}', this)" class="btn-primary btn-xs">Order Print</button>
+                <button onclick="deleteMemory(${waveform.id}, '${title.replace(/'/g, "\\'")}', this)" class="btn-danger btn-xs">Delete</button>
               </div>
             </div>
           </div>
