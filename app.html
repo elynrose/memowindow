@@ -702,69 +702,153 @@
       }
     }
     
+    // Original waveform creation functions from the backup
+    async function decode(file) {
+      const arrayBuf = await file.arrayBuffer();
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return await audioCtx.decodeAudioData(arrayBuf);
+    }
+
+    function computePeaksFromBuffer(buf, width = 2000) {
+      const ch = buf.getChannelData(0);
+      const hop = Math.max(1, Math.floor(buf.length / width));
+      const min = new Float32Array(width), max = new Float32Array(width);
+      for (let x = 0; x < width; x++) {
+        const s = x * hop, e = Math.min((x + 1) * hop, buf.length);
+        let mi = 1.0, ma = -1.0;
+        for (let i = s; i < e; i++) { 
+          const v = ch[i]; 
+          if (v < mi) mi = v; 
+          if (v > ma) ma = v; 
+        }
+        min[x] = mi; 
+        max[x] = ma;
+      }
+      return { min, max };
+    }
+
     async function createWaveformFromAudio(audioFile) {
-      return new Promise((resolve, reject) => {
-        const audio = new Audio();
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = 800;
-        canvas.height = 200;
-        
-        audio.onloadeddata = () => {
-          try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const source = audioContext.createMediaElementSource(audio);
-            const analyser = audioContext.createAnalyser();
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log('🎵 Creating waveform from audio file:', audioFile.name);
+          
+          // Decode the audio file
+          const buf = await decode(audioFile);
+          const peaks = computePeaksFromBuffer(buf, 2000);
+          
+          // Create canvas for waveform
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Set canvas dimensions
+          const W = 800;
+          const H = 200;
+          canvas.width = W;
+          canvas.height = H;
+          
+          // Draw white background
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, W, H);
+          
+          // Get title from input
+          const titleInput = document.getElementById('titleInput');
+          const title = titleInput ? titleInput.value.trim() || 'Untitled Memory' : 'Untitled Memory';
+          
+          // Calculate layout areas
+          const titleHeight = 40;
+          const qrSize = 60;
+          const padding = 20;
+          const waveformWidth = W * 0.7;
+          const waveformArea = {
+            x: (W - waveformWidth) / 2,
+            y: titleHeight + padding,
+            width: waveformWidth,
+            height: H - titleHeight - qrSize - (padding * 3)
+          };
+          
+          // Draw title at top center
+          ctx.fillStyle = '#0b0d12';
+          ctx.font = 'bold 16px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          // Word wrap title if too long
+          const maxTitleWidth = W - (padding * 2);
+          const words = title.split(' ');
+          let line = '';
+          let lines = [];
+          
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
             
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            
-            analyser.fftSize = 2048;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            const draw = () => {
-              analyser.getByteFrequencyData(dataArray);
-              
-              ctx.fillStyle = '#f8fafc';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              
-              const barWidth = (canvas.width / bufferLength) * 2.5;
-              let barHeight;
-              let x = 0;
-              
-              for (let i = 0; i < bufferLength; i++) {
-                barHeight = (dataArray[i] / 255) * canvas.height;
-                
-                const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                gradient.addColorStop(0, '#667eea');
-                gradient.addColorStop(1, '#764ba2');
-                
-                ctx.fillStyle = gradient;
-                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                
-                x += barWidth + 1;
-              }
-            };
-            
-            const drawInterval = setInterval(draw, 100);
-            
-            audio.onended = () => {
-              clearInterval(drawInterval);
-              canvas.toBlob(resolve, 'image/png');
-            };
-            
-            audio.play();
-            
-          } catch (error) {
-            reject(error);
+            if (testWidth > maxTitleWidth && n > 0) {
+              lines.push(line);
+              line = words[n] + ' ';
+            } else {
+              line = testLine;
+            }
           }
-        };
-        
-        audio.onerror = () => reject(new Error('Failed to load audio file'));
-        audio.src = URL.createObjectURL(audioFile);
+          lines.push(line);
+          
+          // Draw title lines
+          const lineHeight = 20;
+          const titleStartY = titleHeight / 2 - ((lines.length - 1) * lineHeight / 2);
+          lines.forEach((line, index) => {
+            ctx.fillText(line.trim(), W / 2, titleStartY + (index * lineHeight));
+          });
+          
+          // Draw waveform in center area
+          ctx.fillStyle = '#000';
+          const waveformPad = waveformArea.height * 0.1;
+          function yMap(v) { 
+            return waveformArea.y + waveformArea.height - waveformPad - (v + 1) / 2 * (waveformArea.height - 2 * waveformPad); 
+          }
+          
+          for (let x = 0; x < waveformArea.width; x++) {
+            const i = Math.floor(x * peaks.min.length / waveformArea.width);
+            const y1 = yMap(peaks.max[i]);
+            const y2 = yMap(peaks.min[i]);
+            const lineWidth = Math.max(1, Math.floor(waveformArea.width / 800));
+            ctx.fillRect(waveformArea.x + x, y1, lineWidth, Math.max(1, y2 - y1));
+          }
+          
+          // Add QR code placeholder
+          drawQRPlaceholder(ctx, padding, H - qrSize - padding, qrSize);
+          
+          // Convert to blob
+          canvas.toBlob((blob) => {
+            if (blob) {
+              console.log('✅ Waveform created successfully');
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to create waveform blob'));
+            }
+          }, 'image/png');
+          
+        } catch (error) {
+          console.error('Waveform creation error:', error);
+          reject(error);
+        }
       });
+    }
+
+    function drawQRPlaceholder(ctx, x, y, size) {
+      // Draw QR placeholder
+      ctx.fillStyle = '#f3f4f6';
+      ctx.fillRect(x, y, size, size);
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, size, size);
+      
+      // QR placeholder text
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '8px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('QR Code', x + size/2, y + size/2 - 4);
+      ctx.fillText('(Generated)', x + size/2, y + size/2 + 4);
     }
     
     async function saveMemoryToDatabase(memoryData) {
