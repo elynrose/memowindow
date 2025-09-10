@@ -124,109 +124,45 @@ async function loadUserWaveforms(offset = 0, append = false) {
 
 // Get DOM elements
 const getElements = () => ({
-  authModal: document.getElementById('authModal'),
-  mainContent: document.getElementById('mainContent'),
-  userInfo: document.getElementById('userInfo'),
+  // Login page elements
   btnLogin: document.getElementById('btnLogin'),
-  btnLogout: document.getElementById('btnLogout'),
-  userName: document.getElementById('userName'),
-  userAvatar: document.getElementById('userAvatar'),
-  btnCreate: document.getElementById('btnCreate'),
-  status: document.getElementById('status'),
-  // Email auth elements
   emailInput: document.getElementById('emailInput'),
   passwordInput: document.getElementById('passwordInput'),
   btnEmailLogin: document.getElementById('btnEmailLogin'),
   btnEmailRegister: document.getElementById('btnEmailRegister'),
 });
 
-// Show login modal
-function showLoginCard() {
+// Reset login button state
+function resetLoginButton() {
   const els = getElements();
-  // Force show modal with multiple methods (reverse of hide)
-  els.authModal.classList.remove('hidden');
-  els.authModal.style.display = '';
-  els.authModal.style.visibility = '';
-  
-  // Force disable main content (reverse of enable)
-  els.mainContent.classList.add('page-disabled');
-  els.mainContent.style.filter = '';
-  els.mainContent.style.opacity = '';
-  els.mainContent.style.pointerEvents = '';
-  
-  els.userInfo.classList.add('hidden');
-  els.btnCreate.disabled = true;
-  
-  // Reset login button state
-  els.btnLogin.disabled = false;
-  els.btnLogin.innerHTML = `
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-    </svg>
-    Sign in with Google
-  `;
-  
-  // Hide waveforms list when not authenticated
-  const waveformsList = document.getElementById('waveformsList');
-  if (waveformsList) {
-    waveformsList.classList.add('hidden');
+  if (els.btnLogin) {
+    els.btnLogin.disabled = false;
+    els.btnLogin.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Sign in with Google
+    `;
   }
-  
 }
 
-// Show user info
+// Show user info - redirect to app page
 async function showUserInfo(user) {
-  const els = getElements();
+  console.log('✅ User authenticated, redirecting to app...');
   
-  // Force hide modal with multiple methods
-  els.authModal.classList.add('hidden');
-  els.authModal.style.display = 'none';
-  els.authModal.style.visibility = 'hidden';
+  // Store user data in sessionStorage for the app page
+  sessionStorage.setItem('currentUser', JSON.stringify({
+    uid: user.uid,
+    displayName: user.displayName,
+    email: user.email,
+    photoURL: user.photoURL
+  }));
   
-  
-  // Force enable main content with multiple methods
-  els.mainContent.classList.remove('page-disabled');
-  els.mainContent.style.filter = 'none';
-  els.mainContent.style.opacity = '1';
-  els.mainContent.style.pointerEvents = 'auto';
-  
-  els.userInfo.classList.remove('hidden');
-  els.userName.textContent = user.displayName || user.email;
-  
-  // Set user avatar with better fallback
-  if (user.photoURL) {
-    console.log('Setting user avatar:', user.photoURL);
-    els.userAvatar.src = user.photoURL;
-    els.userAvatar.onerror = () => {
-      console.log('Avatar failed to load, using fallback');
-      els.userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23667eea"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-    };
-  } else {
-    console.log('No photoURL available, using fallback');
-    els.userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23667eea"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-  }
-  
-  // Update orders link with user ID
-  const ordersLink = document.getElementById('ordersLink');
-  if (ordersLink) {
-    ordersLink.href = `orders.php?user_id=${encodeURIComponent(user.uid)}`;
-  }
-  
-  // Check if user is admin and add admin link
-  checkAdminStatus(user.uid);
-  
-  currentUser = user;
-  
-  // Update create button state based on all requirements
-  if (window.updateCreateButtonState) {
-    window.updateCreateButtonState();
-  }
-  
-  // Load user's waveforms automatically when they sign in
-  await loadUserWaveforms();
+  // Redirect to the app page
+  window.location.href = 'app.html';
 }
 
 // Initialize authentication
@@ -256,7 +192,8 @@ export function initAuth() {
     if (user) {
       showUserInfo(user);
     } else {
-      showLoginCard();
+      // User is logged out - stay on login page
+      resetLoginButton();
     }
   });
 
@@ -274,27 +211,10 @@ export function initAuth() {
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed: ' + error.message);
-      els.btnLogin.disabled = false;
-      els.btnLogin.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Sign in with Google
-      `;
+      resetLoginButton();
     }
   });
 
-  // Logout button
-  els.btnLogout.addEventListener('click', async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  });
 
   // Email login button
   els.btnEmailLogin.addEventListener('click', async () => {

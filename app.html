@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>MemoWindow - Create Beautiful Waveform Memories</title>
+  <meta name="description" content="Transform precious voice recordings into beautiful waveform art and create lasting visual memories">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="MemoWindow">
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  
+  <style>
+    /* Modern Clean Design System */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f8fafc;
+      overflow-x: hidden;
+    }
+    
+    /* Modern Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      padding: 1rem 0;
+    }
+    
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #667eea;
+    }
+    
+    .header-link {
+      color: #000;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .header-link:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+    
+    /* Main Content */
+    .wrap {
+      padding: 4rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      margin-top: 170px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .card-header {
+      margin-bottom: 1.5rem;
+    }
+    
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .card-subtitle {
+      color: #6b7280;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      background: white;
+      color: #000;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-input::placeholder {
+      color: #6b7280;
+    }
+    
+    .upload-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .divider-section {
+      text-align: center;
+      position: relative;
+    }
+    
+    .divider-text {
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: 500;
+      background: white;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .divider-section::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+    
+    .record-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      align-self: center;
+    }
+    
+    .record-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+    
+    .record-button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    
+    .waveform-link {
+      transition: color 0.2s ease, opacity 0.2s ease;
+    }
+    
+    .waveform-link:hover {
+      opacity: 0.7;
+    }
+    
+    /* File upload area */
+    .file-upload-area {
+      width: 100%;
+      justify-content: center;
+      padding: 32px;
+      min-height: 100px;
+      margin: 2rem 0;
+    }
+    
+    /* Button System */
+    button {
+      min-height: 44px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 0.75rem 1.5rem;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 0.75rem 1.5rem;
+    }
+    
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-full {
+      width: 100%;
+    }
+    
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 767px) {
+      .header {
+        padding: 0.75rem 0;
+      }
+      
+      .nav {
+        padding: 0 0.75rem;
+      }
+      
+      .wrap {
+        padding: 2rem 0.75rem;
+        margin-top: 120px;
+      }
+      
+      .card {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Modern Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+      </a>
+      <div id="userInfo" class="user-info hidden">
+        <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+        <span id="userName">Loading...</span>
+        <a id="ordersLink" href="#" class="header-link">My Orders</a>
+        <a id="btnLogout" href="#" class="header-link">Sign Out</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Application Content -->
+  <div id="mainContent" class="wrap">
+    <!-- Memory Title Card -->
+    <div class="card" style="margin-top: 4rem;">
+      <div class="card-header">
+        <h2 class="card-title">Memory Title</h2>
+        <p class="card-subtitle">Give your memory a meaningful name</p>
+      </div>
+      <div class="form-group">
+        <input id="titleInput" type="text" class="form-input" placeholder="Memory title (e.g., 'Mom's Laughter', 'Dad's Bedtime Story')" required>
+      </div>
+    </div>
+
+    <!-- Upload and Record Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Add Your Audio</h2>
+        <p class="card-subtitle">Upload audio files or record your voice to create beautiful waveform art</p>
+      </div>
+      <div class="upload-section">
+        <label for="file" class="file-upload-area" id="fileUploadArea" style="cursor: pointer; width: 100%;">
+          <input id="file" type="file" accept="audio/*" multiple style="display: none;">
+          <svg class="file-upload-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z"/>
+          </svg>
+          <span class="file-upload-text" id="fileUploadText">Upload Audio Files</span>
+        </label>
+        
+        <div class="divider-section">
+          <span class="divider-text">or</span>
+        </div>
+        
+        <button id="btnRecord" type="button" class="record-button" style="display: flex; align-items: center; justify-content: center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
+          </svg>
+        </button>
+      </div>
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <button id="btnCreate" class="btn btn-primary btn-full" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z" />
+          </svg>
+          Create Memory
+        </button>
+      </div>
+      <div style="margin-top: 8px;">
+        <span id="status" class="muted" style="font-size: 14px; color: #6b7280;"></span>
+      </div>
+    </div>
+
+    <!-- User's Waveforms List -->
+    <div id="waveformsList" class="card hidden">
+      <h3 style="margin: 0 0 16px 0; color: #0b0d12;">Your MemoWindows</h3>
+      <div id="waveformsContainer">
+        <div class="muted" style="text-align: center; padding: 20px;">Loading your MemoWindows...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  
+  <!-- App Scripts -->
+  <script type="module" src="src/app-auth.js"></script>
+  <script type="module" src="src/storage.js"></script>
+  <script type="module" src="src/globals.js"></script>
+  
+  <script type="module">
+    // Initialize the app
+    import { initAppAuth } from './src/app-auth.js';
+    
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 MemoWindow App Initializing...');
+      initAppAuth();
+    });
+  </script>
+</body>
+</html>
