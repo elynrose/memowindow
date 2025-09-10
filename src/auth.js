@@ -195,7 +195,19 @@ async function showUserInfo(user) {
   
   els.userInfo.classList.remove('hidden');
   els.userName.textContent = user.displayName || user.email;
-  els.userAvatar.src = user.photoURL || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="%23ccc"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+  
+  // Set user avatar with better fallback
+  if (user.photoURL) {
+    console.log('Setting user avatar:', user.photoURL);
+    els.userAvatar.src = user.photoURL;
+    els.userAvatar.onerror = () => {
+      console.log('Avatar failed to load, using fallback');
+      els.userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23667eea"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    };
+  } else {
+    console.log('No photoURL available, using fallback');
+    els.userAvatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23667eea"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+  }
   
   // Update orders link with user ID
   const ordersLink = document.getElementById('ordersLink');
