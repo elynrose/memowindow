@@ -258,8 +258,19 @@
     
     // Check if user is already logged in and redirect to app
     window.addEventListener('load', function() {
-        // Check if user is authenticated
+        console.log('Login page loaded, checking auth state...');
+        
+        // Check current user immediately
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            console.log('Current user found, redirecting to app.html');
+            window.location.href = 'app.html';
+            return;
+        }
+        
+        // Also set up auth state listener as backup
         auth.onAuthStateChanged(function(user) {
+            console.log('Auth state changed on login:', user ? 'Logged in' : 'Logged out');
             if (user) {
                 // User is signed in, redirect to app.html
                 console.log('User is logged in, redirecting to app.html');

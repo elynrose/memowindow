@@ -189,6 +189,7 @@ export function initAuth() {
   // Set up auth state listener
   onAuthStateChanged(auth, (user) => {
     console.log('🔥 Auth state changed:', user ? 'Logged in' : 'Logged out');
+    currentUser = user; // Update the currentUser variable
     if (user) {
       showUserInfo(user);
     } else {
@@ -341,7 +342,8 @@ async function checkAdminStatus(userUID) {
 
 // Get current user
 export function getCurrentUser() {
-  return currentUser;
+  // Return the current user from auth state or the stored currentUser
+  return currentUser || auth.currentUser;
 }
 
 // Export loadUserWaveforms function
