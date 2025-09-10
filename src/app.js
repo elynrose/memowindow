@@ -517,7 +517,7 @@ async function loadUserWaveforms() {
         const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
         const data = await response.json();
         
-        if (data.success && data.waveforms) {
+        if (data.waveforms && data.waveforms.length > 0) {
             displayWaveforms(data.waveforms);
         } else {
             waveformList.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">No memories found. Create your first memory above!</p>';
