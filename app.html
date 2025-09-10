@@ -396,16 +396,349 @@
   <script type="module" src="src/app-auth.js"></script>
   <script type="module" src="src/storage.js"></script>
   <script type="module" src="src/globals.js"></script>
+  <script type="module" src="src/utils.js"></script>
   
   <script type="module">
-    // Initialize the app
-    import { initAppAuth } from './src/app-auth.js';
+    // Import necessary modules
+    import { initAppAuth, getCurrentUser } from './src/app-auth.js';
+    import { uploadWaveformFiles } from './src/storage.js';
+    import { showToast, showLoading, hideLoading, showConfirmDialog, handleError, formatFileSize, validateFileType, validateFileSize } from './src/utils.js';
     
-    // Wait for DOM to be ready
+    // Make functions available globally
+    window.getCurrentUser = getCurrentUser;
+    window.uploadWaveformFiles = uploadWaveformFiles;
+    window.showToast = showToast;
+    window.showLoading = showLoading;
+    window.hideLoading = hideLoading;
+    window.showConfirmDialog = showConfirmDialog;
+    window.handleError = handleError;
+    window.formatFileSize = formatFileSize;
+    window.validateFileType = validateFileType;
+    window.validateFileSize = validateFileSize;
+    
+    // Global variables
+    let selectedFiles = [];
+    let isRecording = false;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    
+    // Initialize the app
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🚀 MemoWindow App Initializing...');
       initAppAuth();
+      initializeApp();
     });
+    
+    function initializeApp() {
+      console.log('🔧 Initializing app functionality...');
+      
+      // Get DOM elements
+      const fileInput = document.getElementById('file');
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      const fileUploadText = document.getElementById('fileUploadText');
+      const btnRecord = document.getElementById('btnRecord');
+      const btnCreate = document.getElementById('btnCreate');
+      const titleInput = document.getElementById('titleInput');
+      const status = document.getElementById('status');
+      
+      if (!fileInput || !fileUploadArea || !btnRecord || !btnCreate) {
+        console.error('❌ Required DOM elements not found');
+        return;
+      }
+      
+      // File upload functionality
+      fileInput.addEventListener('change', handleFileSelect);
+      fileUploadArea.addEventListener('click', () => fileInput.click());
+      fileUploadArea.addEventListener('dragover', handleDragOver);
+      fileUploadArea.addEventListener('drop', handleFileDrop);
+      
+      // Record button functionality
+      btnRecord.addEventListener('click', toggleRecording);
+      
+      // Create button functionality
+      btnCreate.addEventListener('click', createMemory);
+      
+      // Title input validation
+      titleInput.addEventListener('input', validateForm);
+      
+      console.log('✅ App functionality initialized');
+    }
+    
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      processFiles(files);
+    }
+    
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.currentTarget.style.background = '#f0f4ff';
+    }
+    
+    function handleFileDrop(event) {
+      event.preventDefault();
+      event.currentTarget.style.background = '';
+      const files = Array.from(event.dataTransfer.files);
+      processFiles(files);
+    }
+    
+    function processFiles(files) {
+      const audioFiles = files.filter(file => file.type.startsWith('audio/'));
+      
+      if (audioFiles.length === 0) {
+        showToast('Please select audio files only', 'warning');
+        return;
+      }
+      
+      // Validate file sizes (max 50MB per file)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      const invalidFiles = audioFiles.filter(file => !validateFileSize(file, maxSize));
+      
+      if (invalidFiles.length > 0) {
+        showToast(`Some files are too large. Maximum size is ${formatFileSize(maxSize)}`, 'error');
+        return;
+      }
+      
+      selectedFiles = [...selectedFiles, ...audioFiles];
+      updateFileDisplay();
+      validateForm();
+    }
+    
+    function updateFileDisplay() {
+      const fileUploadText = document.getElementById('fileUploadText');
+      if (selectedFiles.length === 0) {
+        fileUploadText.textContent = 'Upload Audio Files';
+      } else if (selectedFiles.length === 1) {
+        fileUploadText.textContent = selectedFiles[0].name;
+      } else {
+        fileUploadText.textContent = `${selectedFiles.length} files selected`;
+      }
+    }
+    
+    async function toggleRecording() {
+      const btnRecord = document.getElementById('btnRecord');
+      const status = document.getElementById('status');
+      
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          recordedChunks = [];
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
+          };
+          
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const fileName = `recording_${Date.now()}.webm`;
+            const file = new File([blob], fileName, { type: 'audio/webm' });
+            selectedFiles.push(file);
+            updateFileDisplay();
+            validateForm();
+            
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          btnRecord.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+          status.textContent = 'Recording... Click to stop';
+          showToast('Recording started', 'info');
+          
+        } catch (error) {
+          console.error('Recording error:', error);
+          showToast('Unable to access microphone. Please check permissions.', 'error');
+        }
+      } else {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+        isRecording = false;
+        btnRecord.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        status.textContent = '';
+        showToast('Recording saved', 'success');
+      }
+    }
+    
+    function validateForm() {
+      const titleInput = document.getElementById('titleInput');
+      const btnCreate = document.getElementById('btnCreate');
+      
+      const hasTitle = titleInput.value.trim().length > 0;
+      const hasFiles = selectedFiles.length > 0;
+      
+      btnCreate.disabled = !(hasTitle && hasFiles);
+    }
+    
+    async function createMemory() {
+      const titleInput = document.getElementById('titleInput');
+      const btnCreate = document.getElementById('btnCreate');
+      const status = document.getElementById('status');
+      
+      const title = titleInput.value.trim();
+      if (!title || selectedFiles.length === 0) {
+        showToast('Please enter a title and select audio files', 'warning');
+        return;
+      }
+      
+      showLoading(btnCreate, 'Creating Memory...');
+      status.textContent = 'Processing your memory...';
+      
+      try {
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+          throw new Error('Not authenticated');
+        }
+        
+        // Process each audio file
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          status.textContent = `Processing ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+          
+          // Create waveform from audio file
+          const waveformBlob = await createWaveformFromAudio(file);
+          
+          // Upload files
+          const uploadResult = await uploadWaveformFiles(
+            waveformBlob,
+            file.name,
+            currentUser.uid,
+            file
+          );
+          
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error || 'Upload failed');
+          }
+          
+          // Save to database
+          const saveResult = await saveMemoryToDatabase({
+            title: title,
+            user_id: currentUser.uid,
+            image_url: uploadResult.waveformUrl,
+            qr_url: uploadResult.qrUrl,
+            audio_url: uploadResult.audioUrl,
+            original_name: file.name,
+            play_page_url: uploadResult.playPageUrl
+          });
+          
+          if (!saveResult.success) {
+            throw new Error(saveResult.error || 'Database save failed');
+          }
+        }
+        
+        showToast(`Successfully created ${selectedFiles.length} memory(ies)!`, 'success');
+        
+        // Reset form
+        titleInput.value = '';
+        selectedFiles = [];
+        updateFileDisplay();
+        validateForm();
+        status.textContent = '';
+        
+        // Reload waveforms list
+        if (window.loadUserWaveforms) {
+          window.loadUserWaveforms();
+        }
+        
+      } catch (error) {
+        console.error('Create memory error:', error);
+        handleError(error, 'Create Memory');
+        status.textContent = '';
+      } finally {
+        hideLoading(btnCreate);
+      }
+    }
+    
+    async function createWaveformFromAudio(audioFile) {
+      return new Promise((resolve, reject) => {
+        const audio = new Audio();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = 800;
+        canvas.height = 200;
+        
+        audio.onloadeddata = () => {
+          try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(audio);
+            const analyser = audioContext.createAnalyser();
+            
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            analyser.fftSize = 2048;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            const draw = () => {
+              analyser.getByteFrequencyData(dataArray);
+              
+              ctx.fillStyle = '#f8fafc';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              
+              const barWidth = (canvas.width / bufferLength) * 2.5;
+              let barHeight;
+              let x = 0;
+              
+              for (let i = 0; i < bufferLength; i++) {
+                barHeight = (dataArray[i] / 255) * canvas.height;
+                
+                const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                
+                x += barWidth + 1;
+              }
+            };
+            
+            const drawInterval = setInterval(draw, 100);
+            
+            audio.onended = () => {
+              clearInterval(drawInterval);
+              canvas.toBlob(resolve, 'image/png');
+            };
+            
+            audio.play();
+            
+          } catch (error) {
+            reject(error);
+          }
+        };
+        
+        audio.onerror = () => reject(new Error('Failed to load audio file'));
+        audio.src = URL.createObjectURL(audioFile);
+      });
+    }
+    
+    async function saveMemoryToDatabase(memoryData) {
+      try {
+        const response = await fetch('upload.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(memoryData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        return result;
+        
+      } catch (error) {
+        console.error('Database save error:', error);
+        return { success: false, error: error.message };
+      }
+    }
   </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // Firebase Storage functionality
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from './firebase-config.js';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+import { storage } from '../firebase-config.php';
 
 // Generate QR code using external service
 async function generateQRCode(imageUrl) {
