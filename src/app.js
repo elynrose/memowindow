@@ -193,17 +193,23 @@ function drawPreview() {
     ctx.fillRect(0, 0, W, H);
     
     // Draw waveform
-    const barWidth = W / currentPeaks.length;
-    const maxHeight = H * 0.6;
+    const maxHeight = H * 0.36; // 40% smaller (was 0.6, now 0.36)
     
-    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
     for (let i = 0; i < currentPeaks.length; i++) {
-        const barHeight = currentPeaks[i] * maxHeight;
-        const x = i * barWidth;
-        const y = (H - barHeight) / 2;
+        const x = (i / currentPeaks.length) * W;
+        const y = (H / 2) + (currentPeaks[i] * maxHeight);
         
-        ctx.fillRect(x, y, barWidth - 1, barHeight);
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
     }
+    ctx.stroke();
     
     // Draw title
     const title = titleInput.value || 'Your Memory';
@@ -421,17 +427,23 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     const peaks = computePeaksFromBuffer(audioBuffer);
     
     // Draw waveform
-    const barWidth = W / peaks.length;
-    const maxHeight = H * 0.6;
+    const maxHeight = H * 0.36; // 40% smaller (was 0.6, now 0.36)
     
-    ctx.fillStyle = '#000000';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 8; // Thicker line for high resolution
+    ctx.beginPath();
+    
     for (let i = 0; i < peaks.length; i++) {
-        const barHeight = peaks[i] * maxHeight;
-        const x = i * barWidth;
-        const y = (H - barHeight) / 2;
+        const x = (i / peaks.length) * W;
+        const y = (H / 2) + (peaks[i] * maxHeight);
         
-        ctx.fillRect(x, y, barWidth - 1, barHeight);
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
     }
+    ctx.stroke();
     
     // Draw title
     const title = titleInput.value || 'Your Memory';
