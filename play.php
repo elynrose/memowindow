@@ -62,15 +62,22 @@ try {
     }
     $memory = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // If multi-audio is enabled, get a random audio file
+    // If multi-audio is enabled, get a random audio file (including generated audio)
     $selectedAudioUrl = $memory['audio_url']; // Default to primary audio
     
     if ($memory['multi_audio_enabled'] && $memory['audio_count'] > 1) {
-        // Get all active audio files for this memory
+        // Get all active audio files for this memory (including generated audio)
         $audioStmt = $pdo->prepare("
-            SELECT audio_url, original_filename 
+            SELECT audio_url, original_filename, 'uploaded' as source
             FROM memory_audio_files 
             WHERE memory_id = :memory_id AND is_active = TRUE 
+            
+            UNION ALL
+            
+            SELECT audio_url, text_content as original_filename, 'generated' as source
+            FROM generated_audio 
+            WHERE memory_id = :memory_id
+            
             ORDER BY RAND() 
             LIMIT 1
         ");
