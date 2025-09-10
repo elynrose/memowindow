@@ -347,11 +347,17 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
           <p style="margin: 0; color: #6b7280;">Choose your preferred print size and material</p>
         </div>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
           ${products.map(product => `
             <div class="product-card" style="border: 2px solid #e6e9f2; border-radius: 12px; padding: 16px; background: #fafbfc; text-align: center; transition: all 0.2s ease; cursor: pointer;" 
                  onclick="selectProduct('${product.id}', ${memoryId}, '${imageUrl}', this)">
-              <div style="font-size: 32px; margin-bottom: 12px;">🖼️</div>
+              <div style="width: 100%; height: 120px; margin-bottom: 12px; border-radius: 8px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                ${product.image_url ? 
+                  `<img src="${product.image_url}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div style="display: none; font-size: 32px; color: #9ca3af;">🖼️</div>` :
+                  `<div style="font-size: 32px; color: #9ca3af;">🖼️</div>`
+                }
+              </div>
               <div style="font-weight: 600; color: #0b0d12; margin-bottom: 4px; font-size: 14px;">${product.name}</div>
               <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${product.size}</div>
               <div style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">${product.material}</div>

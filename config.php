@@ -83,7 +83,7 @@ function getProduct($productId) {
                 'printful_id' => $product['printful_variant_id'] ?? '4651', // Use correct column name
                 'name' => $product['name'],
                 'description' => $product['description'],
-                'price' => PriceFormatter::formatForStripe($product['price'] ?? 2499),
+                'price' => intval($product['price']), // Database already stores prices in cents
                 'size' => $product['size'] ?? 'Standard Size',
                 'material' => $product['material'] ?? 'Premium Wood'
             ];

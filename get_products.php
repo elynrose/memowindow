@@ -19,7 +19,8 @@ try {
                 description,
                 price,
                 size,
-                material
+                material,
+                image_url
             FROM print_products 
             WHERE is_active = 1 
             ORDER BY name ASC
@@ -38,7 +39,8 @@ try {
                     'price_formatted' => PriceManager::formatPrice($priceInCents),
                     'size' => $product['size'],
                     'material' => $product['material'],
-                    'printful_id' => $product['printful_id']
+                    'printful_id' => $product['printful_id'],
+                    'image_url' => $product['image_url']
                 ];
             }, $dbProducts);
         } else {
@@ -56,7 +58,8 @@ try {
                 'price_formatted' => '$24.99',
                 'size' => '8x10 inches',
                 'material' => 'Premium Wood',
-                'printful_id' => '12345'
+                'printful_id' => '12345',
+                'image_url' => 'https://files.cdn.printful.com/products/2/4651_1527683086.jpg'
             ],
             [
                 'id' => 'memory_frame_11x14',
@@ -66,7 +69,8 @@ try {
                 'price_formatted' => '$34.99',
                 'size' => '11x14 inches',
                 'material' => 'Premium Wood',
-                'printful_id' => '12346'
+                'printful_id' => '12346',
+                'image_url' => 'https://files.cdn.printful.com/products/2/14292_1643092634.jpg'
             ],
             [
                 'id' => 'memory_frame_16x20',
@@ -76,7 +80,8 @@ try {
                 'price_formatted' => '$49.99',
                 'size' => '16x20 inches',
                 'material' => 'Premium Wood',
-                'printful_id' => '12347'
+                'printful_id' => '12347',
+                'image_url' => 'https://files.cdn.printful.com/products/2/1350_1527683296.jpg'
             ]
         ];
     }
