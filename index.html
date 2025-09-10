@@ -10,6 +10,9 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Firebase -->
+    <script type="module" src="firebase-config.php"></script>
+    
     <style>
         * {
             margin: 0;
@@ -795,6 +798,23 @@
             </div>
         </div>
     </footer>
+
+    <script type="module">
+        // Import Firebase modules
+        import { auth } from './firebase-config.php';
+        
+        // Check if user is already logged in and redirect to app
+        window.addEventListener('load', function() {
+            // Check if user is authenticated
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    // User is signed in, redirect to login.html (which is the app)
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+
+    </script>
 
     <script>
         // FAQ Toggle Functionality
