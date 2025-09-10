@@ -194,13 +194,15 @@ function drawPreview() {
     
     // Draw waveform
     const maxHeight = H * 0.36; // 40% smaller (was 0.6, now 0.36)
+    const waveformWidth = W * 0.7; // 70% of canvas width
+    const margin = (W - waveformWidth) / 2; // Center the waveform
     
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.beginPath();
     
     for (let i = 0; i < currentPeaks.length; i++) {
-        const x = (i / currentPeaks.length) * W;
+        const x = margin + (i / currentPeaks.length) * waveformWidth;
         const y = (H / 2) + (currentPeaks[i] * maxHeight);
         
         if (i === 0) {
@@ -214,9 +216,9 @@ function drawPreview() {
     // Draw title
     const title = titleInput.value || 'Your Memory';
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 240px system-ui';
+    ctx.font = 'bold 24px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, 150);
+    ctx.fillText(title, W / 2, 30);
     
     // Draw QR placeholder
     const qrSize = 320; // 8x larger
@@ -428,13 +430,15 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     
     // Draw waveform
     const maxHeight = H * 0.36; // 40% smaller (was 0.6, now 0.36)
+    const waveformWidth = W * 0.7; // 70% of canvas width
+    const margin = (W - waveformWidth) / 2; // Center the waveform
     
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 8; // Thicker line for high resolution
     ctx.beginPath();
     
     for (let i = 0; i < peaks.length; i++) {
-        const x = (i / peaks.length) * W;
+        const x = margin + (i / peaks.length) * waveformWidth;
         const y = (H / 2) + (peaks[i] * maxHeight);
         
         if (i === 0) {
@@ -448,9 +452,9 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     // Draw title
     const title = titleInput.value || 'Your Memory';
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 1200px system-ui';
+    ctx.font = 'bold 120px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, 1200);
+    ctx.fillText(title, W / 2, 120);
     
     // Draw QR code
     if (qrCodeUrl) {
