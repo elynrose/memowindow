@@ -101,7 +101,10 @@ function displayMemories(memories) {
     }
     
     const memoriesHTML = memories.map(memory => `
-        <div class="memory-card">
+        <div class="memory-card memory-item" 
+             data-memory-id="${memory.id}" 
+             data-audio-url="${memory.audio_url || ''}" 
+             data-memory-title="${memory.title || 'Untitled'}">
             <img src="${memory.image_url}" 
                  alt="${memory.title || 'Memory'}" 
                  class="memory-image"

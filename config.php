@@ -35,6 +35,9 @@ define('PRINTFUL_API_KEY', $env['PRINTFUL_API_KEY'] ?? 'your_printful_api_key_he
 define('PRINTFUL_API_URL', 'https://api.printful.com/');
 define('PRINTFUL_STORE_ID', $env['PRINTFUL_STORE_ID'] ?? '12587389');
 
+// ElevenLabs API configuration
+define('ELEVENLABS_API_KEY', $env['ELEVENLABS_API_KEY'] ?? '');
+
 // Database Configuration
 define('DB_HOST', $env['DB_HOST'] ?? '127.0.0.1');
 define('DB_NAME', $env['DB_NAME'] ?? 'wavemy');

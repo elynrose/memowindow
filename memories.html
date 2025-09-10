@@ -457,6 +457,14 @@
         import("./src/memories.js").then(module => {
             console.log("✅ Memories module loaded successfully");
             module.initMemories();
+            
+            // Also initialize voice cloning
+            import("./src/voice-clone.js").then(voiceModule => {
+                console.log("✅ Voice clone module loaded successfully");
+                voiceModule.initVoiceClone();
+            }).catch(voiceError => {
+                console.error("❌ Failed to load voice clone module:", voiceError);
+            });
         }).catch(error => {
             console.error("❌ Failed to load memories module:", error);
             // Fallback: show error message
