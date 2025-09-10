@@ -153,19 +153,7 @@ function displayMemories(memories) {
         </div>
     `;
     
-    // Initialize voice cloning after memories are displayed
-    setTimeout(() => {
-        if (window.initVoiceClone) {
-            window.initVoiceClone();
-        } else {
-            // Import and initialize voice cloning
-            import('./voice-clone.js').then(module => {
-                module.initVoiceClone();
-            }).catch(error => {
-                console.error('Failed to load voice clone module:', error);
-            });
-        }
-    }, 100);
+    // Voice clone buttons are now embedded directly in the memory HTML
 }
 
 // Show empty state
