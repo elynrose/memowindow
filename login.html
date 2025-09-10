@@ -280,6 +280,94 @@
       }
     }
     
+    /* Multi-audio file styles */
+    .audio-file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      gap: 12px;
+    }
+    
+    .audio-file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .audio-file-icon {
+      width: 24px;
+      height: 24px;
+      color: #3b82f6;
+      flex-shrink: 0;
+    }
+    
+    .audio-file-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .audio-file-name {
+      font-weight: 500;
+      color: #374151;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .audio-file-size {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    
+    .audio-file-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .play-audio-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .remove-audio-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+    }
+    
+    .play-audio-btn:hover {
+      background: #059669;
+    }
+    
+    .remove-audio-btn:hover {
+      background: #dc2626;
+    }
+    
     /* Dark mode support */
     @media (prefers-color-scheme: dark) {
       .card {
@@ -303,6 +391,19 @@
       input[type="text"]::placeholder,
       input[type="email"]::placeholder,
       input[type="password"]::placeholder {
+        color: #9ca3af;
+      }
+      
+      .audio-file-item {
+        background: #374151;
+        border-color: #4b5563;
+      }
+      
+      .audio-file-name {
+        color: #f9fafb;
+      }
+      
+      .audio-file-size {
         color: #9ca3af;
       }
     }
@@ -408,12 +509,12 @@
   <div class="card">
     <div class="row">
       <label for="file" class="file-upload-area" id="fileUploadArea" style="cursor: pointer;">
-        <input id="file" type="file" accept="audio/*" style="display: none;">
+        <input id="file" type="file" accept="audio/*" multiple style="display: none;">
         <svg class="file-upload-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
           <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z"/>
         </svg>
-        <span class="file-upload-text" id="fileUploadText">Choose voice recording</span>
+        <span class="file-upload-text" id="fileUploadText">Upload Audio Files</span>
       </label>
       <span style="color: #6b7280; font-size: 14px; margin: 0 8px;">or</span>
       <button id="btnRecord" type="button" style="background: #dc2626; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
@@ -433,6 +534,17 @@
     </div>
     <div style="margin-top: 8px;">
       <span id="status" class="muted" style="font-size: 14px; color: #6b7280;"></span>
+    </div>
+    
+    <!-- Multi-audio file management -->
+    <div id="audioFilesList" class="audio-files-list" style="display: none; margin-top: 16px;">
+      <h4 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600;">Selected Audio Files:</h4>
+      <div id="audioFilesContainer" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Audio files will be dynamically added here -->
+      </div>
+      <div style="margin-top: 12px; padding: 12px; background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; font-size: 13px; color: #0c4a6e;">
+        <strong>🎵 Multi-Audio Feature:</strong> Upload multiple audio files to create a memory that plays different recordings randomly when scanned! Perfect for capturing multiple moments or voices.
+      </div>
     </div>
   </div>
 
@@ -1471,39 +1583,151 @@ els.recordedAudio.addEventListener('pause', () => {
 
 // File upload area uses label, so no manual click handler needed
 
-// File selection handler
+// Multi-audio file selection handler
 els.file.addEventListener('change', async (event)=>{
+  const files = Array.from(els.file.files);
   
-  const f=els.file.files[0]; 
-  if(!f) {
-    // Reset upload area if no file
+  if(files.length === 0) {
+    // Reset upload area if no files
     els.fileUploadArea.classList.remove('has-file');
-    els.fileUploadText.textContent = 'Choose voice recording';
+    els.fileUploadText.textContent = 'Upload Audio Files';
+    document.getElementById('audioFilesList').style.display = 'none';
+    lastFile = null;
+    peaks = null;
+    els.meta.textContent = '';
     return;
   }
   
-  
   // Update upload area visual state
   els.fileUploadArea.classList.add('has-file');
-  els.fileUploadText.textContent = f.name;
+  els.fileUploadText.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
   
-  lastFile=f;
-  els.meta.textContent='Decoding…';
+  // Display selected files
+  displaySelectedAudioFiles(files);
+  
+  // Use the first file for waveform generation (for preview)
+  const f = files[0];
+  lastFile = f;
+  els.meta.textContent = 'Decoding…';
   
   try {
-    const buf=await decode(f);
-    peaks=computePeaksFromBuffer(buf,2000);
+    const buf = await decode(f);
+    peaks = computePeaksFromBuffer(buf, 2000);
     window.peaks = peaks; // Make available to auth module
-    els.meta.textContent=`Decoded ${f.name}`;
+    els.meta.textContent = `Decoded ${f.name} (${files.length} file${files.length > 1 ? 's' : ''} total)`;
     drawPreview();
     
-  // Check if create button should be enabled (user + file + title)
-  updateCreateButtonState();
+    // Check if create button should be enabled (user + file + title)
+    updateCreateButtonState();
   } catch (error) {
     console.error('File processing failed:', error);
     els.meta.textContent = 'Error decoding audio file';
   }
 });
+
+// Display selected audio files with management options
+function displaySelectedAudioFiles(files) {
+  const container = document.getElementById('audioFilesContainer');
+  const listContainer = document.getElementById('audioFilesList');
+  
+  container.innerHTML = '';
+  
+  files.forEach((file, index) => {
+    const fileItem = document.createElement('div');
+    fileItem.className = 'audio-file-item';
+    fileItem.innerHTML = `
+      <div class="audio-file-info">
+        <svg class="audio-file-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,3V13.55C11.41,13.21 10.73,13 10,13A4,4 0 0,0 6,17A4,4 0 0,0 10,21A4,4 0 0,0 14,17V7H18V3H12Z"/>
+        </svg>
+        <div class="audio-file-details">
+          <div class="audio-file-name">${file.name}</div>
+          <div class="audio-file-size">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+        </div>
+      </div>
+      <div class="audio-file-actions">
+        <button class="play-audio-btn" onclick="playAudioFile('${file.name}', ${index})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+          </svg>
+          Play
+        </button>
+        <button class="remove-audio-btn" onclick="removeAudioFile(${index})" title="Remove file">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+          </svg>
+        </button>
+      </div>
+    `;
+    container.appendChild(fileItem);
+  });
+  
+  listContainer.style.display = 'block';
+}
+
+// Play audio file preview
+function playAudioFile(fileName, index) {
+  const files = Array.from(els.file.files);
+  const file = files[index];
+  
+  if (!file) return;
+  
+  const audio = new Audio();
+  const url = URL.createObjectURL(file);
+  
+  audio.src = url;
+  audio.play().catch(error => {
+    console.error('Error playing audio:', error);
+    alert('Could not play audio file. Please check if the file format is supported.');
+  });
+  
+  // Clean up URL when done
+  audio.addEventListener('ended', () => {
+    URL.revokeObjectURL(url);
+  });
+}
+
+// Remove audio file from selection
+function removeAudioFile(index) {
+  const files = Array.from(els.file.files);
+  files.splice(index, 1);
+  
+  // Create new FileList-like object
+  const dt = new DataTransfer();
+  files.forEach(file => dt.items.add(file));
+  els.file.files = dt.files;
+  
+  // Update display
+  if (files.length === 0) {
+    els.fileUploadArea.classList.remove('has-file');
+    els.fileUploadText.textContent = 'Upload Audio Files';
+    document.getElementById('audioFilesList').style.display = 'none';
+    lastFile = null;
+    peaks = null;
+    els.meta.textContent = '';
+  } else {
+    displaySelectedAudioFiles(files);
+    els.fileUploadText.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
+    
+    // Update waveform with first file
+    const f = files[0];
+    lastFile = f;
+    els.meta.textContent = 'Decoding…';
+    
+    decode(f).then(buf => {
+      peaks = computePeaksFromBuffer(buf, 2000);
+      window.peaks = peaks;
+      els.meta.textContent = `Decoded ${f.name} (${files.length} file${files.length > 1 ? 's' : ''} total)`;
+      drawPreview();
+    }).catch(error => {
+      console.error('Decode error:', error);
+      els.meta.textContent = 'Error decoding audio file';
+    });
+  }
+  
+  // Update create button state
+  updateCreateButtonState();
+}
 
 async function exportPngBlob(W=2000,H=600, qrCodeUrl=null){
   const tmp=document.createElement('canvas'); 
@@ -1671,13 +1895,28 @@ els.btnCreate.addEventListener('click', async (event)=>{
       throw new Error('Firebase Storage not available');
     }
     
-    // Upload the audio file first to get the URL
-    console.log('🔍 Uploading audio file...');
-    const audioResult = await window.uploadWaveformFiles(null, lastFile.name, currentUser.uid, lastFile);
-    console.log('🔍 Audio upload result:', audioResult);
+    // Upload all audio files
+    console.log('🔍 Uploading audio files...');
+    const files = Array.from(els.file.files);
+    const audioResults = [];
     
-    if (!audioResult.success) {
-      throw new Error(audioResult.error || 'Audio upload failed');
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      console.log(`🔍 Uploading audio file ${i + 1}/${files.length}: ${file.name}`);
+      
+      const audioResult = await window.uploadWaveformFiles(null, file.name, currentUser.uid, file);
+      console.log(`🔍 Audio upload result ${i + 1}:`, audioResult);
+      
+      if (!audioResult.success) {
+        throw new Error(audioResult.error || `Audio upload failed for ${file.name}`);
+      }
+      
+      audioResults.push({
+        audio_url: audioResult.audioUrl,
+        original_filename: file.name,
+        file_size: file.size,
+        duration: null // Could be calculated if needed
+      });
     }
 
     // Generate the final play page URL with a temporary ID (will update after DB save)
@@ -1711,25 +1950,25 @@ els.btnCreate.addEventListener('click', async (event)=>{
     els.status.textContent='Saving metadata…';
     console.log('🔍 Preparing database save...');
     
-    const formData = new FormData();
-    formData.append('user_id', currentUser.uid);
-    formData.append('title', title);
-    formData.append('original_name', lastFile.name || 'waveform');
-    formData.append('image_url', mainImageUrl); // Use the complete composition
-    formData.append('qr_url', qrUrl);
-    formData.append('audio_url', audioResult.audioUrl || null);
-    formData.append('unique_id', uniqueId);
-    formData.append('play_url', finalPlayPageUrl);
-
-    console.log('🔍 Sending data to upload.php:', {
+    const uploadData = {
       user_id: currentUser.uid,
       title: title,
-      original_name: lastFile.name,
-      image_url: mainImageUrl,
-      audio_url: audioResult.audioUrl || null
-    });
+      image_url: mainImageUrl, // Use the complete composition
+      qr_url: qrUrl,
+      unique_id: uniqueId,
+      play_url: finalPlayPageUrl,
+      audio_files: audioResults
+    };
 
-    const res = await fetch('upload.php', {method: 'POST', body: formData});
+    console.log('🔍 Sending data to upload_multi_audio.php:', uploadData);
+
+    const res = await fetch('upload_multi_audio.php', {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(uploadData)
+    });
     console.log('🔍 Upload response status:', res.status);
     
     if (!res.ok) {

@@ -37,7 +37,9 @@ try {
                 original_name,
                 image_url,
                 audio_url,
-                created_at
+                created_at,
+                multi_audio_enabled,
+                audio_count
             FROM `$table` 
             WHERE id = :id
         ");
@@ -50,13 +52,35 @@ try {
                 original_name,
                 image_url,
                 audio_url,
-                created_at
+                created_at,
+                multi_audio_enabled,
+                audio_count
             FROM `$table` 
             WHERE unique_id = :unique_id
         ");
         $stmt->execute([':unique_id' => $uniqueId]);
     }
     $memory = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // If multi-audio is enabled, get a random audio file
+    $selectedAudioUrl = $memory['audio_url']; // Default to primary audio
+    
+    if ($memory['multi_audio_enabled'] && $memory['audio_count'] > 1) {
+        // Get all active audio files for this memory
+        $audioStmt = $pdo->prepare("
+            SELECT audio_url, original_filename 
+            FROM memory_audio_files 
+            WHERE memory_id = :memory_id AND is_active = TRUE 
+            ORDER BY RAND() 
+            LIMIT 1
+        ");
+        $audioStmt->execute([':memory_id' => $memory['id']]);
+        $randomAudio = $audioStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($randomAudio) {
+            $selectedAudioUrl = $randomAudio['audio_url'];
+        }
+    }
 
     if (!$memory) {
         http_response_code(404);
@@ -194,15 +218,23 @@ try {
         
         <div class="waveform-preview"></div>
         
-        <?php if (isset($memory['audio_url']) && $memory['audio_url']): ?>
+        <?php if (isset($selectedAudioUrl) && $selectedAudioUrl): ?>
             <div class="audio-player">
                 <audio id="audioPlayer" controls preload="metadata">
-                    <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/mpeg">
-                    <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/wav">
-                    <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/mp4">
+                    <source src="<?php echo htmlspecialchars($selectedAudioUrl); ?>" type="audio/mpeg">
+                    <source src="<?php echo htmlspecialchars($selectedAudioUrl); ?>" type="audio/wav">
+                    <source src="<?php echo htmlspecialchars($selectedAudioUrl); ?>" type="audio/mp4">
                     Your browser does not support the audio element.
                 </audio>
             </div>
+            <?php if ($memory['multi_audio_enabled'] && $memory['audio_count'] > 1): ?>
+                <div class="multi-audio-info">
+                    <p style="font-size: 14px; color: #6b7280; margin: 16px 0 0 0;">
+                        🎵 This memory contains <?php echo $memory['audio_count']; ?> audio files. 
+                        A random one is playing now. Refresh to hear a different one!
+                    </p>
+                </div>
+            <?php endif; ?>
             
             <button class="play-button" id="playButton" onclick="togglePlay()">
                 <svg id="playIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
