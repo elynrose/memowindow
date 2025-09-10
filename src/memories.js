@@ -5,10 +5,28 @@ import { getCurrentUser } from './app-auth.js';
 export function initMemories() {
     console.log('💕 Initializing memories functionality...');
     
-    // Load memories when page loads
-    loadMemories();
+    // Wait for authentication to be ready, then load memories
+    waitForAuthAndLoadMemories();
     
     console.log('✅ Memories functionality initialized');
+}
+
+// Wait for authentication and then load memories
+function waitForAuthAndLoadMemories() {
+    const checkAuth = () => {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            console.log('✅ User authenticated, loading memories...');
+            loadMemories();
+        } else {
+            console.log('⏳ Waiting for authentication...');
+            // Check again in 500ms
+            setTimeout(checkAuth, 500);
+        }
+    };
+    
+    // Start checking
+    checkAuth();
 }
 
 // Load user memories

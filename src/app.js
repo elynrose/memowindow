@@ -35,10 +35,28 @@ export function initApp() {
     // Set up event listeners
     setupEventListeners();
     
-    // Load user's waveforms
-    loadUserWaveforms();
+    // Wait for authentication and then load user's waveforms
+    waitForAuthAndLoadWaveforms();
     
     console.log('✅ App functionality initialized');
+}
+
+// Wait for authentication and then load waveforms
+function waitForAuthAndLoadWaveforms() {
+    const checkAuth = () => {
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            console.log('✅ User authenticated, loading waveforms...');
+            loadUserWaveforms();
+        } else {
+            console.log('⏳ Waiting for authentication...');
+            // Check again in 500ms
+            setTimeout(checkAuth, 500);
+        }
+    };
+    
+    // Start checking
+    checkAuth();
 }
 
 // Set up event listeners
