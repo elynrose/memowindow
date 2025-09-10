@@ -189,14 +189,14 @@ function drawPreview() {
     const H = previewCanvas.height;
     
     // Clear canvas
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
     
     // Draw waveform
     const barWidth = W / currentPeaks.length;
     const maxHeight = H * 0.6;
     
-    ctx.fillStyle = '#667eea';
+    ctx.fillStyle = '#ffffff';
     for (let i = 0; i < currentPeaks.length; i++) {
         const barHeight = currentPeaks[i] * maxHeight;
         const x = i * barWidth;
@@ -207,10 +207,10 @@ function drawPreview() {
     
     // Draw title
     const title = titleInput.value || 'Your Memory';
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 24px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, H - 20);
+    ctx.fillText(title, W / 2, 30);
     
     // Draw QR placeholder
     const qrSize = 320; // 8x larger
@@ -219,7 +219,7 @@ function drawPreview() {
     
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(qrX, qrY, qrSize, qrSize);
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = '#000000';
     ctx.font = '16px system-ui';
     ctx.textAlign = 'center';
     ctx.fillText('QR Code', qrX + qrSize / 2, qrY + qrSize / 2);
@@ -414,7 +414,7 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     const ctx = canvas.getContext('2d');
     
     // Background
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
     
     // Compute peaks
@@ -424,7 +424,7 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     const barWidth = W / peaks.length;
     const maxHeight = H * 0.6;
     
-    ctx.fillStyle = '#667eea';
+    ctx.fillStyle = '#000000';
     for (let i = 0; i < peaks.length; i++) {
         const barHeight = peaks[i] * maxHeight;
         const x = i * barWidth;
@@ -435,10 +435,10 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     
     // Draw title
     const title = titleInput.value || 'Your Memory';
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 120px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, H - 100);
+    ctx.fillText(title, W / 2, 150);
     
     // Draw QR code
     if (qrCodeUrl) {
@@ -455,7 +455,7 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
         
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(qrX, qrY, qrSize, qrSize);
-        ctx.fillStyle = '#1a1a1a';
+        ctx.fillStyle = '#000000';
         ctx.font = '60px system-ui';
         ctx.textAlign = 'center';
         ctx.fillText('QR Code', qrX + qrSize / 2, qrY + qrSize / 2);
