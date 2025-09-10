@@ -385,12 +385,12 @@
         <p class="card-subtitle">Upload audio files or record your voice to create beautiful waveform art</p>
       </div>
       
-      <!-- Memory Preview -->
-      <div id="memoryPreview" class="card hidden" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border: 2px dashed #d1d5db; border-radius: 8px;">
-        <h3 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem;">Memory Preview</h3>
-        <canvas id="previewCanvas" width="400" height="200" style="max-width: 100%; height: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white;"></canvas>
-        <p id="previewStatus" style="margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9rem;">Upload audio files to see preview</p>
-      </div>
+    <!-- Memory Preview (Hidden) -->
+    <div id="memoryPreview" class="card hidden" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border: 2px dashed #d1d5db; border-radius: 8px;">
+      <h3 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.1rem;">Memory Preview</h3>
+      <canvas id="previewCanvas" width="400" height="200" style="max-width: 100%; height: auto; border: 1px solid #e5e7eb; border-radius: 4px; background: white;"></canvas>
+      <p id="previewStatus" style="margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9rem;">Upload audio files to see preview</p>
+    </div>
       <div class="upload-section">
         <label for="file" class="file-upload-area" id="fileUploadArea" style="cursor: pointer; width: 100%;">
           <input id="file" type="file" accept="audio/*" multiple style="display: none;">
@@ -529,27 +529,18 @@
     }
     
     async function processFileForPreview(audioFile) {
-      const memoryPreview = document.getElementById('memoryPreview');
-      const previewStatus = document.getElementById('previewStatus');
-      
-      if (!memoryPreview || !previewStatus) return;
-      
+      // Preview functionality disabled - keeping function for compatibility
+      // but not showing the preview area to users
       try {
-        memoryPreview.classList.remove('hidden');
-        previewStatus.textContent = 'Processing audio for preview...';
-        
-        // Decode the audio file
+        // Process the audio file for internal use
         const buf = await decode(audioFile);
         currentPeaks = computePeaksFromBuffer(buf, 2000);
         
-        // Draw the preview
+        // Draw preview internally (but don't show it)
         drawPreview();
-        
-        previewStatus.textContent = `Preview ready - ${audioFile.name}`;
         
       } catch (error) {
         console.error('Preview processing error:', error);
-        previewStatus.textContent = 'Error processing audio file';
       }
     }
     
@@ -853,10 +844,10 @@
           fileInput.value = '';
         }
         
-        // Hide preview
+        // Keep preview hidden (it's already hidden by default)
         const memoryPreview = document.getElementById('memoryPreview');
         if (memoryPreview) {
-          memoryPreview.classList.add('hidden');
+          memoryPreview.style.display = 'none';
         }
         
         // Redirect to memories page
