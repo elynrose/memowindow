@@ -351,6 +351,14 @@ async function createMemory() {
             throw new Error('Not authenticated');
         }
         
+        // Check subscription limits
+        const subscriptionResponse = await fetch(`check_subscription.php?user_id=${currentUser.uid}`);
+        const subscriptionData = await subscriptionResponse.json();
+        
+        if (subscriptionData.success && !subscriptionData.limits.can_create_memory.allowed) {
+            throw new Error(subscriptionData.limits.can_create_memory.reason);
+        }
+        
         // Generate unique ID
         const uniqueId = 'mw_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         

@@ -529,6 +529,16 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
 window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
     try {
         const currentUser = getCurrentUser();
+        
+        // Check subscription limits first
+        const subscriptionResponse = await fetch(`check_subscription.php?user_id=${currentUser.uid}`);
+        const subscriptionData = await subscriptionResponse.json();
+        
+        if (subscriptionData.success && !subscriptionData.limits.can_create_voice_clone.allowed) {
+            alert(subscriptionData.limits.can_create_voice_clone.reason);
+            return;
+        }
+        
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {

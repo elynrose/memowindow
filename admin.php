@@ -412,6 +412,10 @@ try {
                    style="background: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
                     🎤 Voice Clone Settings
                 </a>
+                <a href="admin_subscriptions.php"
+                   style="background: #059669; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
+                    💳 Subscription Management
+                </a>
             </div>
         </div>
     </div>
