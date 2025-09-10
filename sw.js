@@ -1,5 +1,5 @@
 // MemoWindow Service Worker
-const CACHE_NAME = 'memowindow-v1.0.0';
+const CACHE_NAME = 'memowindow-v1.0.1';
 const STATIC_CACHE = [
   '/',
   '/index.html',
