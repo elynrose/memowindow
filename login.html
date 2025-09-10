@@ -125,6 +125,46 @@
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
     
+    .card-header {
+      margin-bottom: 1.5rem;
+    }
+    
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    
+    .card-subtitle {
+      color: #666;
+      font-size: 1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      background: white;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-input::placeholder {
+      color: #9ca3af;
+    }
+    
     /* Mobile header improvements */
     .row {
       flex-direction: column;
@@ -727,7 +767,23 @@
 
 <div id="mainContent" class="wrap">
 
+  <!-- Memory Title Card -->
   <div class="card" style="margin-top: 4rem;">
+    <div class="card-header">
+      <h2 class="card-title">Memory Title</h2>
+      <p class="card-subtitle">Give your memory a meaningful name</p>
+    </div>
+    <div class="form-group">
+      <input id="titleInput" type="text" class="form-input" placeholder="Memory title (e.g., 'Mom's Laughter', 'Dad's Bedtime Story')" required>
+    </div>
+  </div>
+
+  <!-- Upload and Record Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Add Your Audio</h2>
+      <p class="card-subtitle">Upload audio files or record your voice to create beautiful waveform art</p>
+    </div>
     <div class="row">
       <label for="file" class="file-upload-area" id="fileUploadArea" style="cursor: pointer;">
         <input id="file" type="file" accept="audio/*" multiple style="display: none;">
@@ -744,9 +800,10 @@
         </svg>
         Record Voice
       </button>
-      <input id="titleInput" type="text" placeholder="Memory title (e.g., 'Mom's Laughter', 'Dad's Bedtime Story')" required style="flex: 1; padding: 8px; border: 1px solid #e6e9f2; border-radius: 6px; margin: 0 8px;">
-      <button id="btnCreate" class="btn-primary" disabled style="display: flex; align-items: center; gap: 6px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    </div>
+    <div style="margin-top: 1.5rem; text-align: center;">
+      <button id="btnCreate" class="btn btn-primary btn-full" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
           <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z" />
         </svg>
