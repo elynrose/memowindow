@@ -506,7 +506,7 @@
       
       // File upload functionality
       fileInput.addEventListener('change', handleFileSelect);
-      fileUploadArea.addEventListener('click', () => fileInput.click());
+      // Note: No need for click handler since the label already handles file input triggering
       fileUploadArea.addEventListener('dragover', handleDragOver);
       fileUploadArea.addEventListener('drop', handleFileDrop);
       
