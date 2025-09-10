@@ -1,5 +1,6 @@
 // Memories-specific functionality
 import { getCurrentUser } from './app-auth.js';
+import { uploadToFirebaseStorage } from './storage.js';
 
 // Initialize memories functionality
 export function initMemories() {
@@ -719,6 +720,44 @@ window.generateAudio = async function(memoryId) {
         const result = await response.json();
         
         if (result.success) {
+            // If the audio needs Firebase upload, handle it
+            if (result.needs_firebase_upload && result.audio_data) {
+                try {
+                    // Convert base64 to blob
+                    const audioBlob = await base64ToBlob(result.audio_data, 'audio/mpeg');
+                    
+                    // Generate filename for Firebase
+                    const timestamp = Date.now();
+                    const fileName = `generated_${currentUser.uid}_${timestamp}_${result.audio_id}.mp3`;
+                    
+                    // Upload to Firebase Storage
+                    const firebaseUrl = await uploadToFirebaseStorage(audioBlob, fileName, 'generated-audio');
+                    
+                    // Update the database with Firebase URL
+                    const updateResponse = await fetch('voice_clone_api.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            action: 'update_audio_url',
+                            user_id: currentUser.uid,
+                            generated_audio_id: result.generated_audio_id,
+                            firebase_url: firebaseUrl
+                        })
+                    });
+                    
+                    const updateResult = await updateResponse.json();
+                    if (!updateResult.success) {
+                        console.warn('Failed to update Firebase URL in database:', updateResult.error);
+                    }
+                    
+                } catch (firebaseError) {
+                    console.warn('Firebase upload failed (audio still saved locally):', firebaseError);
+                    // Don't fail the entire operation - audio is still saved locally
+                }
+            }
+            
             alert('Audio generated successfully! The new audio has been added to your memory.');
             // Close modal
             document.querySelector('div[style*="position: fixed"]').remove();
@@ -740,6 +779,12 @@ window.generateAudio = async function(memoryId) {
         }
     }
 };
+
+// Helper function to convert base64 to blob
+async function base64ToBlob(base64Data, mimeType) {
+    const response = await fetch(`data:${mimeType};base64,${base64Data}`);
+    return await response.blob();
+}
 
 // Make functions available globally
 window.initMemories = initMemories;

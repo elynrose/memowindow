@@ -195,7 +195,9 @@ class VoiceCloneAPI {
                 'audio_id' => $audioId,
                 'text' => $text,
                 'voice_id' => $voiceId,
-                'audio_size' => strlen($response)
+                'audio_size' => strlen($response),
+                'audio_data' => base64_encode($response), // Include base64 data for Firebase upload
+                'needs_firebase_upload' => true // Flag to indicate frontend should upload to Firebase
             ];
             
         } catch (Exception $e) {
@@ -386,6 +388,29 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 }
                 
                 echo json_encode($result);
+                break;
+                
+            case 'update_audio_url':
+                $generatedAudioId = $_POST['generated_audio_id'] ?? '';
+                $firebaseUrl = $_POST['firebase_url'] ?? '';
+                
+                if (!$generatedAudioId || !$firebaseUrl) {
+                    throw new Exception('Missing generated_audio_id or firebase_url');
+                }
+                
+                $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                ]);
+                
+                // Update the audio_url with the Firebase URL
+                $stmt = $pdo->prepare("UPDATE generated_audio SET audio_url = ? WHERE id = ? AND user_id = ?");
+                $stmt->execute([$firebaseUrl, $generatedAudioId, $userId]);
+                
+                if ($stmt->rowCount() > 0) {
+                    echo json_encode(['success' => true, 'message' => 'Audio URL updated with Firebase URL']);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'No records updated']);
+                }
                 break;
                 
             default:
