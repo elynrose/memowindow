@@ -1,6 +1,6 @@
 <?php
 // config.php - Configuration for Stripe and Printful integration
-require_once __DIR__ . '/PriceManager.php';
+require_once __DIR__ . '/PriceFormatter.php';
 
 // Load environment variables from .env file
 function loadEnv($path) {
@@ -80,10 +80,10 @@ function getProduct($productId) {
         
         if ($product) {
             return [
-                'printful_id' => $product['printful_id'] ?? '12345', // Default fallback
+                'printful_id' => $product['printful_variant_id'] ?? '4651', // Use correct column name
                 'name' => $product['name'],
                 'description' => $product['description'],
-                'price' => PriceManager::fromDatabase($product['price'] ?? 2499),
+                'price' => PriceFormatter::formatForStripe($product['price'] ?? 2499),
                 'size' => $product['size'] ?? 'Standard Size',
                 'material' => $product['material'] ?? 'Premium Wood'
             ];
@@ -91,29 +91,29 @@ function getProduct($productId) {
         
         // If no product found in database, return fallback product
         return [
-            'printful_id' => '12345',
+            'printful_id' => '4651', // Use valid Printful variant ID (8×10)
             'name' => 'Memory Frame',
             'description' => 'Beautiful memory frame for your waveform',
-            'price' => 2499, // $24.99 in cents
-            'size' => 'Standard Size',
-            'material' => 'Premium Wood'
+            'price' => 2250, // $22.50 in cents
+            'size' => '8×10',
+            'material' => 'Enhanced Matte Paper'
         ];
         
     } catch (Exception $e) {
         // Return fallback product if database fails
         return [
-            'printful_id' => '12345',
+            'printful_id' => '4651', // Use valid Printful variant ID (8×10)
             'name' => 'Memory Frame',
             'description' => 'Beautiful memory frame for your waveform',
-            'price' => 2499, // $24.99 in cents
-            'size' => 'Standard Size',
-            'material' => 'Premium Wood'
+            'price' => 2250, // $22.50 in cents
+            'size' => '8×10',
+            'material' => 'Enhanced Matte Paper'
         ];
     }
 }
 
-// Helper function to format price
+// Helper function to format price (legacy - use PriceFormatter::formatDisplay instead)
 function formatPrice($priceInCents) {
-    return '$' . number_format($priceInCents / 100, 2);
+    return PriceFormatter::formatDisplay($priceInCents);
 }
 ?>

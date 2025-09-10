@@ -98,7 +98,7 @@ function createPrintfulOrder($orderData) {
         'items' => [[
             'variant_id' => intval($orderData['printful_product_id']), // Use variant_id for store products
             'quantity' => 1,
-            'retail_price' => ($orderData['amount_paid'] / 100) . '.00',
+            'retail_price' => PriceFormatter::formatForPrintful($orderData['amount_paid']),
             'files' => [[
                 'url' => $orderData['image_url'],
                 'type' => 'default'

@@ -130,8 +130,8 @@ try {
             ':customer_email' => $userEmail,
             ':customer_name' => $userName,
             ':amount_paid' => $product['price'],
-            ':unit_price' => $product['price'] / 100,
-            ':total_price' => $product['price'] / 100,
+            ':unit_price' => PriceFormatter::centsToDollars($product['price']),
+            ':total_price' => PriceFormatter::centsToDollars($product['price']),
             ':quantity' => 1,
             ':status' => 'pending'
         ]);
