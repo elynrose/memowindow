@@ -1,1549 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MemoWindow</title>
-  <meta name="description" content="Transform precious voice recordings into beautiful waveform art and create lasting visual memories">
-  <meta name="theme-color" content="#2a4df5">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="MemoWindow">
-  
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- Apple Touch Icons (optional - add these files if you have them) -->
-  <link rel="apple-touch-icon" href="images/icon-192.png">
-  
-  <!-- Styles are now loaded from external CSS file -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoWindow - Transform Voice into Beautiful Waveform Art</title>
+    <meta name="description" content="Transform precious voice recordings into beautiful waveform art and create lasting visual memories. Turn your memories into stunning prints.">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #667eea;
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8rem 0 6rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border: 2px solid white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.25rem;
+            color: #666;
+            margin-bottom: 4rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
 </head>
 <body>
-<!-- Auth Modal (shown when not authenticated) -->
-<div id="authModal" class="auth-modal hidden">
-  <div class="auth-modal-content">
-    <h1 style="margin: 0;"><img src="images/logo.png" alt="MemoWindow" style="width: 280px; height: 50px;"></h1>
-    <p>Transform precious voice recordings of your loved ones into beautiful waveform art. Create lasting visual memories that you can frame, share, and treasure forever.</p>
-    
-    <!-- Email Login Form -->
-    <div id="emailLoginForm">
-      <div style="margin-bottom: 16px;">
-        <input type="email" id="emailInput" placeholder="Email address" 
-               style="width: 100%; padding: 12px; border: 1px solid #e6e9f2; border-radius: 8px; font-size: 14px; margin-bottom: 8px;">
-        <input type="password" id="passwordInput" placeholder="Password" 
-               style="width: 100%; padding: 12px; border: 1px solid #e6e9f2; border-radius: 8px; font-size: 14px;">
-      </div>
-      
-      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-        <button id="btnEmailLogin" style="flex: 1; background: #2a4df5; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: 500;">
-          Sign In
-        </button>
-        <button id="btnEmailRegister" style="flex: 1; background: #6b7280; border: none; color: white; padding: 12px; border-radius: 8px; font-weight: 500;">
-          Register
-        </button>
-      </div>
-      
-      <div style="text-align: center; margin: 16px 0; color: #6b7280; font-size: 14px;">
-        or
-      </div>
-    </div>
-    
-    <!-- Google Login Button -->
-    <button id="btnLogin" class="btn-auth">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Sign in with Google
-    </button>
-  </div>
-</div>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="logo">MemoWindow</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <a href="login.html" class="cta-button">Get Started</a>
+        </nav>
+    </header>
 
-<!-- Voice Recorder Modal -->
-<div id="recorderModal" class="recorder-modal hidden" style="display: none;">
-  <div class="recorder-modal-content">
-    <h2>🎤 Record Your Voice</h2>
-    <p style="color: #6b7280; margin: 0 0 24px 0;">Record a precious voice memory to transform into a beautiful waveform</p>
-    
-    <div id="recordingStatus" style="margin: 16px 0; min-height: 24px;">
-      <span style="color: #6b7280;">Click record to begin</span>
-    </div>
-    
-    <div class="timer" id="recordingTimer">00:00</div>
-    
-    <div class="recorder-controls">
-      <button id="startRecordBtn" class="record-btn record" title="Start Recording">
-        ⏺️
-      </button>
-      <button id="stopRecordBtn" class="record-btn stop" disabled title="Stop Recording">
-        ⏹️
-      </button>
-      <button id="playRecordBtn" class="record-btn play" disabled title="Play Recording">
-        ▶️
-      </button>
-    </div>
-    
-    <audio id="recordedAudio" class="audio-preview" controls style="display: none;"></audio>
-    
-    <div style="margin-top: 24px; display: flex; justify-content: center; gap: 12px;">
-      <button id="useRecordingBtn" disabled 
-              style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-        Use This Recording
-      </button>
-      <button id="cancelRecordingBtn" 
-              style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-        Cancel
-      </button>
-    </div>
-  </div>
-</div>
-
-<div id="mainContent" class="wrap">
-  <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h1 style="margin: 0;"><img src="images/logo.png" alt="MemoWindow" style="width: 280px; height: 50px;"></h1>
-    <!-- User info (shown when authenticated) -->
-    <div id="userInfo" class="user-info hidden">
-      <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
-      <span id="userName">Loading...</span>
-      <a id="ordersLink" href="#" style="background: #6b7280; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;">My Orders</a>
-      <button id="btnLogout" class="btn-logout">Sign Out</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="row">
-      <label for="file" class="file-upload-area" id="fileUploadArea" style="cursor: pointer;">
-        <input id="file" type="file" accept="audio/*" style="display: none;">
-        <svg class="file-upload-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-          <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z"/>
-        </svg>
-        <span class="file-upload-text" id="fileUploadText">Choose voice recording</span>
-      </label>
-      <span style="color: #6b7280; font-size: 14px; margin: 0 8px;">or</span>
-      <button id="btnRecord" type="button" style="background: #dc2626; border: none; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z" />
-        </svg>
-        Record Voice
-      </button>
-      <input id="titleInput" type="text" placeholder="Memory title (e.g., 'Mom's Laughter', 'Dad's Bedtime Story')" required style="flex: 1; padding: 8px; border: 1px solid #e6e9f2; border-radius: 6px; margin: 0 8px;">
-      <button id="btnCreate" disabled style="display: flex; align-items: center; gap: 6px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-          <path d="M12,11L16,15H13.5V19H10.5V15H8L12,11Z" />
-        </svg>
-        Create Memory
-      </button>
-    </div>
-    <div style="margin-top: 8px;">
-      <span id="status" class="muted" style="font-size: 14px; color: #6b7280;"></span>
-    </div>
-  </div>
-
-  <div class="card">
-    <!-- Hidden canvas for processing, user sees final result below -->
-    <canvas id="preview" width="1200" height="360" class="hidden"></canvas>
-    <p class="muted" id="meta" style="text-align: center; padding: 20px; margin: 0;"></p>
-    <div id="result" class="hidden" style="margin-top:16px">
-      <!-- Complete Memory Frame -->
-      <div style="text-align: center;">
-        <h4 style="margin: 0 0 16px 0; color: #0b0d12; font-size: 18px; font-weight: 600;">Your Complete Memory Frame</h4>
-        <div style="border: 1px solid #e6e9f2; border-radius: 12px; padding: 16px; background: #fafbfc; margin-bottom: 16px;">
-          <img id="waveformPreview" src="" alt="Complete memory composition" style="width: 100%; height: auto; border-radius: 8px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
-        </div>
-        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-          <button onclick="showImageModal()" class="secondary" style="font-size: 14px; padding: 8px 16px; border: none; cursor: pointer;">View Full Size</button>
-          <a id="imageLink" class="secondary" href="#" target="_blank" style="font-size: 14px; padding: 8px 16px;">Download Image</a>
-          <a id="qrLink" class="secondary" href="#" target="_blank" style="font-size: 14px; padding: 8px 16px;">Play Audio</a>
-        </div>
-        <p style="margin: 16px 0 0 0; color: #6b7280; font-size: 13px; text-align: center;">
-          This complete frame includes your title, waveform visualization, and QR code for audio playback
-        </p>
-      </div>
-      
-      <!-- Order Prints Section -->
-      <div id="orderSection" class="hidden" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e6e9f2;">
-        <h4 style="margin: 0 0 16px 0; color: #0b0d12; text-align: center;">Order Physical Prints</h4>
-        <p style="margin: 0 0 20px 0; text-align: center; color: #6b7280; font-size: 14px;">
-          Transform your MemoWindow into a beautiful physical frame with QR code
-        </p>
-        <div class="products-grid">
-          <!-- Products will be loaded here -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- User's Waveforms List -->
-  <div id="waveformsList" class="card hidden">
-    <h3 style="margin: 0 0 16px 0; color: #0b0d12;">Your MemoWindows</h3>
-    <div id="waveformsContainer">
-      <div class="muted" style="text-align: center; padding: 20px;">Loading your MemoWindows...</div>
-    </div>
-  </div>
-</div>
-
-<script>
-
-    
-const els = {
-  file: document.getElementById('file'),
-  fileUploadArea: document.getElementById('fileUploadArea'),
-  fileUploadText: document.getElementById('fileUploadText'),
-  titleInput: document.getElementById('titleInput'),
-  btnCreate: document.getElementById('btnCreate'),
-  status: document.getElementById('status'),
-  preview: document.getElementById('preview'),
-  meta: document.getElementById('meta'),
-  result: document.getElementById('result'),
-  imageLink: document.getElementById('imageLink'),
-  qrLink: document.getElementById('qrLink'),
-  waveformPreview: document.getElementById('waveformPreview'),
-  orderSection: document.getElementById('orderSection'),
-  // Auth elements
-  authModal: document.getElementById('authModal'),
-  mainContent: document.getElementById('mainContent'),
-  userInfo: document.getElementById('userInfo'),
-  btnLogin: document.getElementById('btnLogin'),
-  btnLogout: document.getElementById('btnLogout'),
-  userName: document.getElementById('userName'),
-  userAvatar: document.getElementById('userAvatar'),
-  ordersLink: document.getElementById('ordersLink'),
-  // Email auth elements
-  emailInput: document.getElementById('emailInput'),
-  passwordInput: document.getElementById('passwordInput'),
-  btnEmailLogin: document.getElementById('btnEmailLogin'),
-  btnEmailRegister: document.getElementById('btnEmailRegister'),
-  // Voice recorder elements
-  btnRecord: document.getElementById('btnRecord'),
-  recorderModal: document.getElementById('recorderModal'),
-  startRecordBtn: document.getElementById('startRecordBtn'),
-  stopRecordBtn: document.getElementById('stopRecordBtn'),
-  playRecordBtn: document.getElementById('playRecordBtn'),
-  recordingStatus: document.getElementById('recordingStatus'),
-  recordingTimer: document.getElementById('recordingTimer'),
-  recordedAudio: document.getElementById('recordedAudio'),
-  useRecordingBtn: document.getElementById('useRecordingBtn'),
-  cancelRecordingBtn: document.getElementById('cancelRecordingBtn'),
-  // Waveforms list elements
-  waveformsList: document.getElementById('waveformsList'),
-  waveformsContainer: document.getElementById('waveformsContainer'),
-};
-
-const ctx = els.preview.getContext('2d');
-let peaks = null;
-let lastFile = null;
-
-// Make peaks available globally for the auth module
-window.peaks = null;
-
-// Voice recording variables
-let mediaRecorder;
-let recordedChunks = [];
-let recordingStartTime;
-let recordingTimer;
-let recordedBlob;
-
-// Function to load user's waveforms with pagination support
-async function loadUserWaveforms(offset = 0, append = false) {
-  console.log('🔍 loadUserWaveforms called with offset:', offset, 'append:', append);
-  const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-  console.log('🔍 Current user for waveforms:', currentUser?.displayName || currentUser?.email || 'No user');
-  
-  if (!currentUser) {
-    console.log('🔍 No user, hiding waveforms list');
-    els.waveformsList.classList.add('hidden');
-    return;
-  }
-  
-  try {
-    console.log('🔍 Fetching waveforms...');
-    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
-    console.log('🔍 Response status:', response.status);
-    
-    if (!response.ok) throw new Error('Failed to load waveforms');
-    
-    const data = await response.json();
-    console.log('🔍 Raw response data:', data);
-    
-    // Handle pagination response format
-    const waveforms = Array.isArray(data) ? data : (data.waveforms || []);
-    const hasMore = data.has_more || false;
-    const total = data.total || 0;
-    
-    console.log('🔍 Waveforms received:', waveforms.length, 'items, hasMore:', hasMore, 'total:', total);
-    console.log('🔍 Waveforms data:', waveforms);
-    
-    if (append) {
-      // Append to existing list
-      appendWaveforms(waveforms, hasMore, total, offset);
-    } else {
-      // Replace entire list
-      displayWaveforms(waveforms, hasMore, total, offset);
-    }
-    
-    els.waveformsList.classList.remove('hidden');
-    els.waveformsList.style.display = 'block';
-    console.log('🔍 Waveforms list should now be visible');
-    
-  } catch (error) {
-    console.error('🔍 Error loading waveforms:', error);
-    els.waveformsContainer.innerHTML = '<div class="muted" style="text-align: center; padding: 20px;">Error loading waveforms</div>';
-    els.waveformsList.classList.remove('hidden'); // Show the error message
-  }
-}
-
-// Function to display waveforms in the list
-function displayWaveforms(waveforms) {
-  console.log('🔍 displayWaveforms called with:', waveforms);
-  console.log('🔍 Waveforms container element:', els.waveformsContainer);
-  
-  if (!waveforms || waveforms.length === 0) {
-    console.log('🔍 No waveforms to display');
-    els.waveformsContainer.innerHTML = '<div class="muted" style="text-align: center; padding: 20px;">No MemoWindows yet. Create your first one above!</div>';
-    return;
-  }
-  
-  console.log('🔍 Generating HTML for', waveforms.length, 'waveforms');
-  
-  const waveformItems = waveforms.map(waveform => {
-    const title = waveform.title || waveform.original_name || 'Untitled';
-    const date = new Date(waveform.created_at).toLocaleDateString();
-    const time = new Date(waveform.created_at).toLocaleTimeString();
-    
-    return `
-      <div class="waveform-item" style="border: 1px solid #e6e9f2; border-radius: 8px; padding: 12px; margin-bottom: 8px; background: #fafbfc;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <strong style="color: #0b0d12;">${title}</strong>
-            <div class="muted" style="font-size: 12px; margin-top: 2px;">
-              ${waveform.original_name} • ${date} ${time}
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Transform Voice into Beautiful Waveform Art</h1>
+            <p>Turn your precious voice recordings into stunning visual memories. Create unique waveform prints that capture the essence of your most meaningful moments.</p>
+            <div class="hero-buttons">
+                <a href="login.html" class="btn-primary">Start Creating</a>
+                <a href="#video" class="btn-secondary">Watch Demo</a>
             </div>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <a href="${waveform.image_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">View</a>
-            <a href="${waveform.qr_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">QR</a>
-            <button onclick="deleteMemory(${waveform.id}, '${waveform.title.replace(/'/g, "\\'")}', this)" class="btn-delete" style="background: #dc3545; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
-          </div>
         </div>
-      </div>
-    `;
-  }).join('');
-  
-  els.waveformsContainer.innerHTML = waveformItems;
-  
-  // Add load more button if we received exactly 5 items (suggests there might be more)
-  if (waveforms.length === 5) {
-    const loadMoreBtn = document.createElement('div');
-    loadMoreBtn.id = 'loadMoreBtn';
-    loadMoreBtn.style.cssText = 'text-align: center; margin-top: 16px;';
-    loadMoreBtn.innerHTML = `
-      <button onclick="loadMoreMemories()" style="background: #6b7280; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-        Load More
-      </button>
-    `;
-    els.waveformsContainer.appendChild(loadMoreBtn);
-  }
-  
-  // Set offset for load more
-  window.currentWaveformsOffset = waveforms.length;
-  
-  console.log('🔍 Waveforms HTML updated, offset set to:', window.currentWaveformsOffset);
-}
+    </section>
 
-// Make loadUserWaveforms available globally for the auth module
-window.loadUserWaveforms = loadUserWaveforms;
-
-// Function to delete a memory
-async function deleteMemory(memoryId, title, buttonElement) {
-  // Show confirmation dialog
-  const confirmMessage = `Are you sure you want to delete "${title}"?\n\nThis will permanently remove:\n• The waveform image\n• The QR code\n• The audio file\n• All associated data\n\nThis action cannot be undone.`;
-  
-  if (!confirm(confirmMessage)) {
-    return;
-  }
-  
-  try {
-    // Disable the delete button and show loading state
-    buttonElement.disabled = true;
-    buttonElement.textContent = 'Deleting...';
-    buttonElement.style.background = '#6b7280';
-    
-    const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-    if (!currentUser) {
-      throw new Error('Authentication required');
-    }
-    
-    // Call delete endpoint
-    const formData = new FormData();
-    formData.append('memory_id', memoryId);
-    formData.append('user_id', currentUser.uid);
-    
-    const response = await fetch('delete_memory.php', {
-      method: 'POST',
-      body: formData
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Delete failed');
-    }
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      // Delete files from Firebase Storage if available
-      if (window.deleteMemoryFiles && result.deleted_memory) {
-        buttonElement.textContent = 'Deleting files...';
-        
-        // Get the memory data to find file URLs
-        const waveforms = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
-        const allWaveforms = await waveforms.json();
-        const memoryToDelete = allWaveforms.find(w => w.id == memoryId);
-        
-        if (memoryToDelete) {
-          console.log('🗑️ Deleting Firebase Storage files...');
-          const deleteResult = await window.deleteMemoryFiles(memoryToDelete.image_url, memoryToDelete.audio_url);
-          console.log('🗑️ File deletion result:', deleteResult);
-        }
-      }
-      
-      // Remove the item from the list with animation
-      const memoryItem = buttonElement.closest('.waveform-item');
-      memoryItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      memoryItem.style.opacity = '0';
-      memoryItem.style.transform = 'translateX(-20px)';
-      
-      setTimeout(() => {
-        memoryItem.remove();
-        
-        // Check if list is now empty
-        const remainingItems = document.querySelectorAll('.waveform-item');
-        if (remainingItems.length === 0) {
-          els.waveformsContainer.innerHTML = '<div class="muted" style="text-align: center; padding: 20px;">No MemoWindows yet. Create your first one above!</div>';
-        }
-      }, 300);
-      
-      console.log('✅ Memory and files deleted successfully');
-    } else {
-      throw new Error(result.error || 'Delete failed');
-    }
-    
-  } catch (error) {
-    console.error('Delete error:', error);
-    alert('Failed to delete memory: ' + error.message);
-    
-    // Reset button state
-    buttonElement.disabled = false;
-    buttonElement.textContent = 'Delete';
-    buttonElement.style.background = '#dc3545';
-  }
-}
-
-// Make delete function available globally
-window.deleteMemory = deleteMemory;
-
-// Function to update create button state based on all requirements
-function updateCreateButtonState() {
-  const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-  const hasFile = lastFile && peaks;
-  const hasTitle = els.titleInput.value.trim().length > 0;
-  
-  const shouldEnable = currentUser && hasFile && hasTitle;
-  
-  els.btnCreate.disabled = !shouldEnable;
-  
-  // Update status message to guide user
-  if (!currentUser) {
-    els.status.textContent = 'Please sign in to create memories';
-  } else if (!hasFile) {
-    els.status.textContent = 'Choose a voice recording to continue';
-  } else if (!hasTitle) {
-    els.status.textContent = 'Enter a memory title to continue';
-  } else {
-    els.status.textContent = 'Ready to create your memory!';
-  }
-  
-}
-
-// Make function available globally for auth module
-window.updateCreateButtonState = updateCreateButtonState;
-
-// Function to load order products for a memory
-async function loadOrderProducts(memoryId, imageUrl) {
-  console.log('loadOrderProducts called with:', memoryId, imageUrl);
-  try {
-    const response = await fetch('get_products.php');
-    const products = await response.json();
-    console.log('Products loaded:', products);
-    
-    const productsGrid = document.querySelector('.products-grid');
-    console.log('Products grid element:', productsGrid);
-    
-    const productCards = products.map(product => `
-      <div class="product-card" style="border: 1px solid #e6e9f2; border-radius: 12px; padding: 16px; background: white; text-align: center; display: flex; flex-direction: column; height: 280px;">
-        <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-          <div style="font-size: 24px; margin-bottom: 8px;">\ud83d\uddbc\ufe0f</div>
-          <div style="font-weight: 600; color: #0b0d12; margin-bottom: 4px; font-size: 14px; line-height: 1.3;">${product.name}</div>
-          <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">${product.size}</div>
-          <div style="font-size: 12px; color: #6b7280;">${product.material}</div>
-        </div>
-        <div style="font-size: 18px; font-weight: 600; color: #0b0d12; margin-bottom: 8px;">${product.price_formatted}</div>
-        <div style="font-size: 12px; color: #6b7280; margin-bottom: 16px; flex-grow: 1; display: flex; align-items: center; justify-content: center; line-height: 1.4;">${product.description}</div>
-        <button onclick="orderProduct('${product.id}', ${memoryId}, '${imageUrl}')" 
-                style="background: #2a4df5; border: none; color: white; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 500; margin-top: auto;">
-          Order Now
-        </button>
-      </div>
-    `).join('');
-    
-    productsGrid.innerHTML = productCards;
-    els.orderSection.classList.remove('hidden');
-    console.log('Order section should now be visible');
-    
-  } catch (error) {
-    console.error('Error loading products:', error);
-    els.orderSection.innerHTML = '<div style="text-align: center; color: #dc3545;">Error loading print options</div>';
-    els.orderSection.classList.remove('hidden');
-  }
-}
-
-// Function to initiate order process
-async function orderProduct(productId, memoryId, imageUrl) {
-  try {
-    const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-    if (!currentUser) {
-      return;
-    }
-    
-    console.log('Creating order for:', { productId, memoryId, imageUrl });
-    
-    // Create Stripe checkout session
-    const response = await fetch('create_checkout.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        product_id: productId,
-        memory_id: memoryId,
-        image_url: imageUrl,
-        user_id: currentUser.uid,
-        user_email: currentUser.email,
-        user_name: currentUser.displayName || currentUser.email
-      })
-    });
-    
-    console.log('Checkout response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Checkout response error:', errorText);
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-    
-    const result = await response.json();
-    console.log('Checkout result:', result);
-    
-    if (result.success && result.checkout_url) {
-      // Redirect to Stripe checkout
-      window.location.href = result.checkout_url;
-    } else {
-      alert('Error creating order: ' + (result.error || 'Unknown error'));
-    }
-    
-  } catch (error) {
-    console.error('Order error:', error);
-    alert('Error placing order: ' + error.message);
-  }
-}
-
-// Function to show order options for a specific memory
-async function showOrderOptions(memoryId, imageUrl, title, buttonElement) {
-  try {
-    // Change button state to show loading
-    const originalText = buttonElement.textContent;
-    buttonElement.textContent = 'Loading...';
-    buttonElement.disabled = true;
-    
-    // Create a modal-like overlay for product selection
-    const orderModal = document.createElement('div');
-    orderModal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    `;
-    
-    // Get products
-    const response = await fetch('get_products.php');
-    const products = await response.json();
-    
-    const modalContent = `
-      <div style="background: white; border-radius: 20px; padding: 32px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="margin: 0 0 8px 0; color: #0b0d12;">Order Print for "${title}"</h2>
-          <p style="margin: 0; color: #6b7280;">Choose your preferred print size and material</p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          ${products.map(product => `
-            <div class="product-card" style="border: 2px solid #e6e9f2; border-radius: 12px; padding: 16px; background: #fafbfc; text-align: center; transition: all 0.2s ease; cursor: pointer;" 
-                 onclick="selectProduct('${product.id}', ${memoryId}, '${imageUrl}', this)">
-              <div style="font-size: 32px; margin-bottom: 12px;">🖼️</div>
-              <div style="font-weight: 600; color: #0b0d12; margin-bottom: 4px; font-size: 14px;">${product.name}</div>
-              <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${product.size}</div>
-              <div style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">${product.material}</div>
-              <div style="font-size: 18px; font-weight: 600; color: #2a4df5;">${product.price_formatted}</div>
-              <div style="font-size: 11px; color: #6b7280; margin-top: 8px;">${product.description}</div>
-            </div>
-          `).join('')}
-        </div>
-        
-        <div style="text-align: center;">
-          <button onclick="closeOrderModal()" style="background: #6b7280; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-            Cancel
-          </button>
-        </div>
-      </div>
-    `;
-    
-    orderModal.innerHTML = modalContent;
-    document.body.appendChild(orderModal);
-    
-    // Store reference for cleanup
-    window.currentOrderModal = orderModal;
-    
-    // Reset button state
-    buttonElement.textContent = originalText;
-    buttonElement.disabled = false;
-    
-  } catch (error) {
-    console.error('Error showing order options:', error);
-    alert('Error loading order options: ' + error.message);
-    
-    // Reset button state
-    buttonElement.textContent = originalText;
-    buttonElement.disabled = false;
-  }
-}
-
-// Function to select a product and proceed to checkout
-async function selectProduct(productId, memoryId, imageUrl, cardElement) {
-  // Visual feedback
-  cardElement.style.borderColor = '#2a4df5';
-  cardElement.style.background = '#f0f4ff';
-  
-  // Close modal and proceed to checkout
-  closeOrderModal();
-  
-  // Start order process
-  await orderProduct(productId, memoryId, imageUrl);
-}
-
-// Function to close order modal
-function closeOrderModal() {
-  if (window.currentOrderModal) {
-    window.currentOrderModal.remove();
-    window.currentOrderModal = null;
-  }
-}
-
-// Function to show image in modal
-function showImageModal() {
-  const imageUrl = els.imageLink.href;
-  if (!imageUrl || imageUrl === '#') {
-    alert('No image available to display');
-    return;
-  }
-  
-  // Create modal overlay
-  const modal = document.createElement('div');
-  modal.className = 'image-modal';
-  modal.onclick = (e) => {
-    if (e.target === modal) closeImageModal();
-  };
-  
-  modal.innerHTML = `
-    <div class="image-modal-content">
-      <button class="image-modal-close" onclick="closeImageModal()" title="Close">&times;</button>
-      <img src="${imageUrl}" alt="Complete Memory Frame" style="max-width: 100%; max-height: 100%;">
+    <!-- More sections will be added -->
+    <div class="container" style="padding: 4rem 0; text-align: center;">
+        <h2 class="section-title">Coming Soon</h2>
+        <p class="section-subtitle">More sections will be added to complete the home page</p>
     </div>
-  `;
-  
-  document.body.appendChild(modal);
-  window.currentImageModal = modal;
-  
-  // Add keyboard support
-  document.addEventListener('keydown', handleImageModalKeydown);
-}
 
-// Function to close image modal
-function closeImageModal() {
-  if (window.currentImageModal) {
-    window.currentImageModal.remove();
-    window.currentImageModal = null;
-    document.removeEventListener('keydown', handleImageModalKeydown);
-  }
-}
-
-// Handle keyboard events for image modal
-function handleImageModalKeydown(e) {
-  if (e.key === 'Escape') {
-    closeImageModal();
-  }
-}
-
-// Function to load more memories
-function loadMoreMemories() {
-  const offset = window.currentWaveformsOffset || 0;
-  console.log('🔍 Load more clicked, current offset:', offset);
-  
-  // Call the auth module's loadUserWaveforms function directly
-  const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-  if (!currentUser) {
-    console.log('🔍 No user for load more');
-    return;
-  }
-  
-  loadMoreWaveforms(offset);
-}
-
-// Function to load additional waveforms and append to list
-async function loadMoreWaveforms(offset) {
-  try {
-    console.log('🔍 Loading more waveforms from offset:', offset);
-    const currentUser = window.getCurrentUser();
-    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
-    
-    if (!response.ok) throw new Error('Failed to load more waveforms');
-    
-    const data = await response.json();
-    console.log('🔍 Load more response:', data);
-    
-    const waveforms = Array.isArray(data) ? data : (data.waveforms || []);
-    const hasMore = data.has_more || false;
-    const total = data.total || 0;
-    
-    console.log('🔍 Additional waveforms:', waveforms.length, 'hasMore:', hasMore);
-    
-    if (waveforms.length > 0) {
-      // Generate HTML for additional waveforms
-      const waveformItems = waveforms.map(waveform => {
-        const title = waveform.title || waveform.original_name || 'Untitled';
-        const date = new Date(waveform.created_at).toLocaleDateString();
-        const time = new Date(waveform.created_at).toLocaleTimeString();
-        
-        return `
-          <div class="waveform-item" style="border: 1px solid #e6e9f2; border-radius: 8px; padding: 12px; margin-bottom: 8px; background: #fafbfc;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong style="color: #0b0d12;">${title}</strong>
-                <div class="muted" style="font-size: 12px; margin-top: 2px;">
-                  ${waveform.original_name} • ${date} ${time}
-                </div>
-              </div>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="showMemoryModal('${waveform.image_url}', '${title.replace(/'/g, "\\'")}', '${waveform.qr_url}')" class="secondary" style="font-size: 12px; padding: 4px 8px; border: none; cursor: pointer;">View</button>
-                <a href="${waveform.qr_url}" target="_blank" class="secondary" style="font-size: 12px; padding: 4px 8px;">QR</a>
-                <button onclick="showOrderOptions(${waveform.id}, '${waveform.image_url}', '${title.replace(/'/g, "\\'")}', this)" style="background: #2a4df5; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Order Print</button>
-                <button onclick="deleteMemory(${waveform.id}, '${title.replace(/'/g, "\\'")}', this)" class="btn-delete" style="background: #dc3545; border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      
-      // Remove existing load more button
-      const existingLoadMore = els.waveformsContainer.querySelector('#loadMoreBtn');
-      if (existingLoadMore) {
-        existingLoadMore.remove();
-      }
-      
-      // Append new items
-      els.waveformsContainer.insertAdjacentHTML('beforeend', waveformItems);
-      
-      // Add new load more button if there are more items
-      if (hasMore) {
-        const loadMoreBtn = document.createElement('div');
-        loadMoreBtn.id = 'loadMoreBtn';
-        loadMoreBtn.style.cssText = 'text-align: center; margin-top: 16px;';
-        loadMoreBtn.innerHTML = `
-          <button onclick="loadMoreMemories()" style="background: #6b7280; border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500;">
-            Load More (${total - offset - waveforms.length} remaining)
-          </button>
-        `;
-        els.waveformsContainer.appendChild(loadMoreBtn);
-      }
-      
-      // Update offset for next load more
-      window.currentWaveformsOffset = offset + waveforms.length;
-      console.log('🔍 Updated offset to:', window.currentWaveformsOffset);
-    }
-    
-  } catch (error) {
-    console.error('🔍 Error loading more waveforms:', error);
-    alert('Error loading more memories: ' + error.message);
-  }
-}
-
-// Function to show memory in modal (for list view button)
-function showMemoryModal(imageUrl, title, qrUrl) {
-  // Create modal overlay
-  const modal = document.createElement('div');
-  modal.className = 'image-modal';
-  modal.onclick = (e) => {
-    if (e.target === modal) closeImageModal();
-  };
-  
-  modal.innerHTML = `
-    <div class="image-modal-content">
-      <button class="image-modal-close" onclick="closeImageModal()" title="Close">&times;</button>
-      <div style="text-align: center; margin-bottom: 16px;">
-        <h3 style="color: white; margin: 0 0 8px 0;">${title}</h3>
-        <a href="${qrUrl}" target="_blank" style="color: #60a5fa; text-decoration: none; font-size: 14px;">🎵 Play Audio</a>
-      </div>
-      <img src="${imageUrl}" alt="Complete Memory Frame" style="max-width: 100%; max-height: 100%;">
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  window.currentImageModal = modal;
-  
-  // Add keyboard support
-  document.addEventListener('keydown', handleImageModalKeydown);
-}
-
-// Voice Recording Functions
-function openRecorderModal() {
-  els.recorderModal.classList.remove('hidden');
-  els.recorderModal.style.display = 'flex';
-  resetRecorder();
-  
-  // Add escape key listener
-  document.addEventListener('keydown', handleRecorderModalKeydown);
-  
-  // Add click outside to close
-  els.recorderModal.addEventListener('click', handleRecorderModalClick);
-}
-
-function closeRecorderModal() {
-  els.recorderModal.classList.add('hidden');
-  els.recorderModal.style.display = 'none';
-  stopRecording();
-  resetRecorder();
-  
-  // Remove event listeners
-  document.removeEventListener('keydown', handleRecorderModalKeydown);
-  els.recorderModal.removeEventListener('click', handleRecorderModalClick);
-}
-
-function resetRecorder() {
-  recordedChunks = [];
-  recordedBlob = null;
-  els.recordingTimer.textContent = '00:00';
-  els.recordingStatus.innerHTML = '<span style="color: #6b7280;">Click record to begin</span>';
-  els.startRecordBtn.disabled = false;
-  els.stopRecordBtn.disabled = true;
-  els.playRecordBtn.disabled = true;
-  els.useRecordingBtn.disabled = true;
-  els.recordedAudio.style.display = 'none';
-  
-  if (recordingTimer) {
-    clearInterval(recordingTimer);
-    recordingTimer = null;
-  }
-}
-
-async function startRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        sampleRate: 44100
-      } 
-    });
-    
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: 'audio/webm;codecs=opus'
-    });
-    
-    recordedChunks = [];
-    
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunks.push(event.data);
-      }
-    };
-    
-    mediaRecorder.onstop = () => {
-      recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-      const audioURL = URL.createObjectURL(recordedBlob);
-      els.recordedAudio.src = audioURL;
-      els.recordedAudio.style.display = 'block';
-      els.playRecordBtn.disabled = false;
-      els.useRecordingBtn.disabled = false;
-      
-      // Stop all tracks
-      stream.getTracks().forEach(track => track.stop());
-    };
-    
-    mediaRecorder.start(1000); // Collect data every second
-    recordingStartTime = Date.now();
-    
-    // Update UI
-    els.startRecordBtn.disabled = true;
-    els.stopRecordBtn.disabled = false;
-    els.recordingStatus.innerHTML = '<span class="recording-indicator">🔴 Recording...</span>';
-    
-    // Start timer
-    recordingTimer = setInterval(updateRecordingTimer, 100);
-    
-  } catch (error) {
-    console.error('Recording failed:', error);
-    alert('Recording failed: ' + error.message + '\n\nPlease make sure you have granted microphone permission.');
-  }
-}
-
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    els.startRecordBtn.disabled = false;
-    els.stopRecordBtn.disabled = true;
-    els.recordingStatus.innerHTML = '<span style="color: #059669;">✅ Recording complete</span>';
-    
-    if (recordingTimer) {
-      clearInterval(recordingTimer);
-      recordingTimer = null;
-    }
-  }
-}
-
-function updateRecordingTimer() {
-  if (recordingStartTime) {
-    const elapsed = Date.now() - recordingStartTime;
-    const seconds = Math.floor(elapsed / 1000) % 60;
-    const minutes = Math.floor(elapsed / 60000);
-    els.recordingTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }
-}
-
-function playRecording() {
-  if (els.recordedAudio.paused) {
-    els.recordedAudio.play();
-    els.playRecordBtn.innerHTML = '⏸️';
-  } else {
-    els.recordedAudio.pause();
-    els.playRecordBtn.innerHTML = '▶️';
-  }
-}
-
-function useRecording() {
-  if (recordedBlob) {
-    // Convert blob to File object
-    const file = new File([recordedBlob], `recording_${Date.now()}.webm`, { 
-      type: 'audio/webm',
-      lastModified: Date.now() 
-    });
-    
-    // Simulate file input selection
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    els.file.files = dataTransfer.files;
-    
-    // Update UI
-    els.fileUploadArea.classList.add('has-file');
-    els.fileUploadText.textContent = `🎤 ${file.name}`;
-    
-    // Process the recorded audio
-    lastFile = file;
-    processAudioFile(file);
-    
-    // Close recorder modal
-    closeRecorderModal();
-  }
-}
-
-async function processAudioFile(file) {
-  try {
-    els.meta.textContent = 'Processing recorded audio...';
-    const buf = await decode(file);
-    peaks = computePeaksFromBuffer(buf, 2000);
-    window.peaks = peaks;
-    els.meta.textContent = `Recorded: ${formatDuration(buf.duration)}`;
-    drawPreview();
-    updateCreateButtonState();
-  } catch (error) {
-    console.error('Audio processing failed:', error);
-    els.meta.textContent = 'Error processing recorded audio';
-  }
-}
-
-function formatDuration(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
-function handleRecorderModalKeydown(event) {
-  if (event.key === 'Escape') {
-    closeRecorderModal();
-  }
-}
-
-function handleRecorderModalClick(event) {
-  // Close modal if clicking on the backdrop (not the content)
-  if (event.target === els.recorderModal) {
-    closeRecorderModal();
-  }
-}
-
-// Make recording functions available globally
-window.openRecorderModal = openRecorderModal;
-window.closeRecorderModal = closeRecorderModal;
-window.startRecording = startRecording;
-window.stopRecording = stopRecording;
-window.playRecording = playRecording;
-window.useRecording = useRecording;
-
-// Make other functions available globally
-window.loadOrderProducts = loadOrderProducts;
-window.orderProduct = orderProduct;
-window.showOrderOptions = showOrderOptions;
-window.selectProduct = selectProduct;
-window.closeOrderModal = closeOrderModal;
-window.showImageModal = showImageModal;
-window.closeImageModal = closeImageModal;
-window.loadMoreMemories = loadMoreMemories;
-window.showMemoryModal = showMemoryModal;
-
-
-async function decode(file){
-  const arrayBuf = await file.arrayBuffer();
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return await audioCtx.decodeAudioData(arrayBuf);
-}
-
-function computePeaksFromBuffer(buf, width=2000){
-  const ch = buf.getChannelData(0);
-  const hop = Math.max(1, Math.floor(buf.length / width));
-  const min = new Float32Array(width), max = new Float32Array(width);
-  for(let x=0;x<width;x++){
-    const s=x*hop, e=Math.min((x+1)*hop, buf.length);
-    let mi=1.0, ma=-1.0;
-    for(let i=s;i<e;i++){ const v=ch[i]; if(v<mi) mi=v; if(v>ma) ma=v; }
-    min[x]=mi; max[x]=ma;
-  }
-  return {min,max};
-}
-
-function drawPreview(){
-  if(!peaks) return;
-  
-  // Show the preview canvas when drawing
-  els.preview.classList.remove('hidden');
-  
-  const W=els.preview.width,H=els.preview.height;
-  ctx.clearRect(0,0,W,H);
-  
-  // Draw white background
-  ctx.fillStyle='#fff'; 
-  ctx.fillRect(0,0,W,H);
-  
-  // Get title from input
-  const title = els.titleInput.value.trim() || 'Untitled Memory';
-  
-  // Calculate layout areas
-  const titleHeight = 80;
-  const qrSize = 120;
-  const padding = 40;
-  const waveformWidth = W * 0.7; // 70% of canvas width
-  const waveformArea = {
-    x: (W - waveformWidth) / 2, // Center the waveform
-    y: titleHeight + padding,
-    width: waveformWidth,
-    height: H - titleHeight - qrSize - (padding * 3)
-  };
-  
-  // Draw title at top center
-  ctx.fillStyle = '#0b0d12';
-  ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Word wrap title if too long
-  const maxTitleWidth = W - (padding * 2);
-  const words = title.split(' ');
-  let line = '';
-  let lines = [];
-  
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
-    const metrics = ctx.measureText(testLine);
-    const testWidth = metrics.width;
-    
-    if (testWidth > maxTitleWidth && n > 0) {
-      lines.push(line);
-      line = words[n] + ' ';
-    } else {
-      line = testLine;
-    }
-  }
-  lines.push(line);
-  
-  // Draw title lines
-  const lineHeight = 40;
-  const titleStartY = titleHeight / 2 - ((lines.length - 1) * lineHeight / 2);
-  lines.forEach((line, index) => {
-    ctx.fillText(line.trim(), W / 2, titleStartY + (index * lineHeight));
-  });
-  
-  // Draw waveform in center area
-  ctx.fillStyle = '#000';
-  const waveformPad = waveformArea.height * 0.1;
-  function yMap(v) { 
-    return waveformArea.y + waveformArea.height - waveformPad - (v + 1) / 2 * (waveformArea.height - 2 * waveformPad); 
-  }
-  
-  for(let x = 0; x < waveformArea.width; x++){
-    const i = Math.floor(x * peaks.min.length / waveformArea.width);
-    const y1 = yMap(peaks.max[i]);
-    const y2 = yMap(peaks.min[i]);
-    const lineWidth = Math.max(1, Math.floor(waveformArea.width / 800)); // Responsive line width
-    ctx.fillRect(waveformArea.x + x, y1, lineWidth, Math.max(1, y2 - y1));
-  }
-  
-  // Add QR code placeholder (will be replaced with actual QR when available)
-  drawQRPlaceholder(padding, H - qrSize - padding, qrSize);
-}
-
-function drawQRPlaceholder(x, y, size) {
-  // Draw QR placeholder
-  ctx.fillStyle = '#f3f4f6';
-  ctx.fillRect(x, y, size, size);
-  ctx.strokeStyle = '#e5e7eb';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x, y, size, size);
-  
-  // QR placeholder text
-  ctx.fillStyle = '#6b7280';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('QR Code', x + size/2, y + size/2 - 8);
-  ctx.fillText('(Generated after save)', x + size/2, y + size/2 + 8);
-}
-
-// Title input event listener to update button state and redraw preview
-els.titleInput.addEventListener('input', () => {
-  updateCreateButtonState();
-  // Redraw preview with new title if waveform is loaded
-  if (peaks) {
-    drawPreview();
-  }
-});
-
-// Voice recorder event listeners
-els.btnRecord.addEventListener('click', openRecorderModal);
-els.startRecordBtn.addEventListener('click', startRecording);
-els.stopRecordBtn.addEventListener('click', stopRecording);
-els.playRecordBtn.addEventListener('click', playRecording);
-els.cancelRecordingBtn.addEventListener('click', closeRecorderModal);
-els.useRecordingBtn.addEventListener('click', useRecording);
-
-// Audio element event listeners
-els.recordedAudio.addEventListener('ended', () => {
-  els.playRecordBtn.innerHTML = '▶️';
-});
-
-els.recordedAudio.addEventListener('play', () => {
-  els.playRecordBtn.innerHTML = '⏸️';
-});
-
-els.recordedAudio.addEventListener('pause', () => {
-  els.playRecordBtn.innerHTML = '▶️';
-});
-
-// File upload area uses label, so no manual click handler needed
-
-// File selection handler
-els.file.addEventListener('change', async (event)=>{
-  
-  const f=els.file.files[0]; 
-  if(!f) {
-    // Reset upload area if no file
-    els.fileUploadArea.classList.remove('has-file');
-    els.fileUploadText.textContent = 'Choose voice recording';
-    return;
-  }
-  
-  
-  // Update upload area visual state
-  els.fileUploadArea.classList.add('has-file');
-  els.fileUploadText.textContent = f.name;
-  
-  lastFile=f;
-  els.meta.textContent='Decoding…';
-  
-  try {
-    const buf=await decode(f);
-    peaks=computePeaksFromBuffer(buf,2000);
-    window.peaks = peaks; // Make available to auth module
-    els.meta.textContent=`Decoded ${f.name}`;
-    drawPreview();
-    
-  // Check if create button should be enabled (user + file + title)
-  updateCreateButtonState();
-  } catch (error) {
-    console.error('File processing failed:', error);
-    els.meta.textContent = 'Error decoding audio file';
-  }
-});
-
-async function exportPngBlob(W=2000,H=600, qrCodeUrl=null){
-  const tmp=document.createElement('canvas'); 
-  tmp.width=W; 
-  tmp.height=H; 
-  const cx=tmp.getContext('2d');
-  
-  // Draw white background
-  cx.fillStyle='#fff'; 
-  cx.fillRect(0,0,W,H);
-  
-  // Get title
-  const title = els.titleInput.value.trim() || 'Untitled Memory';
-  
-  // Calculate layout (same proportions as preview)
-  const titleHeight = Math.floor(H * 0.13); // 13% for title
-  const qrSize = Math.floor(H * 0.2); // 20% for QR code
-  const padding = Math.floor(W * 0.02); // 2% padding
-  const waveformWidth = W * 0.7; // 70% of canvas width (same as preview)
-  const waveformArea = {
-    x: (W - waveformWidth) / 2, // Center the waveform
-    y: titleHeight + padding,
-    width: waveformWidth,
-    height: H - titleHeight - qrSize - (padding * 3)
-  };
-  
-  // Draw title
-  cx.fillStyle = '#0b0d12';
-  const fontSize = Math.floor(W * 0.024); // Responsive font size
-  cx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
-  cx.textAlign = 'center';
-  cx.textBaseline = 'middle';
-  
-  // Word wrap title
-  const maxTitleWidth = W - (padding * 2);
-  const words = title.split(' ');
-  let line = '';
-  let lines = [];
-  
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
-    const metrics = cx.measureText(testLine);
-    const testWidth = metrics.width;
-    
-    if (testWidth > maxTitleWidth && n > 0) {
-      lines.push(line);
-      line = words[n] + ' ';
-    } else {
-      line = testLine;
-    }
-  }
-  lines.push(line);
-  
-  // Draw title lines
-  const lineHeight = fontSize * 1.2;
-  const titleStartY = titleHeight / 2 - ((lines.length - 1) * lineHeight / 2);
-  lines.forEach((line, index) => {
-    cx.fillText(line.trim(), W / 2, titleStartY + (index * lineHeight));
-  });
-  
-  // Draw waveform
-  cx.fillStyle = '#000';
-  const waveformPad = waveformArea.height * 0.1;
-  function yMap(v) { 
-    return waveformArea.y + waveformArea.height - waveformPad - (v + 1) / 2 * (waveformArea.height - 2 * waveformPad); 
-  }
-  
-  for(let x = 0; x < waveformArea.width; x++){
-    const i = Math.floor(x * peaks.min.length / waveformArea.width);
-    const y1 = yMap(peaks.max[i]);
-    const y2 = yMap(peaks.min[i]);
-    const lineWidth = Math.max(1, Math.floor(waveformArea.width / 800)); // Responsive line width
-    cx.fillRect(waveformArea.x + x, y1, lineWidth, Math.max(1, y2 - y1));
-  }
-  
-  // Draw QR code if provided
-  if (qrCodeUrl) {
-    try {
-      await drawQRCode(cx, padding, H - qrSize - padding, qrSize, qrCodeUrl);
-    } catch (error) {
-      console.error('Failed to draw QR code:', error);
-      // Draw placeholder if QR fails
-      drawQRPlaceholderOnCanvas(cx, padding, H - qrSize - padding, qrSize);
-    }
-  } else {
-    drawQRPlaceholderOnCanvas(cx, padding, H - qrSize - padding, qrSize);
-  }
-  
-  const dataURL=tmp.toDataURL('image/png');
-  const byteString=atob(dataURL.split(',')[1]); 
-  const ab=new ArrayBuffer(byteString.length); 
-  const ia=new Uint8Array(ab);
-  for(let i=0;i<byteString.length;i++){ ia[i]=byteString.charCodeAt(i); }
-  return new Blob([ab],{type:'image/png'});
-}
-
-// Function to draw actual QR code on canvas
-async function drawQRCode(ctx, x, y, size, qrUrl) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      ctx.drawImage(img, x, y, size, size);
-      resolve();
-    };
-    img.onerror = reject;
-    img.src = qrUrl;
-  });
-}
-
-// Function to draw QR placeholder on export canvas
-function drawQRPlaceholderOnCanvas(ctx, x, y, size) {
-  ctx.fillStyle = '#f3f4f6';
-  ctx.fillRect(x, y, size, size);
-  ctx.strokeStyle = '#e5e7eb';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(x, y, size, size);
-  
-  ctx.fillStyle = '#6b7280';
-  const fontSize = Math.floor(size * 0.08);
-  ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('QR Code', x + size/2, y + size/2);
-}
-
-// Create button event listener
-els.btnCreate.addEventListener('click', async (event)=>{
-  event.preventDefault();
-  
-  const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
-  
-  const title = els.titleInput.value.trim();
-  
-  if(!lastFile||!peaks||!currentUser||!title) {
-    const missingItems = [];
-    if (!lastFile) missingItems.push('voice recording');
-    if (!peaks) missingItems.push('waveform data');
-    if (!currentUser) missingItems.push('user authentication');
-    if (!title) missingItems.push('memory title');
-    
-    const message = `Missing: ${missingItems.join(', ')}`;
-    els.status.textContent = message;
-    return;
-  }
-  
-  try{
-    console.log('🔍 Starting memory creation process...');
-    els.status.textContent='Creating your memory…';
-    
-    // First create QR code URL
-    const tempMemoryId = Date.now(); // Temporary ID for QR generation
-    const tempPlayPageUrl = `${window.location.origin}${window.location.pathname.replace(/\/[^\/]*$/, '')}/play.php?temp_id=${tempMemoryId}`;
-    const tempQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=1&data=${encodeURIComponent(tempPlayPageUrl)}`; // Higher resolution QR
-    
-    console.log('🔍 Creating composition with QR:', tempQrApiUrl);
-    // Create the complete composition with QR code at print resolution
-    const blob = await exportPngBlob(3600, 2400, tempQrApiUrl); // 18x24 at 150 DPI
-    console.log('🔍 Composition blob created:', blob.size, 'bytes');
-
-    els.status.textContent='Uploading, please wait...';
-    
-    // Use Firebase Storage instead of PHP upload
-    if (!window.uploadWaveformFiles) {
-      throw new Error('Firebase Storage not available');
-    }
-    
-    // Upload the audio file first to get the URL
-    console.log('🔍 Uploading audio file...');
-    const audioResult = await window.uploadWaveformFiles(null, lastFile.name, currentUser.uid, lastFile);
-    console.log('🔍 Audio upload result:', audioResult);
-    
-    if (!audioResult.success) {
-      throw new Error(audioResult.error || 'Audio upload failed');
-    }
-
-    // Generate the final play page URL with a temporary ID (will update after DB save)
-    const timestamp = Date.now();
-    const baseName = lastFile.name.replace(/\.[^.]+$/, '');
-    const uniqueId = timestamp + '_' + Math.random().toString(36).substr(2, 9);
-    const finalPlayPageUrl = `${window.location.origin}${window.location.pathname.replace(/\/[^\/]*$/, '')}/play.php?uid=${uniqueId}`;
-    
-    // Generate QR code for the final composition
-    els.status.textContent='Generating final composition…';
-    const finalQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=1&data=${encodeURIComponent(finalPlayPageUrl)}`; // High resolution QR
-    
-    // Create the final complete composition with the actual QR code at print resolution
-    const finalCompositionBlob = await exportPngBlob(3600, 2400, finalQrApiUrl); // 18x24 at 150 DPI
-    
-    // Upload the complete composition as the main image
-    els.status.textContent='Uploading complete composition…';
-    console.log('🔍 Uploading composition blob...');
-    const compositionResult = await window.uploadWaveformFiles(finalCompositionBlob, `${baseName}_composition.png`, currentUser.uid, null);
-    console.log('🔍 Composition upload result:', compositionResult);
-    
-    if (!compositionResult.success) {
-      throw new Error(compositionResult.error || 'Composition upload failed');
-    }
-
-    // Use the composition as the main image URL
-    const mainImageUrl = compositionResult.waveformUrl;
-    const qrUrl = finalQrApiUrl;
-
-    // Save metadata to database via PHP
-    els.status.textContent='Saving metadata…';
-    console.log('🔍 Preparing database save...');
-    
-    const formData = new FormData();
-    formData.append('user_id', currentUser.uid);
-    formData.append('title', title);
-    formData.append('original_name', lastFile.name || 'waveform');
-    formData.append('image_url', mainImageUrl); // Use the complete composition
-    formData.append('qr_url', qrUrl);
-    formData.append('audio_url', audioResult.audioUrl || null);
-    formData.append('unique_id', uniqueId);
-    formData.append('play_url', finalPlayPageUrl);
-
-    console.log('🔍 Sending data to upload.php:', {
-      user_id: currentUser.uid,
-      title: title,
-      original_name: lastFile.name,
-      image_url: mainImageUrl,
-      audio_url: audioResult.audioUrl || null
-    });
-
-    const res = await fetch('upload.php', {method: 'POST', body: formData});
-    console.log('🔍 Upload response status:', res.status);
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('🔍 Upload failed with response:', errorText);
-      
-      try {
-        const errorData = JSON.parse(errorText);
-        throw new Error(errorData.error || 'Metadata save failed');
-      } catch (parseError) {
-        throw new Error(`Upload failed (${res.status}): ${errorText}`);
-      }
-    }
-    
-    const responseText = await res.text();
-    console.log('🔍 Raw response:', responseText);
-    
-    try {
-      const json = JSON.parse(responseText);
-      console.log('🔍 Parsed response:', json);
-    } catch (parseError) {
-      throw new Error('Invalid JSON response from server: ' + responseText);
-    }
-    
-    const json = JSON.parse(responseText);
-
-    els.status.textContent='Memory saved successfully!';
-    els.result.classList.remove('hidden');
-    
-    // Set up the complete composition image
-    els.imageLink.href = mainImageUrl;
-    els.waveformPreview.src = mainImageUrl;
-    
-    // QR link should point to the play page  
-    const actualPlayPageUrl = `${window.location.origin}${window.location.pathname.replace(/\/[^\/]*$/, '')}/play.php?id=${json.id}`;
-    els.qrLink.href = actualPlayPageUrl;
-    
-    // QR code is now embedded in the complete composition, no separate display needed
-    
-    // Clear title input
-    els.titleInput.value = '';
-    
-    // Show order section with products
-    console.log('Loading order products for memory ID:', json.id);
-    loadOrderProducts(json.id, result.waveformUrl);
-    
-    // Refresh the waveforms list
-    await loadUserWaveforms();
-    
-  } catch(err) {
-    console.error('Upload error:', err);
-    els.status.textContent = 'Error: ' + err.message;
-  }
-});
-
-</script>
-
-<!-- Load the bundled Firebase authentication and styles -->
-<link rel="stylesheet" href="dist/main.07cc2b43c659bd54da23.css">
-<script type="module" src="firebase-config.php"></script>
-<script src="dist/bundle.874b55151c9f182f3eeb.js"></script>
-<script src="dist/bundle.0831caa59b61a8784be1.js"></script>
-
-<script>
-// Initialize app after Firebase bundle loads
-window.addEventListener('load', () => {
-  
-  // Check for authentication errors in URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const error = urlParams.get('error');
-  
-  if (error) {
-    let message = '';
-    switch (error) {
-      case 'access_denied':
-        message = 'Access denied. Admin privileges required.';
-        break;
-      case 'login_required':
-        message = 'Please sign in to access this page.';
-        break;
-      case 'database_error':
-        message = 'Database connection error. Please try again.';
-        break;
-      case 'admin_required':
-        message = 'Admin access required for this page.';
-        break;
-      default:
-        message = 'Authentication error. Please sign in.';
-    }
-    
-    // Show error message
-    if (window.showMessage) {
-      window.showMessage(message, 'error');
-    } else {
-      alert(message);
-    }
-    
-    // Clear the error from URL
-    const newUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, newUrl);
-  }
-  
-  // Update button state for current user and loaded files
-  if (window.updateCreateButtonState) {
-    window.updateCreateButtonState();
-  }
-});
-</script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
