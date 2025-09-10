@@ -358,6 +358,7 @@
       <div id="userInfo" class="user-info hidden">
         <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
         <span id="userName">Loading...</span>
+        <a href="memories.html" class="header-link">My Memories</a>
         <a id="ordersLink" href="#" class="header-link">My Orders</a>
         <a id="btnLogout" href="#" class="header-link">Sign Out</a>
       </div>
@@ -830,10 +831,10 @@
           memoryPreview.classList.add('hidden');
         }
         
-        // Reload waveforms list
-        if (window.loadUserWaveforms) {
-          window.loadUserWaveforms();
-        }
+        // Redirect to memories page
+        setTimeout(() => {
+          window.location.href = 'memories.html';
+        }, 1500); // Small delay to show success message
         
       } catch (error) {
         console.error('Create memory error:', error);

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>My Memories - MemoWindow</title>
+  <meta name="description" content="View and manage your beautiful waveform memories">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="MemoWindow">
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  
+  <style>
+    /* Modern Clean Design System */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f8fafc;
+      overflow-x: hidden;
+    }
+    
+    /* Modern Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      padding: 1rem 0;
+    }
+    
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #667eea;
+    }
+    
+    .header-link {
+      color: #000;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .header-link:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: #333;
+    }
+    
+    /* Main Content */
+    .wrap {
+      padding: 4rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      margin-top: 170px;
+    }
+    
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: #6b7280;
+      margin-bottom: 2rem;
+    }
+    
+    .create-memory-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .create-memory-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Memories Grid */
+    .memories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .memory-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .memory-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .memory-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background: #f3f4f6;
+    }
+    
+    .memory-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+    
+    .memory-meta {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+    
+    .memory-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .action-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .btn-view {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .btn-view:hover {
+      background: #e5e7eb;
+    }
+    
+    .btn-qr {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    
+    .btn-qr:hover {
+      background: #bfdbfe;
+    }
+    
+    .btn-order {
+      background: #2a4df5;
+      color: white;
+    }
+    
+    .btn-order:hover {
+      background: #1e40af;
+    }
+    
+    .btn-delete {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+    
+    .btn-delete:hover {
+      background: #fee2e2;
+    }
+    
+    /* Loading States */
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #6b7280;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e5e7eb;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #6b7280;
+    }
+    
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+    
+    .empty-state p {
+      margin-bottom: 2rem;
+    }
+    
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 767px) {
+      .header {
+        padding: 0.75rem 0;
+      }
+      
+      .nav {
+        padding: 0 0.75rem;
+      }
+      
+      .wrap {
+        padding: 2rem 0.75rem;
+        margin-top: 120px;
+      }
+      
+      .page-title {
+        font-size: 2rem;
+      }
+      
+      .memories-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .memory-actions {
+        flex-direction: column;
+      }
+      
+      .action-btn {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Modern Header -->
+  <header class="header">
+    <nav class="nav">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+      </a>
+      <div id="userInfo" class="user-info hidden">
+        <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+        <span id="userName">Loading...</span>
+        <a href="app.html" class="header-link">Create Memory</a>
+        <a id="ordersLink" href="#" class="header-link">My Orders</a>
+        <a id="btnLogout" href="#" class="header-link">Sign Out</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <div class="wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">My Memories</h1>
+      <p class="page-subtitle">Your beautiful waveform memories, ready to share and print</p>
+      <a href="app.html" class="create-memory-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+        </svg>
+        Create New Memory
+      </a>
+    </div>
+
+    <!-- Memories Container -->
+    <div id="memoriesContainer">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        Loading your memories...
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  
+  <!-- App Scripts -->
+  <script type="module" src="src/app-auth.js"></script>
+  <script type="module" src="src/globals.js"></script>
+  <script type="module" src="src/utils.js"></script>
+  
+  <script type="module">
+    // Import necessary modules
+    import { initAppAuth, getCurrentUser } from './src/app-auth.js';
+    import { showToast, showLoading, hideLoading, showConfirmDialog, handleError } from './src/utils.js';
+    
+    // Make functions available globally
+    window.getCurrentUser = getCurrentUser;
+    window.showToast = showToast;
+    window.showLoading = showLoading;
+    window.hideLoading = hideLoading;
+    window.showConfirmDialog = showConfirmDialog;
+    window.handleError = handleError;
+    
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 MemoWindow Memories Page Initializing...');
+      initAppAuth();
+      loadMemories();
+    });
+    
+    async function loadMemories() {
+      const container = document.getElementById('memoriesContainer');
+      
+      try {
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+          throw new Error('Not authenticated');
+        }
+        
+        // Show loading state
+        container.innerHTML = `
+          <div class="loading">
+            <div class="loading-spinner"></div>
+            Loading your memories...
+          </div>
+        `;
+        
+        // Fetch memories
+        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&limit=50`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to load memories');
+        }
+        
+        const data = await response.json();
+        const memories = Array.isArray(data) ? data : (data.waveforms || []);
+        
+        if (memories.length === 0) {
+          showEmptyState();
+          return;
+        }
+        
+        displayMemories(memories);
+        
+      } catch (error) {
+        console.error('Error loading memories:', error);
+        handleError(error, 'Load Memories');
+        showErrorState();
+      }
+    }
+    
+    function displayMemories(memories) {
+      const container = document.getElementById('memoriesContainer');
+      
+      const memoriesHTML = memories.map(memory => {
+        const title = memory.title || 'Untitled Memory';
+        const date = new Date(memory.created_at).toLocaleDateString();
+        const time = new Date(memory.created_at).toLocaleTimeString();
+        
+        return `
+          <div class="memory-card">
+            <img src="${memory.image_url}" alt="${title}" class="memory-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNkI3MjgwIiBmb250LWZhbWlseT0ic3lzdGVtLXVpLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0cHgiPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='">
+            <h3 class="memory-title">${title}</h3>
+            <div class="memory-meta">
+              Created on ${date} at ${time}
+            </div>
+            <div class="memory-actions">
+              <button class="action-btn btn-view" onclick="viewMemory('${memory.image_url}', '${title.replace(/'/g, "\\'")}', '${memory.qr_url}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                </svg>
+                View
+              </button>
+              <a href="${memory.qr_url}" target="_blank" class="action-btn btn-qr">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V13H11V15H9V11M15,11H17V13H19V11H21V13H19V15H21V19H19V21H17V19H13V21H11V17H15V13H17V11H15M19,19V17H17V19H19M15,13H13V15H15V13M3,19H5V21H3V19M3,15H5V17H3V15M3,7H5V9H3V7M7,3H9V5H7V3M11,3H13V5H11V3M19,3V5H21V3H19M15,3V5H17V3H15M7,19H9V21H7V19Z"/>
+                </svg>
+                QR Code
+              </a>
+              <button class="action-btn btn-order" onclick="orderMemory(${memory.id}, '${memory.image_url}', '${title.replace(/'/g, "\\'")}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19,7H16V6A4,4 0 0,0 12,2A4,4 0 0,0 8,6V7H5A1,1 0 0,0 4,8V19A3,3 0 0,0 7,22H17A3,3 0 0,0 20,19V8A1,1 0 0,0 19,7M10,6A2,2 0 0,1 12,4A2,2 0 0,1 14,6V7H10V6M18,19A1,1 0 0,1 17,20H7A1,1 0 0,1 6,19V9H18V19Z"/>
+                </svg>
+                Order Print
+              </button>
+              <button class="action-btn btn-delete" onclick="deleteMemory(${memory.id}, '${title.replace(/'/g, "\\'")}', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                </svg>
+                Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = `
+        <div class="memories-grid">
+          ${memoriesHTML}
+        </div>
+      `;
+    }
+    
+    function showEmptyState() {
+      const container = document.getElementById('memoriesContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🎵</div>
+          <h3>No memories yet</h3>
+          <p>Create your first beautiful waveform memory to get started!</p>
+          <a href="app.html" class="create-memory-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+            </svg>
+            Create Your First Memory
+          </a>
+        </div>
+      `;
+    }
+    
+    function showErrorState() {
+      const container = document.getElementById('memoriesContainer');
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <h3>Error loading memories</h3>
+          <p>There was a problem loading your memories. Please try again.</p>
+          <button class="create-memory-btn" onclick="loadMemories()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+            </svg>
+            Try Again
+          </button>
+        </div>
+      `;
+    }
+    
+    // Global functions for memory actions
+    window.viewMemory = function(imageUrl, title, qrUrl) {
+      // Create modal overlay
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 24px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <h3 style="color: #1f2937; margin: 0 0 8px 0;">${title}</h3>
+            <a href="${qrUrl}" target="_blank" style="color: #667eea; text-decoration: none; font-size: 14px;">🎵 Play Audio</a>
+          </div>
+          <img src="${imageUrl}" alt="${title}" style="max-width: 100%; max-height: 100%; border-radius: 8px;">
+          <div style="text-align: center; margin-top: 16px;">
+            <button onclick="this.closest('.modal').remove()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+              Close
+            </button>
+          </div>
+        </div>
+      `;
+      
+      modal.className = 'modal';
+      modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+      };
+      
+      document.body.appendChild(modal);
+    };
+    
+    window.orderMemory = async function(memoryId, imageUrl, title) {
+      try {
+        // This will use the existing order functionality from globals.js
+        if (window.showOrderOptions) {
+          await window.showOrderOptions(memoryId, imageUrl, title, { textContent: 'Order Print' });
+        } else {
+          showToast('Order functionality not available', 'warning');
+        }
+      } catch (error) {
+        console.error('Order error:', error);
+        handleError(error, 'Order Memory');
+      }
+    };
+    
+    window.deleteMemory = async function(memoryId, title, buttonElement) {
+      try {
+        const confirmed = await showConfirmDialog(
+          `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+          'Delete Memory'
+        );
+        
+        if (!confirmed) return;
+        
+        const originalText = buttonElement.textContent;
+        buttonElement.textContent = 'Deleting...';
+        buttonElement.disabled = true;
+        
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+          throw new Error('Not authenticated');
+        }
+        
+        // Call the server to delete the memory
+        const response = await fetch('delete_memory.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `memory_id=${memoryId}&user_id=${encodeURIComponent(currentUser.uid)}`
+        });
+        
+        if (!response.ok) {
+          throw new Error('Delete request failed');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Remove the memory card from the UI
+          const memoryCard = buttonElement.closest('.memory-card');
+          if (memoryCard) {
+            memoryCard.remove();
+          }
+          
+          showToast(`"${title}" has been deleted.`, 'success');
+          
+          // Check if no memories left
+          const remainingCards = document.querySelectorAll('.memory-card');
+          if (remainingCards.length === 0) {
+            showEmptyState();
+          }
+        } else {
+          throw new Error(result.error || 'Delete failed');
+        }
+        
+      } catch (error) {
+        console.error('Delete error:', error);
+        handleError(error, 'Delete Memory');
+      } finally {
+        buttonElement.textContent = originalText;
+        buttonElement.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
