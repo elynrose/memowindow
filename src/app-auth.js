@@ -131,10 +131,13 @@ export function initAppAuth() {
 // Function to check if user is admin and add admin link
 async function checkAdminStatus(userUID) {
   try {
+    console.log('Checking admin status for user:', userUID);
     const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
     const data = await response.json();
+    console.log('Admin check response:', data);
     
     if (data.is_admin) {
+      console.log('User is admin, adding admin button');
       // Add admin link to user info area
       const userInfo = document.getElementById('userInfo');
       if (userInfo && !userInfo.querySelector('.admin-link')) {
@@ -144,16 +147,19 @@ async function checkAdminStatus(userUID) {
         adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
         adminLink.textContent = 'Admin';
         
-        // Insert after user profile (at the end)
+        // Insert before user profile to make it more visible
         const userProfile = userInfo.querySelector('.user-profile');
         if (userProfile) {
-          userInfo.insertBefore(adminLink, userProfile.nextSibling);
+          userInfo.insertBefore(adminLink, userProfile);
         } else {
           userInfo.appendChild(adminLink);
         }
       }
+    } else {
+      console.log('User is not admin');
     }
   } catch (error) {
+    console.error('Admin check failed:', error);
     // Silently fail - not critical functionality
     // Admin check failed
   }

@@ -172,7 +172,6 @@ export function initAuth() {
   
   // Check if required elements exist
   if (!els.btnLogin) {
-    console.error('❌ Login button not found! DOM might not be ready.');
     // Retry after a short delay
     setTimeout(() => {
       // Retrying auth initialization
