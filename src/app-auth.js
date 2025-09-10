@@ -131,13 +131,10 @@ export function initAppAuth() {
 // Function to check if user is admin and add admin link
 async function checkAdminStatus(userUID) {
   try {
-    console.log('Checking admin status for user:', userUID);
     const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
     const data = await response.json();
-    console.log('Admin check response:', data);
     
     if (data.is_admin) {
-      console.log('User is admin, adding admin button');
       // Add admin link to user info area
       const userInfo = document.getElementById('userInfo');
       if (userInfo && !userInfo.querySelector('.admin-link')) {
@@ -155,11 +152,9 @@ async function checkAdminStatus(userUID) {
           userInfo.appendChild(adminLink);
         }
       }
-    } else {
-      console.log('User is not admin');
     }
   } catch (error) {
-    console.error('Admin check failed:', error);
+    // Admin check failed
     // Silently fail - not critical functionality
     // Admin check failed
   }
