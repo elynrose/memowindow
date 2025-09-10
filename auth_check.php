@@ -39,7 +39,7 @@ function requireAdmin() {
         ]);
         
         // Check if user is admin
-        $stmt = $pdo->prepare("SELECT is_admin FROM users WHERE firebase_uid = ?");
+        $stmt = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
         
