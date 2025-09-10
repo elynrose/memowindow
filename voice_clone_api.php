@@ -173,31 +173,27 @@ class VoiceCloneAPI {
             // Generate a unique ID for this audio
             $audioId = uniqid('audio_', true);
             
-            // Store the audio data in a simple file-based cache
+            // Store the audio data in local backup cache
             $cacheDir = __DIR__ . '/audio_cache';
             if (!is_dir($cacheDir)) {
                 mkdir($cacheDir, 0755, true);
             }
             
             $cacheFile = $cacheDir . '/' . $audioId . '.mp3';
-            if (file_put_contents($cacheFile, $response) === false) {
-                // If file storage fails, fall back to base64 data URL
-                $audioData = base64_encode($response);
-                $audioUrl = 'data:audio/mpeg;base64,' . $audioData;
-            } else {
-                // Use the cached file
-                $audioUrl = 'audio_cache/' . $audioId . '.mp3';
-            }
+            $localBackupSuccess = file_put_contents($cacheFile, $response) !== false;
             
+            // Return data for Firebase upload (primary storage)
             return [
                 'success' => true,
-                'audio_url' => $audioUrl,
+                'audio_url' => 'PENDING_FIREBASE_UPLOAD', // Will be updated after Firebase upload
                 'audio_id' => $audioId,
                 'text' => $text,
                 'voice_id' => $voiceId,
                 'audio_size' => strlen($response),
                 'audio_data' => base64_encode($response), // Include base64 data for Firebase upload
-                'needs_firebase_upload' => true // Flag to indicate frontend should upload to Firebase
+                'needs_firebase_upload' => true, // Flag to indicate frontend should upload to Firebase
+                'local_backup_success' => $localBackupSuccess, // Track if local backup succeeded
+                'local_backup_url' => $localBackupSuccess ? 'audio_cache/' . $audioId . '.mp3' : null
             ];
             
         } catch (Exception $e) {
@@ -393,6 +389,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             case 'update_audio_url':
                 $generatedAudioId = $_POST['generated_audio_id'] ?? '';
                 $firebaseUrl = $_POST['firebase_url'] ?? '';
+                $localBackupUrl = $_POST['local_backup_url'] ?? '';
                 
                 if (!$generatedAudioId || !$firebaseUrl) {
                     throw new Exception('Missing generated_audio_id or firebase_url');
@@ -402,12 +399,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 ]);
                 
-                // Update the audio_url with the Firebase URL
-                $stmt = $pdo->prepare("UPDATE generated_audio SET audio_url = ? WHERE id = ? AND user_id = ?");
-                $stmt->execute([$firebaseUrl, $generatedAudioId, $userId]);
+                // Update the audio_url with the Firebase URL (primary) and store local backup URL
+                $stmt = $pdo->prepare("UPDATE generated_audio SET audio_url = ?, local_backup_url = ? WHERE id = ? AND user_id = ?");
+                $stmt->execute([$firebaseUrl, $localBackupUrl, $generatedAudioId, $userId]);
                 
                 if ($stmt->rowCount() > 0) {
-                    echo json_encode(['success' => true, 'message' => 'Audio URL updated with Firebase URL']);
+                    echo json_encode([
+                        'success' => true, 
+                        'message' => 'Audio URL updated with Firebase URL',
+                        'firebase_url' => $firebaseUrl,
+                        'local_backup_url' => $localBackupUrl
+                    ]);
                 } else {
                     echo json_encode(['success' => false, 'error' => 'No records updated']);
                 }

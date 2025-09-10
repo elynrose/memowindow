@@ -67,14 +67,23 @@ try {
     
     if ($memory['multi_audio_enabled'] && $memory['audio_count'] > 1) {
         // Get all active audio files for this memory (including generated audio)
+        // For generated audio, prioritize Firebase URLs over local backup
         $audioStmt = $pdo->prepare("
-            SELECT audio_url, original_filename, 'uploaded' as source
+            SELECT audio_url, original_filename, 'uploaded' as source, NULL as local_backup_url
             FROM memory_audio_files 
             WHERE memory_id = :memory_id AND is_active = TRUE 
             
             UNION ALL
             
-            SELECT audio_url, text_content as original_filename, 'generated' as source
+            SELECT 
+                CASE 
+                    WHEN audio_url LIKE 'https://firebasestorage.googleapis.com%' THEN audio_url
+                    WHEN local_backup_url IS NOT NULL THEN local_backup_url
+                    ELSE audio_url
+                END as audio_url,
+                text_content as original_filename, 
+                'generated' as source,
+                local_backup_url
             FROM generated_audio 
             WHERE memory_id = :memory_id
             

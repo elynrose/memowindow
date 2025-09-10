@@ -720,7 +720,7 @@ window.generateAudio = async function(memoryId) {
         const result = await response.json();
         
         if (result.success) {
-            // If the audio needs Firebase upload, handle it
+            // Firebase upload is required for all generated audio (primary storage)
             if (result.needs_firebase_upload && result.audio_data) {
                 try {
                     // Convert base64 to blob
@@ -730,10 +730,10 @@ window.generateAudio = async function(memoryId) {
                     const timestamp = Date.now();
                     const fileName = `generated_${currentUser.uid}_${timestamp}_${result.audio_id}.mp3`;
                     
-                    // Upload to Firebase Storage
+                    // Upload to Firebase Storage (primary)
                     const firebaseUrl = await uploadToFirebaseStorage(audioBlob, fileName, 'generated-audio');
                     
-                    // Update the database with Firebase URL
+                    // Update the database with Firebase URL as primary
                     const updateResponse = await fetch('voice_clone_api.php', {
                         method: 'POST',
                         headers: {
@@ -743,22 +743,54 @@ window.generateAudio = async function(memoryId) {
                             action: 'update_audio_url',
                             user_id: currentUser.uid,
                             generated_audio_id: result.generated_audio_id,
-                            firebase_url: firebaseUrl
+                            firebase_url: firebaseUrl,
+                            local_backup_url: result.local_backup_url
                         })
                     });
                     
                     const updateResult = await updateResponse.json();
                     if (!updateResult.success) {
-                        console.warn('Failed to update Firebase URL in database:', updateResult.error);
+                        throw new Error('Failed to update database with Firebase URL: ' + updateResult.error);
                     }
                     
+                    console.log('✅ Generated audio uploaded to Firebase and database updated');
+                    
                 } catch (firebaseError) {
-                    console.warn('Firebase upload failed (audio still saved locally):', firebaseError);
-                    // Don't fail the entire operation - audio is still saved locally
+                    console.error('❌ Firebase upload failed:', firebaseError);
+                    
+                    // If Firebase fails, fall back to local backup
+                    if (result.local_backup_success && result.local_backup_url) {
+                        console.log('🔄 Falling back to local backup');
+                        
+                        // Update database with local backup URL
+                        const fallbackResponse = await fetch('voice_clone_api.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams({
+                                action: 'update_audio_url',
+                                user_id: currentUser.uid,
+                                generated_audio_id: result.generated_audio_id,
+                                firebase_url: result.local_backup_url, // Use local as fallback
+                                local_backup_url: result.local_backup_url
+                            })
+                        });
+                        
+                        const fallbackResult = await fallbackResponse.json();
+                        if (!fallbackResult.success) {
+                            throw new Error('Failed to update database with fallback URL: ' + fallbackResult.error);
+                        }
+                        
+                        alert('Audio generated successfully! (Saved locally - Firebase upload failed)');
+                    } else {
+                        throw new Error('Both Firebase and local storage failed');
+                    }
                 }
+            } else {
+                alert('Audio generated successfully! The new audio has been added to your memory.');
             }
             
-            alert('Audio generated successfully! The new audio has been added to your memory.');
             // Close modal
             document.querySelector('div[style*="position: fixed"]').remove();
             // Refresh memories to show the new audio
