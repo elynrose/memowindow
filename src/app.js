@@ -159,28 +159,26 @@ async function processFileForPreview(file) {
     }
 }
 
-// Compute peaks from audio buffer
-function computePeaksFromBuffer(audioBuffer) {
-    const samples = audioBuffer.getChannelData(0);
-    const blockSize = Math.floor(samples.length / 200); // 200 bars
-    const peaks = [];
-    
-    for (let i = 0; i < 200; i++) {
-        const start = i * blockSize;
-        const end = Math.min(start + blockSize, samples.length);
-        let max = 0;
-        
-        for (let j = start; j < end; j++) {
-            max = Math.max(max, Math.abs(samples[j]));
+// Compute peaks from audio buffer (original implementation)
+function computePeaksFromBuffer(buf, width = 2000) {
+    const ch = buf.getChannelData(0);
+    const hop = Math.max(1, Math.floor(buf.length / width));
+    const min = new Float32Array(width), max = new Float32Array(width);
+    for (let x = 0; x < width; x++) {
+        const s = x * hop, e = Math.min((x + 1) * hop, buf.length);
+        let mi = 1.0, ma = -1.0;
+        for (let i = s; i < e; i++) { 
+            const v = ch[i]; 
+            if (v < mi) mi = v; 
+            if (v > ma) ma = v; 
         }
-        
-        peaks.push(max);
+        min[x] = mi; 
+        max[x] = ma;
     }
-    
-    return peaks;
+    return { min, max };
 }
 
-// Draw preview
+// Draw preview (original implementation)
 function drawPreview() {
     if (!previewCanvas || !currentPeaks) return;
     
@@ -192,45 +190,89 @@ function drawPreview() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
     
-    // Draw waveform
-    const maxHeight = H * 0.36; // 40% smaller (was 0.6, now 0.36)
+    // Get title from input
+    const title = titleInput.value.trim() || 'Untitled Memory';
+    
+    // Calculate layout areas
+    const titleHeight = 80;
+    const qrSize = 120;
+    const padding = 40;
     const waveformWidth = W * 0.7; // 70% of canvas width
-    const margin = (W - waveformWidth) / 2; // Center the waveform
+    const waveformArea = {
+        x: (W - waveformWidth) / 2, // Center the waveform
+        y: titleHeight + padding,
+        width: waveformWidth,
+        height: H - titleHeight - qrSize - (padding * 3)
+    };
     
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
+    // Draw title at top center
+    ctx.fillStyle = '#0b0d12';
+    ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     
-    for (let i = 0; i < currentPeaks.length; i++) {
-        const x = margin + (i / currentPeaks.length) * waveformWidth;
-        const y = (H / 2) + (currentPeaks[i] * maxHeight);
+    // Word wrap title if too long
+    const maxTitleWidth = W - (padding * 2);
+    const words = title.split(' ');
+    let line = '';
+    let lines = [];
+    
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
         
-        if (i === 0) {
-            ctx.moveTo(x, y);
+        if (testWidth > maxTitleWidth && n > 0) {
+            lines.push(line);
+            line = words[n] + ' ';
         } else {
-            ctx.lineTo(x, y);
+            line = testLine;
         }
     }
-    ctx.stroke();
+    lines.push(line);
     
-    // Draw title
-    const title = titleInput.value || 'Your Memory';
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 24px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, 30);
+    // Draw title lines
+    const lineHeight = 40;
+    const titleStartY = titleHeight / 2 - ((lines.length - 1) * lineHeight / 2);
+    lines.forEach((line, index) => {
+        ctx.fillText(line.trim(), W / 2, titleStartY + (index * lineHeight));
+    });
     
+    // Draw waveform in center area (using bars like original)
+    ctx.fillStyle = '#000';
+    const waveformPad = waveformArea.height * 0.1;
+    function yMap(v) { 
+        return waveformArea.y + waveformArea.height - waveformPad - (v + 1) / 2 * (waveformArea.height - 2 * waveformPad); 
+    }
+    
+    for (let x = 0; x < waveformArea.width; x++) {
+        const i = Math.floor(x * currentPeaks.min.length / waveformArea.width);
+        const y1 = yMap(currentPeaks.max[i]);
+        const y2 = yMap(currentPeaks.min[i]);
+        const lineWidth = Math.max(1, Math.floor(waveformArea.width / 800)); // Responsive line width
+        ctx.fillRect(waveformArea.x + x, y1, lineWidth, Math.max(1, y2 - y1));
+    }
+    
+    // Add QR code placeholder (will be replaced with actual QR when available)
+    drawQRPlaceholder(padding, H - qrSize - padding, qrSize);
+}
+
+function drawQRPlaceholder(x, y, size) {
+    const ctx = previewCanvas.getContext('2d');
     // Draw QR placeholder
-    const qrSize = 320; // 8x larger
-    const qrX = W - qrSize - 20;
-    const qrY = H - qrSize - 20;
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(x, y, size, size);
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, size, size);
     
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(qrX, qrY, qrSize, qrSize);
-    ctx.fillStyle = '#000000';
-    ctx.font = '16px system-ui';
+    // QR placeholder text
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '12px system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('QR Code', qrX + qrSize / 2, qrY + qrSize / 2);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('QR Code', x + size/2, y + size/2 - 8);
+    ctx.fillText('(Generated after save)', x + size/2, y + size/2 + 8);
 }
 
 // Toggle recording
@@ -407,7 +449,7 @@ async function createMemory() {
     }
 }
 
-// Create waveform from audio
+// Create waveform from audio (original implementation)
 async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -428,56 +470,100 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     // Compute peaks
     const peaks = computePeaksFromBuffer(audioBuffer);
     
-    // Draw waveform
-    const maxHeight = H * 0.36; // 40% smaller (was 0.6, now 0.36)
-    const waveformWidth = W * 0.7; // 70% of canvas width
-    const margin = (W - waveformWidth) / 2; // Center the waveform
+    // Get title
+    const title = titleInput.value.trim() || 'Untitled Memory';
     
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 8; // Thicker line for high resolution
-    ctx.beginPath();
-    
-    for (let i = 0; i < peaks.length; i++) {
-        const x = margin + (i / peaks.length) * waveformWidth;
-        const y = (H / 2) + (peaks[i] * maxHeight);
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    }
-    ctx.stroke();
+    // Calculate layout (same proportions as preview)
+    const titleHeight = Math.floor(H * 0.13); // 13% for title
+    const qrSize = Math.floor(H * 0.2); // 20% for QR code
+    const padding = Math.floor(W * 0.02); // 2% padding
+    const waveformWidth = W * 0.7; // 70% of canvas width (same as preview)
+    const waveformArea = {
+        x: (W - waveformWidth) / 2, // Center the waveform
+        y: titleHeight + padding,
+        width: waveformWidth,
+        height: H - titleHeight - qrSize - (padding * 3)
+    };
     
     // Draw title
-    const title = titleInput.value || 'Your Memory';
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 120px system-ui';
+    ctx.fillStyle = '#0b0d12';
+    const fontSize = Math.floor(W * 0.024); // Responsive font size
+    ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
     ctx.textAlign = 'center';
-    ctx.fillText(title, W / 2, 120);
+    ctx.textBaseline = 'middle';
     
-    // Draw QR code
+    // Word wrap title
+    const maxTitleWidth = W - (padding * 2);
+    const words = title.split(' ');
+    let line = '';
+    let lines = [];
+    
+    for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        
+        if (testWidth > maxTitleWidth && n > 0) {
+            lines.push(line);
+            line = words[n] + ' ';
+        } else {
+            line = testLine;
+        }
+    }
+    lines.push(line);
+    
+    // Draw title lines
+    const lineHeight = fontSize * 1.2;
+    const titleStartY = titleHeight / 2 - ((lines.length - 1) * lineHeight / 2);
+    lines.forEach((line, index) => {
+        ctx.fillText(line.trim(), W / 2, titleStartY + (index * lineHeight));
+    });
+    
+    // Draw waveform (using bars like original)
+    ctx.fillStyle = '#000';
+    const waveformPad = waveformArea.height * 0.1;
+    function yMap(v) { 
+        return waveformArea.y + waveformArea.height - waveformPad - (v + 1) / 2 * (waveformArea.height - 2 * waveformPad); 
+    }
+    
+    for (let x = 0; x < waveformArea.width; x++) {
+        const i = Math.floor(x * peaks.min.length / waveformArea.width);
+        const y1 = yMap(peaks.max[i]);
+        const y2 = yMap(peaks.min[i]);
+        const lineWidth = Math.max(1, Math.floor(waveformArea.width / 800)); // Responsive line width
+        ctx.fillRect(waveformArea.x + x, y1, lineWidth, Math.max(1, y2 - y1));
+    }
+    
+    // Draw QR code if provided
     if (qrCodeUrl) {
-        const qrSize = 480; // 8x larger
-        const qrX = W - qrSize - 100;
-        const qrY = H - qrSize - 100;
-        
-        await drawQRCode(ctx, qrX, qrY, qrSize, qrCodeUrl);
+        try {
+            await drawQRCode(ctx, padding, H - qrSize - padding, qrSize, qrCodeUrl);
+        } catch (error) {
+            console.error('Failed to draw QR code:', error);
+            // Draw placeholder if QR fails
+            drawQRPlaceholderOnCanvas(ctx, padding, H - qrSize - padding, qrSize);
+        }
     } else {
-        // Draw QR placeholder
-        const qrSize = 480;
-        const qrX = W - qrSize - 100;
-        const qrY = H - qrSize - 100;
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(qrX, qrY, qrSize, qrSize);
-        ctx.fillStyle = '#000000';
-        ctx.font = '60px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText('QR Code', qrX + qrSize / 2, qrY + qrSize / 2);
+        drawQRPlaceholderOnCanvas(ctx, padding, H - qrSize - padding, qrSize);
     }
     
     return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
+// Function to draw QR placeholder on export canvas
+function drawQRPlaceholderOnCanvas(ctx, x, y, size) {
+    ctx.fillStyle = '#f3f4f6';
+    ctx.fillRect(x, y, size, size);
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, size, size);
+    
+    ctx.fillStyle = '#6b7280';
+    const fontSize = Math.floor(size * 0.08);
+    ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('QR Code', x + size/2, y + size/2);
 }
 
 // Draw QR code
@@ -633,3 +719,4 @@ function showToast(message, type = 'info') {
 // Make functions available globally
 window.initApp = initApp;
 window.loadUserWaveforms = loadUserWaveforms;
+
