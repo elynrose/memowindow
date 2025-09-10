@@ -83,6 +83,21 @@
       border: 2px solid #667eea;
     }
     
+    .header-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .header-link:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #5a67d8;
+    }
+    
     /* Hero Section */
     .hero {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -756,8 +771,8 @@
       <div id="userInfo" class="user-info hidden">
         <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
         <span id="userName">Loading...</span>
-        <a id="ordersLink" href="#" class="btn btn-secondary btn-sm" style="text-decoration: none;">My Orders</a>
-        <button id="btnLogout" class="btn btn-secondary btn-sm">Sign Out</button>
+        <a id="ordersLink" href="#" class="header-link">My Orders</a>
+        <a id="btnLogout" href="#" class="header-link">Sign Out</a>
       </div>
     </nav>
   </header>
