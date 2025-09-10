@@ -364,6 +364,23 @@
       background: #059669;
     }
     
+    .stop-audio-btn {
+      background: #f59e0b;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .stop-audio-btn:hover {
+      background: #d97706;
+    }
+    
     .remove-audio-btn:hover {
       background: #dc2626;
     }
@@ -1646,11 +1663,17 @@ function displaySelectedAudioFiles(files) {
         </div>
       </div>
       <div class="audio-file-actions">
-        <button class="play-audio-btn" onclick="playAudioFile('${file.name}', ${index})">
+        <button class="play-audio-btn" id="playBtn_${index}" onclick="playAudioFile('${file.name}', ${index})">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8,5.14V19.14L19,12.14L8,5.14Z"/>
           </svg>
           Play
+        </button>
+        <button class="stop-audio-btn" id="stopBtn_${index}" onclick="stopAudioFile(${index})" style="display: none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6,6H18V18H6V6Z"/>
+          </svg>
+          Stop
         </button>
         <button class="remove-audio-btn" onclick="removeAudioFile(${index})" title="Remove file">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -1665,6 +1688,10 @@ function displaySelectedAudioFiles(files) {
   listContainer.style.display = 'block';
 }
 
+// Global variable to track currently playing audio
+let currentPlayingAudio = null;
+let currentPlayingIndex = -1;
+
 // Play audio file preview
 function playAudioFile(fileName, index) {
   const files = Array.from(els.file.files);
@@ -1672,23 +1699,80 @@ function playAudioFile(fileName, index) {
   
   if (!file) return;
   
+  // Stop any currently playing audio
+  if (currentPlayingAudio) {
+    stopAudioFile(currentPlayingIndex);
+  }
+  
   const audio = new Audio();
   const url = URL.createObjectURL(file);
   
   audio.src = url;
+  
+  // Store reference to current audio
+  currentPlayingAudio = audio;
+  currentPlayingIndex = index;
+  
+  // Update button states
+  const playBtn = document.getElementById(`playBtn_${index}`);
+  const stopBtn = document.getElementById(`stopBtn_${index}`);
+  
+  if (playBtn) playBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'flex';
+  
   audio.play().catch(error => {
     console.error('Error playing audio:', error);
     alert('Could not play audio file. Please check if the file format is supported.');
+    // Reset button states on error
+    if (playBtn) playBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    currentPlayingAudio = null;
+    currentPlayingIndex = -1;
   });
   
-  // Clean up URL when done
+  // Handle audio end
   audio.addEventListener('ended', () => {
     URL.revokeObjectURL(url);
+    // Reset button states
+    if (playBtn) playBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    currentPlayingAudio = null;
+    currentPlayingIndex = -1;
   });
+  
+  // Handle audio pause (if user pauses via browser controls)
+  audio.addEventListener('pause', () => {
+    if (playBtn) playBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    currentPlayingAudio = null;
+    currentPlayingIndex = -1;
+  });
+}
+
+// Stop audio file preview
+function stopAudioFile(index) {
+  if (currentPlayingAudio && currentPlayingIndex === index) {
+    currentPlayingAudio.pause();
+    currentPlayingAudio.currentTime = 0;
+    currentPlayingAudio = null;
+    currentPlayingIndex = -1;
+    
+    // Reset button states
+    const playBtn = document.getElementById(`playBtn_${index}`);
+    const stopBtn = document.getElementById(`stopBtn_${index}`);
+    
+    if (playBtn) playBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+  }
 }
 
 // Remove audio file from selection
 function removeAudioFile(index) {
+  // Stop audio if this file is currently playing
+  if (currentPlayingIndex === index) {
+    stopAudioFile(index);
+  }
+  
   const files = Array.from(els.file.files);
   files.splice(index, 1);
   
