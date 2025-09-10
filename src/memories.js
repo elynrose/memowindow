@@ -13,13 +13,21 @@ export function initMemories() {
 
 // Wait for authentication and then load memories
 function waitForAuthAndLoadMemories() {
+    let attempts = 0;
+    const maxAttempts = 20; // 10 seconds total
+    
     const checkAuth = () => {
+        attempts++;
         const currentUser = getCurrentUser();
+        
         if (currentUser) {
             console.log('✅ User authenticated, loading memories...');
             loadMemories();
+        } else if (attempts >= maxAttempts) {
+            console.log('❌ Authentication timeout, showing login prompt');
+            showLoginPrompt();
         } else {
-            console.log('⏳ Waiting for authentication...');
+            console.log(`⏳ Waiting for authentication... (attempt ${attempts}/${maxAttempts})`);
             // Check again in 500ms
             setTimeout(checkAuth, 500);
         }
@@ -29,27 +37,57 @@ function waitForAuthAndLoadMemories() {
     checkAuth();
 }
 
+// Show login prompt if user is not authenticated
+function showLoginPrompt() {
+    const container = document.getElementById('memoriesContainer');
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-state-icon">🔐</div>
+            <h3>Please Sign In</h3>
+            <p>You need to be signed in to view your memories.</p>
+            <a href="login.html" class="create-memory-btn" style="margin-top: 1rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                Sign In
+            </a>
+        </div>
+    `;
+}
+
 // Load user memories
 async function loadMemories() {
     try {
         const currentUser = getCurrentUser();
         if (!currentUser) {
             console.error('User not authenticated');
+            showLoginPrompt();
             return;
         }
         
-        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
-        const data = await response.json();
+        console.log('Loading memories for user:', currentUser.uid);
         
-        if (data.success && data.waveforms) {
+        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
+        console.log('API Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('API Response data:', data);
+        
+        if (data.success && data.waveforms && data.waveforms.length > 0) {
+            console.log(`Found ${data.waveforms.length} memories`);
             displayMemories(data.waveforms);
         } else {
+            console.log('No memories found');
             showEmptyState();
         }
         
     } catch (error) {
         console.error('Error loading memories:', error);
-        showErrorState();
+        showErrorState(error.message);
     }
 }
 
@@ -127,13 +165,14 @@ function showEmptyState() {
 }
 
 // Show error state
-function showErrorState() {
+function showErrorState(errorMessage = '') {
     const container = document.getElementById('memoriesContainer');
     container.innerHTML = `
         <div class="empty-state">
             <div class="empty-state-icon">⚠️</div>
             <h3>Error loading memories</h3>
             <p>There was a problem loading your memories. Please try refreshing the page.</p>
+            ${errorMessage ? `<p style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem;">Error: ${errorMessage}</p>` : ''}
             <button onclick="location.reload()" class="create-memory-btn" style="margin-top: 1rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
