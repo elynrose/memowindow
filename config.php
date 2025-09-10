@@ -52,8 +52,8 @@ define('DB_PASS', 'Sugarose227');
 */
 // Application URLs - Dynamic based on current domain and path
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-$host = $_SERVER['HTTP_HOST'];
-$scriptDir = dirname($_SERVER['SCRIPT_NAME']);
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
 $basePath = $scriptDir === '/' ? '' : $scriptDir;
 define('BASE_URL', $protocol . $host . $basePath);
 define('SUCCESS_URL', BASE_URL . '/order_success.php');

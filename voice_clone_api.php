@@ -4,7 +4,16 @@
  * Handles voice cloning and text-to-speech generation
  */
 
+// Suppress PHP warnings but allow JSON output
+error_reporting(0);
+ini_set('display_errors', 0);
+
+// Increase output buffer and memory limits for large audio data
+ini_set('memory_limit', '256M');
+ini_set('output_buffering', '8192');
+
 require_once 'config.php';
+require_once 'VoiceCloneSettings.php';
 
 class VoiceCloneAPI {
     private $apiKey;
@@ -31,46 +40,82 @@ class VoiceCloneAPI {
                 throw new Exception('Failed to download audio file');
             }
             
-            // Create voice clone
-            $url = $this->baseUrl . '/voices/ivc';
-            
-            $postData = [
-                'name' => $voiceName,
-                'files' => [
-                    [
-                        'name' => 'audio.mp3',
-                        'content' => base64_encode($audioData),
-                        'type' => 'audio/mpeg'
-                    ]
-                ]
-            ];
-            
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'xi-api-key: ' . $this->apiKey
-            ]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            
-            if ($httpCode !== 200) {
-                throw new Exception('ElevenLabs API error: ' . $response);
+            // Create temporary file for multipart upload
+            $tempDir = sys_get_temp_dir();
+            if (!is_writable($tempDir)) {
+                $tempDir = __DIR__ . '/temp';
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0755, true);
+                }
             }
             
-            $result = json_decode($response, true);
+            $tempFile = tempnam($tempDir, 'voice_clone_');
+            if (!$tempFile) {
+                throw new Exception('Failed to create temporary file');
+            }
             
-            return [
-                'success' => true,
-                'voice_id' => $result['voice_id'] ?? null,
-                'voice_name' => $voiceName
-            ];
+            if (file_put_contents($tempFile, $audioData) === false) {
+                throw new Exception('Failed to write audio data to temporary file');
+            }
+            
+            try {
+                // Use ElevenLabs Instant Voice Cloning API
+                $url = $this->baseUrl . '/voices/add';
+                
+                $postData = [
+                    'name' => $voiceName,
+                    'files' => new CURLFile($tempFile, 'audio/mpeg', 'audio.mp3')
+                ];
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'xi-api-key: ' . $this->apiKey
+                ]);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_VERBOSE, true);
+                
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curlError = curl_error($ch);
+                curl_close($ch);
+                
+                if ($curlError) {
+                    throw new Exception('cURL error: ' . $curlError);
+                }
+                
+                // Log the response for debugging
+                error_log('ElevenLabs API Response (HTTP ' . $httpCode . '): ' . $response);
+                
+                if ($httpCode !== 200 && $httpCode !== 201) {
+                    throw new Exception('ElevenLabs API error (HTTP ' . $httpCode . '): ' . $response);
+                }
+                
+                if (empty($response)) {
+                    throw new Exception('Empty response from ElevenLabs API');
+                }
+                
+                $result = json_decode($response, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new Exception('Invalid JSON response from ElevenLabs API: ' . $response);
+                }
+                
+                return [
+                    'success' => true,
+                    'voice_id' => $result['voice_id'] ?? null,
+                    'voice_name' => $voiceName,
+                    'voice_data' => $result
+                ];
+                
+            } finally {
+                // Clean up temporary file
+                if (file_exists($tempFile)) {
+                    unlink($tempFile);
+                }
+            }
             
         } catch (Exception $e) {
             return [
@@ -114,20 +159,43 @@ class VoiceCloneAPI {
             
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
             curl_close($ch);
             
-            if ($httpCode !== 200) {
-                throw new Exception('ElevenLabs TTS API error: ' . $response);
+            if ($curlError) {
+                throw new Exception('cURL error: ' . $curlError);
             }
             
-            // Save generated audio to temporary file
-            $tempFile = tempnam(sys_get_temp_dir(), 'generated_audio_');
-            file_put_contents($tempFile, $response);
+            if ($httpCode !== 200) {
+                throw new Exception('ElevenLabs TTS API error (HTTP ' . $httpCode . '): ' . $response);
+            }
+            
+            // Generate a unique ID for this audio
+            $audioId = uniqid('audio_', true);
+            
+            // Store the audio data in a simple file-based cache
+            $cacheDir = __DIR__ . '/audio_cache';
+            if (!is_dir($cacheDir)) {
+                mkdir($cacheDir, 0755, true);
+            }
+            
+            $cacheFile = $cacheDir . '/' . $audioId . '.mp3';
+            if (file_put_contents($cacheFile, $response) === false) {
+                // If file storage fails, fall back to base64 data URL
+                $audioData = base64_encode($response);
+                $audioUrl = 'data:audio/mpeg;base64,' . $audioData;
+            } else {
+                // Use the cached file
+                $audioUrl = 'audio_cache/' . $audioId . '.mp3';
+            }
             
             return [
                 'success' => true,
-                'audio_file' => $tempFile,
-                'text' => $text
+                'audio_url' => $audioUrl,
+                'audio_id' => $audioId,
+                'text' => $text,
+                'voice_id' => $voiceId,
+                'audio_size' => strlen($response)
             ];
             
         } catch (Exception $e) {
@@ -170,7 +238,8 @@ class VoiceCloneAPI {
 }
 
 // API endpoints
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    
     header('Content-Type: application/json');
     
     $action = $_POST['action'] ?? '';
@@ -178,6 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         $voiceAPI = new VoiceCloneAPI();
+        $settings = new VoiceCloneSettings();
         
         switch ($action) {
             case 'create_clone':
@@ -189,6 +259,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new Exception('Missing required parameters');
                 }
                 
+                // Check if user can create a voice clone
+                $canCreate = $settings->canCreateClone($userId, true); // TODO: Check actual subscription status
+                if (!$canCreate['allowed']) {
+                    throw new Exception($canCreate['reason']);
+                }
+                
                 // Create voice clone
                 $result = $voiceAPI->createVoiceClone($audioUrl, $voiceName);
                 
@@ -198,27 +274,117 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     ]);
                     
-                    $stmt = $pdo->prepare("
-                        INSERT INTO voice_clones (user_id, source_memory_id, voice_id, voice_name, created_at) 
-                        VALUES (?, ?, ?, ?, NOW())
-                    ");
-                    $stmt->execute([$userId, $memoryId, $result['voice_id'], $voiceName]);
+                    // Check if the memory exists first
+                    $checkStmt = $pdo->prepare("SELECT id FROM wave_assets WHERE id = ? AND user_id = ?");
+                    $checkStmt->execute([$memoryId, $userId]);
+                    $memoryExists = $checkStmt->fetch();
                     
-                    $result['clone_id'] = $pdo->lastInsertId();
+                    if ($memoryExists) {
+                        $stmt = $pdo->prepare("
+                            INSERT INTO voice_clones (user_id, source_memory_id, voice_id, voice_name, created_at) 
+                            VALUES (?, ?, ?, ?, NOW())
+                        ");
+                        $stmt->execute([$userId, $memoryId, $result['voice_id'], $voiceName]);
+                        $result['clone_id'] = $pdo->lastInsertId();
+                    } else {
+                        // Memory doesn't exist, save without the foreign key reference
+                        $stmt = $pdo->prepare("
+                            INSERT INTO voice_clones (user_id, source_memory_id, voice_id, voice_name, created_at) 
+                            VALUES (?, NULL, ?, ?, NOW())
+                        ");
+                        $stmt->execute([$userId, $result['voice_id'], $voiceName]);
+                        $result['clone_id'] = $pdo->lastInsertId();
+                        $result['warning'] = 'Memory reference not found, voice clone saved without source reference';
+                    }
+                    
+                    // Increment usage count
+                    $settings->incrementUsage($userId);
+                    $result['usage_info'] = [
+                        'current_usage' => $settings->getUserUsage($userId),
+                        'monthly_limit' => $settings->getMonthlyLimit()
+                    ];
                 }
                 
                 echo json_encode($result);
                 break;
                 
+            case 'check_status':
+                // Check user's voice clone status and limits
+                $canCreate = $settings->canCreateClone($userId, true); // TODO: Check actual subscription status
+                $usage = $settings->getUserUsage($userId);
+                $limit = $settings->getMonthlyLimit();
+                
+                echo json_encode([
+                    'success' => true,
+                    'enabled' => $settings->isEnabled(),
+                    'can_create' => $canCreate['allowed'],
+                    'reason' => $canCreate['reason'] ?? null,
+                    'usage' => $usage,
+                    'limit' => $limit,
+                    'requires_subscription' => $settings->requiresSubscription()
+                ]);
+                break;
+                
+            case 'get_user_voices':
+                $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                ]);
+                
+                $stmt = $pdo->prepare("
+                    SELECT vc.id, vc.voice_name, vc.voice_id, vc.created_at, 
+                           wa.title as memory_title, wa.id as memory_id
+                    FROM voice_clones vc
+                    LEFT JOIN wave_assets wa ON vc.source_memory_id = wa.id
+                    WHERE vc.user_id = ?
+                    ORDER BY vc.created_at DESC
+                ");
+                $stmt->execute([$userId]);
+                $voices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                echo json_encode([
+                    'success' => true,
+                    'voices' => $voices
+                ]);
+                break;
+                
             case 'generate_speech':
                 $voiceId = $_POST['voice_id'] ?? '';
                 $text = $_POST['text'] ?? '';
+                $memoryId = $_POST['memory_id'] ?? '';
                 
                 if (!$voiceId || !$text) {
                     throw new Exception('Missing voice_id or text');
                 }
                 
                 $result = $voiceAPI->generateSpeech($voiceId, $text);
+                
+                // If generation was successful and we have a memory_id, save the audio
+                if ($result['success'] && $memoryId) {
+                    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    ]);
+                    // Get the voice clone ID from the voice_clones table
+                    $stmt = $pdo->prepare("SELECT id FROM voice_clones WHERE user_id = ? AND voice_id = ?");
+                    $stmt->execute([$userId, $voiceId]);
+                    $voiceClone = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($voiceClone) {
+                        // Get memory title
+                        $stmt = $pdo->prepare("SELECT title FROM wave_assets WHERE id = ?");
+                        $stmt->execute([$memoryId]);
+                        $memory = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $memoryTitle = $memory ? $memory['title'] : 'Untitled';
+                        
+                        // Save generated audio to database
+                        $stmt = $pdo->prepare("
+                            INSERT INTO generated_audio (user_id, voice_clone_id, text_content, audio_url, memory_title, created_at)
+                            VALUES (?, ?, ?, ?, ?, NOW())
+                        ");
+                        $stmt->execute([$userId, $voiceClone['id'], $text, $result['audio_url'], $memoryTitle]);
+                        $result['generated_audio_id'] = $pdo->lastInsertId();
+                    }
+                }
+                
                 echo json_encode($result);
                 break;
                 
@@ -233,11 +399,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'error' => $e->getMessage()
         ]);
     }
+    
     exit;
 }
 
-// GET endpoint for listing voice clones
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+// GET endpoint for listing voice clones or serving audio files
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+    // Check if this is a request for an audio file
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($requestUri, '/temp/') !== false || strpos($requestUri, '/audio_cache/') !== false) {
+        // Serve audio file
+        $audioFile = basename(parse_url($requestUri, PHP_URL_PATH));
+        
+        // Try audio_cache first, then temp
+        $cacheDir = __DIR__ . '/audio_cache';
+        $tempDir = __DIR__ . '/temp';
+        
+        $filePath = null;
+        if (strpos($requestUri, '/audio_cache/') !== false && file_exists($cacheDir . '/' . $audioFile)) {
+            $filePath = $cacheDir . '/' . $audioFile;
+        } elseif (strpos($requestUri, '/temp/') !== false && file_exists($tempDir . '/' . $audioFile)) {
+            $filePath = $tempDir . '/' . $audioFile;
+        }
+        
+        if ($filePath && is_file($filePath)) {
+            header('Content-Type: audio/mpeg');
+            header('Content-Length: ' . filesize($filePath));
+            header('Cache-Control: public, max-age=3600');
+            readfile($filePath);
+            exit;
+        } else {
+            http_response_code(404);
+            echo 'Audio file not found';
+            exit;
+        }
+    }
+    
+    // Regular API request
     header('Content-Type: application/json');
     
     $userId = $_GET['user_id'] ?? '';

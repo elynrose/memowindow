@@ -129,18 +129,20 @@ function displayMemories(memories) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12.5h-8v-4h8v4z"/>
                         </svg>
-                        Order Print
+                        Order
                     </a>
                     ${memory.audio_url ? `
-                    <button onclick="showVoiceCloneModal(${memory.id}, '${memory.audio_url}', '${memory.title || 'Untitled'}')" class="memory-action voice-clone" style="background: #8b5cf6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                    <button onclick="checkVoiceCloneStatus(${memory.id}, '${memory.audio_url}', '${memory.title || 'Untitled'}')" class="memory-action voice-clone" style="background: #8b5cf6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
                         🎤 Clone Voice
+                    </button>
+                    <button onclick="showGenerateAudioModal(${memory.id}, '${memory.title || 'Untitled'}')" class="memory-action generate-audio" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
+                        🎵 Generate Audio
                     </button>
                     ` : ''}
                     <a href="#" onclick="deleteMemory(${memory.id})" class="memory-action delete">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                         </svg>
-                        Delete
                     </a>
                 </div>
             </div>
@@ -152,6 +154,9 @@ function displayMemories(memories) {
             ${memoriesHTML}
         </div>
     `;
+    
+    // Check voice clone feature status and show/hide buttons
+    checkVoiceCloneFeatureStatus();
     
     // Voice clone buttons are now embedded directly in the memory HTML
 }
@@ -357,7 +362,7 @@ function showToast(message, type = 'info') {
 }
 
 // Show voice clone modal
-window.showVoiceCloneModal = function(memoryId, audioUrl, memoryTitle) {
+window.showVoiceCloneModal = function(memoryId, audioUrl, memoryTitle, statusInfo = null) {
     const modal = document.createElement('div');
     modal.className = 'voice-clone-modal';
     modal.style.cssText = `
@@ -394,6 +399,14 @@ window.showVoiceCloneModal = function(memoryId, audioUrl, memoryTitle) {
         <p style="margin: 0 0 20px 0; color: #6b7280; line-height: 1.5;">
             Create a voice clone from "${memoryTitle}" to generate new audio with this voice.
         </p>
+        
+        ${statusInfo ? `
+        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
+            <div style="font-size: 14px; color: #0369a1;">
+                <strong>Usage:</strong> ${statusInfo.usage}/${statusInfo.limit} clones this month
+            </div>
+        </div>
+        ` : ''}
         
         <div style="margin-bottom: 20px;">
             <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Voice Name:</label>
@@ -510,6 +523,223 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
         createBtn.textContent = 'Create Voice Clone';
     }
 }
+
+// Check voice clone status before showing modal
+window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
+    try {
+        const currentUser = getCurrentUser();
+        const response = await fetch('voice_clone_api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'check_status',
+                user_id: currentUser.uid
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            if (result.can_create) {
+                // User can create voice clone, show the modal
+                showVoiceCloneModal(memoryId, audioUrl, memoryTitle, result);
+            } else {
+                // Show error message
+                alert(`Cannot create voice clone: ${result.reason}`);
+            }
+        } else {
+            alert('Error checking voice clone status');
+        }
+    } catch (error) {
+        console.error('Error checking voice clone status:', error);
+        alert('Error checking voice clone status');
+    }
+};
+
+// Check voice clone feature status and show/hide buttons
+async function checkVoiceCloneFeatureStatus() {
+    try {
+        const currentUser = getCurrentUser();
+        const response = await fetch('voice_clone_api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'check_status',
+                user_id: currentUser.uid
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.enabled) {
+            // Show all voice clone and generate audio buttons
+            document.querySelectorAll('.voice-clone, .generate-audio').forEach(button => {
+                button.style.display = 'inline-block';
+            });
+        } else {
+            // Hide all voice clone and generate audio buttons
+            document.querySelectorAll('.voice-clone, .generate-audio').forEach(button => {
+                button.style.display = 'none';
+            });
+        }
+    } catch (error) {
+        console.error('Error checking voice clone feature status:', error);
+        // Hide buttons on error to be safe
+        document.querySelectorAll('.voice-clone, .generate-audio').forEach(button => {
+            button.style.display = 'none';
+        });
+    }
+}
+
+// Show generate audio modal
+window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
+    try {
+        // Get user's cloned voices
+        const currentUser = getCurrentUser();
+        const response = await fetch('voice_clone_api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'get_user_voices',
+                user_id: currentUser.uid
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success || !result.voices || result.voices.length === 0) {
+            alert('No cloned voices found. Please clone a voice first.');
+            return;
+        }
+        
+        // Create modal
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+            justify-content: center; z-index: 1000;
+        `;
+        
+        dialog.innerHTML = `
+            <div style="background: white; padding: 24px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 16px 0; color: #0b0d12; font-size: 18px;">🎵 Generate Audio for "${memoryTitle}"</h3>
+                <p style="margin: 0 0 20px 0; color: #6b7280; line-height: 1.5;">
+                    Select a cloned voice and enter text to generate new audio for this memory.
+                </p>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Select Voice:</label>
+                    <select id="voiceSelect" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        ${result.voices.map(voice => `
+                            <option value="${voice.voice_id}" data-voice-name="${voice.voice_name}">
+                                ${voice.voice_name} ${voice.memory_title ? `(from "${voice.memory_title}")` : ''}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Text to Convert:</label>
+                    <textarea id="textInput" placeholder="Enter the text you want to convert to speech..." 
+                              style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; min-height: 100px; resize: vertical;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="this.closest('div').parentElement.remove()" 
+                            style="padding: 10px 20px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
+                        Cancel
+                    </button>
+                    <button onclick="generateAudio(${memoryId})" 
+                            style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        Generate Audio
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(dialog);
+        
+    } catch (error) {
+        console.error('Error showing generate audio modal:', error);
+        alert('Error loading voice options');
+    }
+};
+
+// Generate audio with selected voice
+window.generateAudio = async function(memoryId) {
+    const voiceSelect = document.getElementById('voiceSelect');
+    const textInput = document.getElementById('textInput');
+    
+    if (!voiceSelect || !textInput) {
+        alert('Error: Form elements not found');
+        return;
+    }
+    
+    const voiceId = voiceSelect.value;
+    const text = textInput.value.trim();
+    
+    if (!voiceId || !text) {
+        alert('Please select a voice and enter text');
+        return;
+    }
+    
+    if (text.length > 5000) {
+        alert('Text is too long. Please keep it under 5000 characters.');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        const generateBtn = document.querySelector('button[onclick*="generateAudio"]');
+        const originalText = generateBtn.textContent;
+        generateBtn.textContent = 'Generating...';
+        generateBtn.disabled = true;
+        
+        const currentUser = getCurrentUser();
+        const response = await fetch('voice_clone_api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                action: 'generate_speech',
+                user_id: currentUser.uid,
+                voice_id: voiceId,
+                text: text,
+                memory_id: memoryId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Audio generated successfully! The new audio has been added to your memory.');
+            // Close modal
+            document.querySelector('div[style*="position: fixed"]').remove();
+            // Refresh memories to show the new audio
+            loadMemories();
+        } else {
+            alert(`Error generating audio: ${result.error}`);
+        }
+        
+    } catch (error) {
+        console.error('Error generating audio:', error);
+        alert('Error generating audio');
+    } finally {
+        // Reset button state
+        const generateBtn = document.querySelector('button[onclick*="generateAudio"]');
+        if (generateBtn) {
+            generateBtn.textContent = 'Generate Audio';
+            generateBtn.disabled = false;
+        }
+    }
+};
 
 // Make functions available globally
 window.initMemories = initMemories;

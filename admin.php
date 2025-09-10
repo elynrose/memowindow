@@ -408,6 +408,10 @@ try {
                    style="background: #7c3aed; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
                     📦 Manage Orders
                 </a>
+                <a href="admin_voice_clone.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
+                   style="background: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
+                    🎤 Voice Clone Settings
+                </a>
             </div>
         </div>
     </div>
