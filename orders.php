@@ -1,16 +1,10 @@
 <?php
 // orders.php - User's order tracking page
+require_once 'auth_check.php';
 require_once 'config.php';
 
-// This page requires authentication - we'll get user ID from URL parameter for now
-// In production, you'd want to verify the Firebase token
-$userId = $_GET['user_id'] ?? '';
-
-if (!$userId) {
-    // Redirect to main page if no user ID
-    header('Location: index.html');
-    exit;
-}
+// Require authentication
+$userId = requireAuth();
 
 try {
     // Connect to database

@@ -1504,6 +1504,41 @@ els.btnCreate.addEventListener('click', async (event)=>{
 // Initialize app after Firebase bundle loads
 window.addEventListener('load', () => {
   
+  // Check for authentication errors in URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const error = urlParams.get('error');
+  
+  if (error) {
+    let message = '';
+    switch (error) {
+      case 'access_denied':
+        message = 'Access denied. Admin privileges required.';
+        break;
+      case 'login_required':
+        message = 'Please sign in to access this page.';
+        break;
+      case 'database_error':
+        message = 'Database connection error. Please try again.';
+        break;
+      case 'admin_required':
+        message = 'Admin access required for this page.';
+        break;
+      default:
+        message = 'Authentication error. Please sign in.';
+    }
+    
+    // Show error message
+    if (window.showMessage) {
+      window.showMessage(message, 'error');
+    } else {
+      alert(message);
+    }
+    
+    // Clear the error from URL
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+  }
+  
   // Update button state for current user and loaded files
   if (window.updateCreateButtonState) {
     window.updateCreateButtonState();

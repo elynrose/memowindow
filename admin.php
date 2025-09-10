@@ -1,39 +1,22 @@
 <?php
 // admin.php - MemoWindow Admin Dashboard
-require_once 'config.php';
+require_once 'auth_check.php';
 
-// Get user ID from URL parameter (in production, verify Firebase token)
-$userFirebaseUID = $_GET['user_id'] ?? '';
+// Require admin authentication
+$userFirebaseUID = requireAdmin();
 
-if (!$userFirebaseUID) {
-    header('Location: index.html?admin_required=1');
-    exit;
-}
-
-// Check if user is admin
+// User is already verified as admin by requireAdmin()
+// Update last login
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
     
-    $adminCheck = $pdo->prepare("SELECT * FROM admin_users WHERE firebase_uid = :uid AND is_admin = 1");
-    $adminCheck->execute([':uid' => $userFirebaseUID]);
-    $adminUser = $adminCheck->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$adminUser) {
-        http_response_code(403);
-        echo "Access denied. Admin privileges required.";
-        exit;
-    }
-    
-    // Update last login
     $pdo->prepare("UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE firebase_uid = :uid")
         ->execute([':uid' => $userFirebaseUID]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo "Database error";
-    exit;
+    // Continue even if update fails
 }
 
 // Get dashboard data

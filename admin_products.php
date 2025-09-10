@@ -1,31 +1,17 @@
 <?php
 // admin_products.php - Print products management interface
+require_once 'auth_check.php';
 require_once 'config.php';
 require_once 'PriceManager.php';
 
-// Get user ID from URL parameter
-$userFirebaseUID = $_GET['user_id'] ?? '';
+// Require admin authentication
+$userFirebaseUID = requireAdmin();
 
-if (!$userFirebaseUID) {
-    header('Location: index.html?admin_required=1');
-    exit;
-}
-
-// Check if user is admin
+// User is already verified as admin by requireAdmin()
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
-    
-    $adminCheck = $pdo->prepare("SELECT * FROM admin_users WHERE firebase_uid = :uid AND is_admin = 1");
-    $adminCheck->execute([':uid' => $userFirebaseUID]);
-    $adminUser = $adminCheck->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$adminUser) {
-        http_response_code(403);
-        echo "Access denied. Admin privileges required.";
-        exit;
-    }
     
     // Create products table if it doesn't exist
     $pdo->exec("

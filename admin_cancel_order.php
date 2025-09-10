@@ -1,15 +1,18 @@
 <?php
 // admin_cancel_order.php - Admin function to cancel and delete orders
 header('Content-Type: application/json');
+require_once 'auth_check.php';
 require_once 'config.php';
+
+// Require admin authentication
+$adminUserId = requireAdmin();
 
 // Get parameters
 $orderId = $_POST['order_id'] ?? $_GET['order_id'] ?? '';
-$adminUserId = $_POST['admin_user_id'] ?? $_GET['admin_user_id'] ?? '';
 $reason = $_POST['reason'] ?? $_GET['reason'] ?? 'Admin cancelled order';
 
-if (!$orderId || !$adminUserId) {
-    echo json_encode(['success' => false, 'error' => 'Missing order ID or admin user ID']);
+if (!$orderId) {
+    echo json_encode(['success' => false, 'error' => 'Missing order ID']);
     exit;
 }
 

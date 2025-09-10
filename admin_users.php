@@ -1,14 +1,10 @@
 <?php
 // admin_users.php - User management interface
+require_once 'auth_check.php';
 require_once 'config.php';
 
-// Get user ID from URL parameter
-$userFirebaseUID = $_GET['user_id'] ?? '';
-
-if (!$userFirebaseUID) {
-    header('Location: index.html?admin_required=1');
-    exit;
-}
+// Require admin authentication
+$userFirebaseUID = requireAdmin();
 
 // Check if user is admin
 try {

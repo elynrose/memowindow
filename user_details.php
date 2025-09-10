@@ -1,12 +1,14 @@
 <?php
 // user_details.php - Detailed user information
+require_once 'auth_check.php';
 require_once 'config.php';
 
-$adminUID = $_GET['user_id'] ?? '';
+// Require admin authentication
+$adminUID = requireAdmin();
 $targetUserID = $_GET['target_user'] ?? '';
 
-if (!$adminUID || !$targetUserID) {
-    header('Location: admin_users.php');
+if (!$targetUserID) {
+    header('Location: admin_users.php?user_id=' . $adminUID);
     exit;
 }
 

@@ -1,14 +1,11 @@
 <?php
 // admin_orders.php - Orders management interface
+require_once 'auth_check.php';
 require_once 'config.php';
 require_once 'PriceManager.php';
 
-// Get user ID from URL parameter
-$userFirebaseUID = $_GET['user_id'] ?? '';
-
-if (!$userFirebaseUID) {
-    die('User ID required');
-}
+// Require admin authentication
+$userFirebaseUID = requireAdmin();
 
 $success = '';
 $error = '';
