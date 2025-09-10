@@ -122,7 +122,7 @@ function displayMemories(memories) {
                         </svg>
                         QR
                     </a>
-                    <a href="#" onclick="orderPrint(${memory.id}, '${memory.image_url}')" class="memory-action order">
+                    <a href="#" onclick="showOrderOptions(${memory.id}, '${memory.image_url}', '${memory.title || 'Untitled'}', this)" class="memory-action order">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12.5h-8v-4h8v4z"/>
                         </svg>
