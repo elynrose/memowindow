@@ -62,6 +62,20 @@ class TemplateProcessor {
     }
     
     /**
+     * Generate orders.html from template
+     */
+    public function generateOrdersPage() {
+        $pageData = [
+            'PAGE_TITLE' => 'My Orders',
+            'PAGE_STYLES' => $this->getOrdersStyles(),
+            'PAGE_CONTENT' => $this->getOrdersContent(),
+            'PAGE_SCRIPTS' => $this->getOrdersScripts()
+        ];
+        
+        return $this->savePage($pageData, 'orders.html');
+    }
+    
+    /**
      * Get app-specific styles
      */
     private function getAppStyles() {
@@ -444,6 +458,184 @@ class TemplateProcessor {
     }
     
     /**
+     * Get orders-specific styles
+     */
+    private function getOrdersStyles() {
+        return '
+        /* Orders-specific styles */
+        .order-card {
+            background: white;
+            border: 1px solid #e6e9f2;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .order-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0b0d12;
+            margin: 0;
+        }
+        
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-processing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .order-image {
+            width: 80px;
+            height: 50px;
+            border-radius: 8px;
+            border: 1px solid #e6e9f2;
+            object-fit: cover;
+            background: white;
+        }
+        
+        .order-info {
+            flex: 1;
+        }
+        
+        .order-info h4 {
+            margin: 0 0 4px 0;
+            color: #0b0d12;
+            font-size: 14px;
+        }
+        
+        .order-info p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        
+        .order-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0b0d12;
+            text-align: right;
+        }
+        
+        .order-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f3f4f6;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .cancel-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .cancel-btn:hover {
+            background: #b91c1c;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        
+        .empty-state h3 {
+            color: #0b0d12;
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 640px) {
+            .order-details {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .order-meta {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
+        ';
+    }
+    
+    /**
+     * Get orders-specific content
+     */
+    private function getOrdersContent() {
+        return '
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">My Orders</h1>
+            <p class="page-subtitle">Track your MemoryWave print orders</p>
+        </div>
+
+        <!-- Orders Container -->
+        <div id="ordersContainer">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                Loading your orders...
+            </div>
+        </div>
+        ';
+    }
+    
+    /**
      * Get app-specific scripts
      */
     private function getAppScripts() {
@@ -491,6 +683,34 @@ class TemplateProcessor {
         });
         ';
     }
+    
+    /**
+     * Get orders-specific scripts
+     */
+    private function getOrdersScripts() {
+        return '
+        // Orders-specific initialization
+        console.log("📦 Orders page loaded");
+        
+        // Import and initialize orders functionality
+        import("./src/orders.js").then(module => {
+            console.log("✅ Orders module loaded successfully");
+            module.initOrders();
+        }).catch(error => {
+            console.error("❌ Failed to load orders module:", error);
+            // Fallback: show error message
+            const container = document.getElementById("ordersContainer");
+            if (container) {
+                container.innerHTML = `
+                    <div class="order-card" style="text-align: center; color: #dc2626;">
+                        <h3>Error Loading Orders</h3>
+                        <p>Failed to load orders functionality. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        });
+        ';
+    }
 }
 
 // Auto-generate pages if called directly
@@ -509,6 +729,12 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_NAME'])) {
         echo "✅ Generated memories.html\n";
     } else {
         echo "❌ Failed to generate memories.html\n";
+    }
+    
+    if ($processor->generateOrdersPage()) {
+        echo "✅ Generated orders.html\n";
+    } else {
+        echo "❌ Failed to generate orders.html\n";
     }
     
     echo "🎉 Template generation complete!\n";

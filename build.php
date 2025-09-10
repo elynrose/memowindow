@@ -27,6 +27,13 @@ try {
         echo "❌ Failed to generate memories.html\n";
     }
     
+    // Generate orders.html
+    if ($processor->generateOrdersPage()) {
+        echo "✅ Generated orders.html\n";
+    } else {
+        echo "❌ Failed to generate orders.html\n";
+    }
+    
     echo "\n🎉 Build complete! All pages have been regenerated from templates.\n";
     echo "\n📝 Template System Benefits:\n";
     echo "   • Consistent styling across all pages\n";
