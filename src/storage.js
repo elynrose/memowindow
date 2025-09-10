@@ -93,7 +93,7 @@ async function saveToLocalBackup(blob, fileName, folder) {
 }
 
 // Upload waveform, audio file, and generate QR code
-export async function uploadWaveformFiles(waveformBlob, originalFileName, userId, audioFile = null) {
+export async function uploadWaveformFiles(waveformBlob, originalFileName, userId, audioFile = null, playPageUrl = null) {
   try {
     // Generate unique filenames
     const timestamp = Date.now();
@@ -117,17 +117,12 @@ export async function uploadWaveformFiles(waveformBlob, originalFileName, userId
       audioUrl = await uploadToFirebaseStorage(audioFile, audioFileName, 'audio');
     }
     
-    // Create a temporary record to get the ID for the play page URL
-    // We'll update this after we get the database ID
-    // Get the base URL from the server (uses production URL for QR codes)
-    const baseUrlResponse = await fetch('get_base_url.php');
-    const baseUrlData = await baseUrlResponse.json();
-    const baseUrl = baseUrlData.base_url;
-    playPageUrl = `${baseUrl}/play.php?id=TEMP_ID`;
-    
-    // Generate QR code pointing to the play page instead of the image
-    const qrBlob = await generateQRCode(playPageUrl);
-    const qrUrl = await uploadToFirebaseStorage(qrBlob, qrFileName, 'qr-codes');
+    // Generate QR code if playPageUrl is provided
+    let qrUrl = null;
+    if (playPageUrl) {
+      const qrBlob = await generateQRCode(playPageUrl);
+      qrUrl = await uploadToFirebaseStorage(qrBlob, qrFileName, 'qr-codes');
+    }
     
     return {
       waveformUrl,

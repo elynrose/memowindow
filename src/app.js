@@ -364,16 +364,20 @@ async function createMemory() {
             const file = selectedFiles[i];
             const baseName = file.name.replace(/\.[^/.]+$/, '');
             
-            // Create waveform from audio (temporary QR URL for now)
-            const tempQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(baseUrl + '/play.php?uid=' + uniqueId)}`;
-            const waveformBlob = await createWaveformFromAudio(file, tempQrUrl);
+            // Generate the final play URL and QR code with the unique_id (secure)
+            const playPageUrl = `${baseUrl}/play.php?uid=${uniqueId}`;
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
             
-            // Upload waveform image
+            // Create waveform from audio with correct QR URL
+            const waveformBlob = await createWaveformFromAudio(file, qrApiUrl);
+            
+            // Upload waveform image with QR code
             const waveformResult = await uploadWaveformFiles(
                 waveformBlob,
                 `${baseName}_composition.png`,
                 currentUser.uid,
-                null
+                null,
+                playPageUrl
             );
             
             if (!waveformResult.success) {
@@ -391,10 +395,6 @@ async function createMemory() {
             if (!audioResult.success) {
                 throw new Error(audioResult.error || 'Audio upload failed');
             }
-            
-            // Generate the final play URL and QR code with the unique_id (secure)
-            const playPageUrl = `${baseUrl}/play.php?uid=${uniqueId}`;
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
             
             // Save to database with correct URLs
             const saveResult = await saveMemoryToDatabase({
