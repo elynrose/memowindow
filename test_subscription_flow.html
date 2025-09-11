@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Subscription Flow - MemoWindow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        .debug {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Subscription Flow</h1>
+        <p>This page tests the complete subscription flow step by step.</p>
+        
+        <div>
+            <h3>Test Steps:</h3>
+            <button onclick="testPackagesAPI()" class="btn">1. Test Packages API</button>
+            <button onclick="testDirectCheckout()" class="btn">2. Test Direct Checkout</button>
+            <button onclick="testSubscriptionFlow()" class="btn">3. Test Full Flow</button>
+            <button onclick="clearDebug()" class="btn">Clear Debug</button>
+        </div>
+        
+        <div class="debug" id="debugOutput">Click a button to see debug output...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const debugOutput = document.getElementById('debugOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            debugOutput.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+        
+        async function testPackagesAPI() {
+            log('Testing packages API...');
+            
+            try {
+                const response = await fetch(`get_packages.php?t=${Date.now()}`);
+                log(`Response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`Packages loaded: ${JSON.stringify(data, null, 2)}`, 'success');
+                
+                if (data.success && data.packages) {
+                    log(`Found ${data.packages.length} packages`, 'success');
+                    data.packages.forEach(pkg => {
+                        log(`- ${pkg.name}: $${pkg.price_monthly}/month`, 'success');
+                    });
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDirectCheckout() {
+            log('Testing direct checkout API...');
+            
+            try {
+                const url = `create_direct_checkout.php?package=standard&billing=monthly&user_id=test123&user_email=test@example.com&user_name=Test%20User`;
+                log(`Making request to: ${url}`);
+                
+                const response = await fetch(url);
+                log(`Response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`Checkout response: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    if (data.checkout_url) {
+                        log(`✅ Stripe checkout URL generated: ${data.checkout_url}`, 'success');
+                        log('This URL should redirect to Stripe checkout page', 'success');
+                    } else if (data.redirect_url) {
+                        log(`✅ Free plan redirect: ${data.redirect_url}`, 'success');
+                    }
+                } else {
+                    log(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSubscriptionFlow() {
+            log('Testing complete subscription flow...');
+            
+            // Simulate the startSubscription function
+            const packageSlug = 'standard';
+            const billingCycle = 'monthly';
+            
+            log(`1. User clicks subscription button for ${packageSlug} plan`);
+            
+            // Check if auth is available (simulate)
+            const auth = null; // Simulate no auth
+            log('2. Checking authentication...');
+            
+            if (!auth) {
+                log('3. Auth not available, storing intended action and redirecting to login');
+                
+                const intendedAction = {
+                    action: 'subscribe',
+                    package: packageSlug,
+                    billing: billingCycle
+                };
+                
+                localStorage.setItem('intendedAction', JSON.stringify(intendedAction));
+                log(`4. Stored intended action: ${JSON.stringify(intendedAction)}`);
+                log('5. Would redirect to login.html');
+                
+                // Simulate login success
+                log('6. Simulating login success...');
+                
+                const storedAction = localStorage.getItem('intendedAction');
+                if (storedAction) {
+                    const action = JSON.parse(storedAction);
+                    log(`7. Found intended action: ${JSON.stringify(action)}`);
+                    
+                    if (action.action === 'subscribe') {
+                        log('8. Creating subscription checkout session...');
+                        
+                        const url = `create_direct_checkout.php?package=${encodeURIComponent(action.package)}&billing=${encodeURIComponent(action.billing)}&user_id=test123&user_email=test@example.com&user_name=Test%20User`;
+                        log(`9. Making request to: ${url}`);
+                        
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        
+                        log(`10. Response: ${JSON.stringify(data, null, 2)}`);
+                        
+                        if (data.success) {
+                            if (data.checkout_url) {
+                                log(`✅ SUCCESS: Would redirect to Stripe checkout: ${data.checkout_url}`, 'success');
+                                log('🎉 Subscription flow working correctly!', 'success');
+                            } else if (data.redirect_url) {
+                                log(`✅ SUCCESS: Free plan redirect: ${data.redirect_url}`, 'success');
+                            }
+                        } else {
+                            log(`❌ FAILED: ${data.error}`, 'error');
+                        }
+                        
+                        // Clear intended action
+                        localStorage.removeItem('intendedAction');
+                    }
+                }
+            }
+        }
+        
+        function clearDebug() {
+            document.getElementById('debugOutput').innerHTML = '';
+        }
+        
+        // Clear debug on page load
+        document.getElementById('debugOutput').textContent = '';
+    </script>
+</body>
+</html>

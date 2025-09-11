@@ -980,8 +980,8 @@
                             ${package.features.map(feature => `<li>${feature}</li>`).join('')}
                         </ul>
                         ${isFree ? 
-                            '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\')">Get Started Free</a>' :
-                            `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly')">Start ${package.name} Plan</a>`
+                            '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\', this)">Get Started Free</a>' :
+                            `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly', this)">Start ${package.name} Plan</a>`
                         }
                     </div>
                 `;
@@ -1004,7 +1004,7 @@
         }
 
         // Subscription functionality
-        window.startSubscription = async function(packageSlug, billingCycle) {
+        window.startSubscription = async function(packageSlug, billingCycle, buttonElement) {
             console.log('startSubscription called with:', packageSlug, billingCycle);
             console.log('window.auth available:', !!window.auth);
             console.log('window.auth object:', window.auth);
@@ -1049,7 +1049,7 @@
             
             try {
                 // Show loading state
-                const button = event.target;
+                const button = buttonElement;
                 const originalText = button.textContent;
                 button.textContent = 'Creating checkout...';
                 button.disabled = true;
@@ -1084,7 +1084,7 @@
                 console.error('Error creating checkout session:', error);
                 alert('Error creating checkout session. Please try again.');
                 // Restore button
-                const button = event.target;
+                const button = buttonElement;
                 button.textContent = originalText;
                 button.disabled = false;
             }
