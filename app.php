@@ -10,9 +10,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Navigation Styles -->
-    <link rel="stylesheet" href="includes/navigation.css">
-    
     <style>
         /* Reset and Base Styles */
         * {
@@ -28,7 +25,87 @@
             color: #333;
             line-height: 1.6;
         }
-
+        
+        /* Modern Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+        }
+        
+        .header-link {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-link:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        /* Main Content */
+        .wrap {
+            padding: 8rem 1rem!important;
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-top: 50px;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
         .loading {
             text-align: center;
             padding: 2rem;
@@ -138,7 +215,29 @@
         }
         
         /* Responsive Design */
-
+        @media (max-width: 767px) {
+            .header {
+                padding: 0.75rem 0;
+            }
+            
+            .nav {
+                padding: 0 0.75rem;
+            }
+            
+            .wrap {
+                padding: 2rem 0.75rem;
+            }
+            
+            .user-info {
+                gap: 0.5rem;
+            }
+            
+            .header-link {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+        
         /* Page-specific styles will be injected here */
         
         /* App-specific styles */
@@ -197,8 +296,6 @@
         }
         
         .record-button.recording {
-            background: #22c55e;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
             animation: pulse 1.5s infinite;
         }
         
@@ -274,10 +371,26 @@
     </style>
 </head>
 <body>
-    <?php include 'includes/navigation.php'; ?>
+    <!-- Modern Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.php" class="logo">
+                <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+            </a>
+            <div id="userInfo" class="user-info hidden">
+                <a href="memories.php" class="header-link">My Memories</a>
+                <a id="ordersLink" href="#" class="header-link">My Orders</a>
+                <a id="btnLogout" href="#" class="header-link">Sign Out</a>
+                <div class="user-profile">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+                    <span id="userName">Loading...</span>
+                </div>
+            </div>
+        </nav>
+    </header>
 
     <!-- Main Content -->
-    <div class="wrap" style="margin: 100px auto; max-width: 1200px;">
+    <div class="wrap">
         
         <!-- Memory Title Card -->
         <div class="card">
@@ -305,27 +418,9 @@
             
             <div style="text-align: center; margin-top: 1.5rem;">
                 <p style="color: #6b7280; margin-bottom: 1rem;">Or record your voice</p>
-                
-                <!-- Audio Length Limit Display -->
-                <div id="audioLimitInfo" style="margin-bottom: 1rem; padding: 12px; background: #f3f4f6; border-radius: 8px; display: block;">
-                    <p style="margin: 0; color: #374151; font-size: 14px;">
-                        <span id="packageName">Your Plan</span> allows up to <span id="maxLength">100</span> seconds
-                    </p>
-                </div>
-                
-                <!-- Countdown Timer -->
-                <div id="countdownTimer" style="display: none; margin-bottom: 1rem;">
-                    <div style="font-size: 24px; font-weight: bold; color: #ef4444; margin-bottom: 8px;">
-                        <span id="timeRemaining">00:00</span>
-                    </div>
-                    <div style="width: 200px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0 auto;">
-                        <div id="progressBar" style="height: 100%; background: linear-gradient(90deg, #22c55e, #ef4444); border-radius: 2px; width: 100%; transition: width 0.1s ease;"></div>
-                    </div>
-                </div>
-                
                 <button id="btnRecord" type="button" class="record-button" style="display: flex; align-items: center; justify-content: center;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2V4c0-1.1.9-2 2-2zm6 8c0 3.3-2.7 6-6 6s-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8h-2z"/>
+                        <path d="M12 1c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2s2-.9 2-2V3c0-1.1-.9-2-2-2zm-1 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                     </svg>
                 </button>
             </div>
@@ -366,9 +461,6 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <!-- App Scripts -->
     <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
@@ -384,7 +476,7 @@
         // Initialize authentication for all pages
         initAppAuth();
         
-        // Initialize navigation
+        // Initialize navigation for all pages
         initNavigation();
         
         // Page-specific initialization will be injected here

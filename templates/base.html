@@ -276,13 +276,18 @@
     <script type="module" src="src/storage.js"></script>
     <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
+    <script type="module" src="includes/navigation.js"></script>
     
     <!-- Template initialization -->
     <script type="module">
         import { initAppAuth } from './src/app-auth.js';
+        import { initNavigation } from './includes/navigation.js';
         
         // Initialize authentication for all pages
         initAppAuth();
+        
+        // Initialize navigation for all pages
+        initNavigation();
         
         // Page-specific initialization will be injected here
         {{PAGE_SCRIPTS}}

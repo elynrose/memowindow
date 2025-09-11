@@ -10,9 +10,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Navigation Styles -->
-    <link rel="stylesheet" href="includes/navigation.css">
-    
     <style>
         /* Reset and Base Styles */
         * {
@@ -396,15 +393,31 @@
     </style>
 </head>
 <body>
-    <?php include 'includes/navigation.php'; ?>
+    <!-- Modern Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.php" class="logo">
+                <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+            </a>
+            <div id="userInfo" class="user-info hidden">
+                <a href="memories.php" class="header-link">My Memories</a>
+                <a id="ordersLink" href="#" class="header-link">My Orders</a>
+                <a id="btnLogout" href="#" class="header-link">Sign Out</a>
+                <div class="user-profile">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+                    <span id="userName">Loading...</span>
+                </div>
+            </div>
+        </nav>
+    </header>
 
     <!-- Main Content -->
     <div class="wrap">
         
         <!-- Page Header -->
         <div class="page-header">
-            <h1 class="page-title" style="color:#FFFFFF;">My Orders</h1>
-            <p class="page-subtitle" style="margin-bottom: 50px; color:#FFFFFF;">Track your MemoryWave print orders</p>
+            <h1 class="page-title">My Orders</h1>
+            <p class="page-subtitle">Track your MemoryWave print orders</p>
         </div>
 
         <!-- Orders Container -->
@@ -422,9 +435,6 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <!-- App Scripts -->
     <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
@@ -440,7 +450,7 @@
         // Initialize authentication for all pages
         initAppAuth();
         
-        // Initialize navigation
+        // Initialize navigation for all pages
         initNavigation();
         
         // Page-specific initialization will be injected here
