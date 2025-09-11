@@ -307,9 +307,9 @@
                 <p style="color: #6b7280; margin-bottom: 1rem;">Or record your voice</p>
                 
                 <!-- Audio Length Limit Display -->
-                <div id="audioLimitInfo" style="margin-bottom: 1rem; padding: 12px; background: #f3f4f6; border-radius: 8px; display: none;">
+                <div id="audioLimitInfo" style="margin-bottom: 1rem; padding: 12px; background: #f3f4f6; border-radius: 8px; display: block;">
                     <p style="margin: 0; color: #374151; font-size: 14px;">
-                        <span id="packageName">Free Plan</span> allows up to <span id="maxLength">60</span> seconds
+                        <span id="packageName">Your Plan</span> allows up to <span id="maxLength">60</span> seconds
                     </p>
                 </div>
                 

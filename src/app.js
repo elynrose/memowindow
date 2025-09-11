@@ -49,10 +49,7 @@ export function initApp() {
     // Set up event listeners
     setupEventListeners();
     
-    // Load user's audio limit
-    loadUserAudioLimit();
-    
-    // Wait for authentication and then load user's waveforms
+    // Wait for authentication and then load user's waveforms and audio limit
     waitForAuthAndLoadWaveforms();
     
     // App functionality initialized
@@ -63,8 +60,9 @@ function waitForAuthAndLoadWaveforms() {
     const checkAuth = () => {
         const currentUser = getCurrentUser();
         if (currentUser) {
-            // User authenticated, loading waveforms
+            // User authenticated, loading waveforms and audio limit
             loadUserWaveforms();
+            loadUserAudioLimit();
         } else {
             // Waiting for authentication
             // Check again in 500ms
@@ -812,11 +810,20 @@ async function loadUserAudioLimit() {
         const currentUser = getCurrentUser();
         if (!currentUser) {
             console.log('No user logged in, using default audio limit');
+            // Show default limit info even when not logged in
+            if (packageName && maxLength) {
+                packageName.textContent = 'Free Plan';
+                maxLength.textContent = '60';
+                audioLimitInfo.style.display = 'block';
+            }
             return;
         }
         
+        console.log('Loading audio limit for user:', currentUser.uid);
         const response = await fetch(`get_user_audio_limit.php?user_id=${currentUser.uid}`);
         const data = await response.json();
+        
+        console.log('Audio limit response:', data);
         
         if (data.success) {
             maxAudioLength = data.max_audio_length_seconds;
@@ -826,6 +833,9 @@ async function loadUserAudioLimit() {
                 packageName.textContent = data.package_name;
                 maxLength.textContent = maxAudioLength;
                 audioLimitInfo.style.display = 'block';
+                console.log(`Updated UI: ${data.package_name} - ${maxAudioLength} seconds`);
+            } else {
+                console.error('DOM elements not found:', { packageName, maxLength, audioLimitInfo });
             }
             
             console.log(`Audio limit loaded: ${maxAudioLength} seconds (${data.package_name})`);
