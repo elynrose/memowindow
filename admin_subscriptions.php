@@ -22,6 +22,7 @@ try {
             $memoryLimit = $_POST['memory_limit'];
             $memoryExpiryDays = $_POST['memory_expiry_days'];
             $voiceCloneLimit = $_POST['voice_clone_limit'];
+            $maxAudioLength = $_POST['max_audio_length_seconds'];
             $stripePriceIdMonthly = $_POST['stripe_price_id_monthly'];
             $stripePriceIdYearly = $_POST['stripe_price_id_yearly'];
             $isActive = isset($_POST['is_active']) ? 1 : 0;
@@ -30,12 +31,12 @@ try {
                 UPDATE subscription_packages 
                 SET name = ?, description = ?, price_monthly = ?, price_yearly = ?,
                     memory_limit = ?, memory_expiry_days = ?, voice_clone_limit = ?,
-                    stripe_price_id_monthly = ?, stripe_price_id_yearly = ?, is_active = ?
+                    max_audio_length_seconds = ?, stripe_price_id_monthly = ?, stripe_price_id_yearly = ?, is_active = ?
                 WHERE id = ?
             ");
             $stmt->execute([
                 $name, $description, $priceMonthly, $priceYearly,
-                $memoryLimit, $memoryExpiryDays, $voiceCloneLimit,
+                $memoryLimit, $memoryExpiryDays, $voiceCloneLimit, $maxAudioLength,
                 $stripePriceIdMonthly, $stripePriceIdYearly, $isActive, $packageId
             ]);
             
@@ -215,6 +216,19 @@ try {
                                     <?php endforeach; ?>
                                 </ul>
                             <?php endif; ?>
+                            
+                            <div style="margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 6px;">
+                                <h5 style="margin: 0 0 8px 0; color: #374151;">Package Limits:</h5>
+                                <div style="font-size: 14px; color: #6b7280;">
+                                    <div>🎵 Max Audio Length: <strong><?php 
+                                        $minutes = floor($package['max_audio_length_seconds'] / 60);
+                                        $seconds = $package['max_audio_length_seconds'] % 60;
+                                        echo $minutes > 0 ? "{$minutes}m {$seconds}s" : "{$seconds}s";
+                                    ?></strong></div>
+                                    <div>💾 Memory Limit: <strong><?= $package['memory_limit'] == 0 ? 'Unlimited' : $package['memory_limit'] ?></strong></div>
+                                    <div>🎤 Voice Clone Limit: <strong><?= $package['voice_clone_limit'] == 0 ? 'Unlimited' : $package['voice_clone_limit'] ?></strong></div>
+                                </div>
+                            </div>
                         </div>
                         
                         <form method="POST" class="package-form">
@@ -253,9 +267,22 @@ try {
                                 </div>
                             </div>
                             
-                            <div class="admin-form-group">
-                                <label>Voice Clone Limit</label>
-                                <input type="number" name="voice_clone_limit" value="<?= $package['voice_clone_limit'] ?>" min="0">
+                            <div class="admin-form-row">
+                                <div class="admin-form-group">
+                                    <label>Voice Clone Limit</label>
+                                    <input type="number" name="voice_clone_limit" value="<?= $package['voice_clone_limit'] ?>" min="0">
+                                </div>
+                                <div class="admin-form-group">
+                                    <label>Max Audio Length (seconds)</label>
+                                    <input type="number" name="max_audio_length_seconds" value="<?= $package['max_audio_length_seconds'] ?>" min="1" max="3600">
+                                    <small style="color: #6b7280; font-size: 12px;">
+                                        <?php 
+                                        $minutes = floor($package['max_audio_length_seconds'] / 60);
+                                        $seconds = $package['max_audio_length_seconds'] % 60;
+                                        echo "({$minutes}m {$seconds}s)";
+                                        ?>
+                                    </small>
+                                </div>
                             </div>
                             
                             <div class="admin-form-row">

@@ -22,7 +22,8 @@ try {
             'price_yearly' => floatval($package['price_yearly']),
             'features' => $features,
             'is_popular' => $package['slug'] === 'standard', // Mark standard as popular
-            'is_active' => (bool)$package['is_active']
+            'is_active' => (bool)$package['is_active'],
+            'max_audio_length_seconds' => intval($package['max_audio_length_seconds'] ?? 300)
         ];
     }
     

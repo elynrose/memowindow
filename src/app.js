@@ -9,8 +9,14 @@ let isRecording = false;
 let mediaRecorder = null;
 let audioChunks = [];
 
+// Audio limit and countdown variables
+let maxAudioLength = 60; // Default 1 minute
+let countdownInterval = null;
+let recordingStartTime = null;
+
 // DOM elements
 let fileInput, fileUploadArea, btnRecord, btnCreate, titleInput, waveformList, memoryPreview, previewCanvas, previewStatus;
+let audioLimitInfo, countdownTimer, timeRemaining, progressBar, packageName, maxLength;
 
 // Initialize app functionality
 export function initApp() {
@@ -27,6 +33,14 @@ export function initApp() {
     previewCanvas = document.getElementById('previewCanvas');
     previewStatus = document.getElementById('previewStatus');
     
+    // Countdown timer elements
+    audioLimitInfo = document.getElementById('audioLimitInfo');
+    countdownTimer = document.getElementById('countdownTimer');
+    timeRemaining = document.getElementById('timeRemaining');
+    progressBar = document.getElementById('progressBar');
+    packageName = document.getElementById('packageName');
+    maxLength = document.getElementById('maxLength');
+    
     if (!fileInput || !fileUploadArea || !btnRecord || !btnCreate) {
         console.error('❌ Required DOM elements not found');
         return;
@@ -34,6 +48,9 @@ export function initApp() {
     
     // Set up event listeners
     setupEventListeners();
+    
+    // Load user's audio limit
+    loadUserAudioLimit();
     
     // Wait for authentication and then load user's waveforms
     waitForAuthAndLoadWaveforms();
@@ -89,13 +106,31 @@ function setupEventListeners() {
 }
 
 // Handle file selection
-function handleFileSelect(event) {
+async function handleFileSelect(event) {
     const files = Array.from(event.target.files);
     if (files.length > 0) {
-        selectedFiles = files;
-        updateFileUploadArea();
-        processFileForPreview(files[0]);
-        validateForm();
+        // Validate each audio file
+        let validFiles = [];
+        for (const file of files) {
+            if (file.type.startsWith('audio/')) {
+                const isValid = await validateAudioFile(file);
+                if (isValid) {
+                    validFiles.push(file);
+                }
+            } else {
+                validFiles.push(file); // Non-audio files are always valid
+            }
+        }
+        
+        if (validFiles.length > 0) {
+            selectedFiles = validFiles;
+            updateFileUploadArea();
+            processFileForPreview(validFiles[0]);
+            validateForm();
+        } else {
+            // Clear the file input if no valid files
+            fileInput.value = '';
+        }
     }
 }
 
@@ -107,15 +142,26 @@ function handleDragOver(event) {
 }
 
 // Handle drop
-function handleDrop(event) {
+async function handleDrop(event) {
     event.preventDefault();
     const files = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith('audio/'));
     if (files.length > 0) {
-        selectedFiles = files;
-        fileInput.files = event.dataTransfer.files;
-        updateFileUploadArea();
-        processFileForPreview(files[0]);
-        validateForm();
+        // Validate each audio file
+        let validFiles = [];
+        for (const file of files) {
+            const isValid = await validateAudioFile(file);
+            if (isValid) {
+                validFiles.push(file);
+            }
+        }
+        
+        if (validFiles.length > 0) {
+            selectedFiles = validFiles;
+            fileInput.files = event.dataTransfer.files;
+            updateFileUploadArea();
+            processFileForPreview(validFiles[0]);
+            validateForm();
+        }
     }
     handleDragLeave();
 }
@@ -309,6 +355,9 @@ async function startRecording() {
         btnRecord.classList.add('recording');
         btnRecord.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
         
+        // Start countdown timer
+        startCountdownTimer();
+        
     } catch (error) {
         console.error('Error starting recording:', error);
         Swal.fire({
@@ -329,6 +378,9 @@ function stopRecording() {
         isRecording = false;
         btnRecord.classList.remove('recording');
         btnRecord.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2V4c0-1.1.9-2 2-2zm6 8c0 3.3-2.7 6-6 6s-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8h-2z"/></svg>';
+        
+        // Stop countdown timer
+        stopCountdownTimer();
     }
 }
 
@@ -752,6 +804,169 @@ function showToast(message, type = 'info') {
             toast.parentNode.removeChild(toast);
         }
     }, 3000);
+}
+
+// Load user's audio length limit
+async function loadUserAudioLimit() {
+    try {
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            console.log('No user logged in, using default audio limit');
+            return;
+        }
+        
+        const response = await fetch(`get_user_audio_limit.php?user_id=${currentUser.uid}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            maxAudioLength = data.max_audio_length_seconds;
+            
+            // Update the UI
+            if (packageName && maxLength) {
+                packageName.textContent = data.package_name;
+                maxLength.textContent = maxAudioLength;
+                audioLimitInfo.style.display = 'block';
+            }
+            
+            console.log(`Audio limit loaded: ${maxAudioLength} seconds (${data.package_name})`);
+        } else {
+            console.error('Failed to load audio limit:', data.error);
+        }
+    } catch (error) {
+        console.error('Error loading audio limit:', error);
+    }
+}
+
+// Start countdown timer
+function startCountdownTimer() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    
+    recordingStartTime = Date.now();
+    countdownTimer.style.display = 'block';
+    
+    countdownInterval = setInterval(() => {
+        const elapsed = (Date.now() - recordingStartTime) / 1000;
+        const remaining = Math.max(0, maxAudioLength - elapsed);
+        
+        // Update time display
+        const minutes = Math.floor(remaining / 60);
+        const seconds = Math.floor(remaining % 60);
+        timeRemaining.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Update progress bar
+        const progress = (remaining / maxAudioLength) * 100;
+        progressBar.style.width = `${progress}%`;
+        
+        // Change color as time runs out
+        if (remaining <= 10) {
+            timeRemaining.style.color = '#ef4444';
+            progressBar.style.background = '#ef4444';
+        } else if (remaining <= 30) {
+            timeRemaining.style.color = '#f59e0b';
+            progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+        } else {
+            timeRemaining.style.color = '#ef4444';
+            progressBar.style.background = 'linear-gradient(90deg, #22c55e, #ef4444)';
+        }
+        
+        // Auto-stop recording when time runs out
+        if (remaining <= 0) {
+            stopRecording();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Time Limit Reached',
+                text: `Your ${packageName.textContent} allows up to ${maxAudioLength} seconds. Recording stopped automatically.`,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#667eea'
+            });
+        }
+    }, 100);
+}
+
+// Stop countdown timer
+function stopCountdownTimer() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+    countdownTimer.style.display = 'none';
+    recordingStartTime = null;
+}
+
+// Get audio duration from file
+function getAudioDuration(file) {
+    return new Promise((resolve, reject) => {
+        const audio = new Audio();
+        const url = URL.createObjectURL(file);
+        
+        audio.addEventListener('loadedmetadata', () => {
+            URL.revokeObjectURL(url);
+            resolve(audio.duration);
+        });
+        
+        audio.addEventListener('error', () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Could not load audio file'));
+        });
+        
+        audio.src = url;
+    });
+}
+
+// Validate audio file length
+async function validateAudioFile(file) {
+    try {
+        const duration = await getAudioDuration(file);
+        const durationSeconds = Math.ceil(duration);
+        
+        console.log(`Audio file duration: ${durationSeconds} seconds, limit: ${maxAudioLength} seconds`);
+        
+        if (durationSeconds > maxAudioLength) {
+            const minutes = Math.floor(durationSeconds / 60);
+            const seconds = durationSeconds % 60;
+            const limitMinutes = Math.floor(maxAudioLength / 60);
+            const limitSeconds = maxAudioLength % 60;
+            
+            const durationText = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+            const limitText = limitMinutes > 0 ? `${limitMinutes}m ${limitSeconds}s` : `${limitSeconds}s`;
+            
+            const result = await Swal.fire({
+                icon: 'warning',
+                title: 'Audio File Too Long',
+                html: `
+                    <p>Your audio file is <strong>${durationText}</strong> long.</p>
+                    <p>Your <strong>${packageName.textContent}</strong> allows up to <strong>${limitText}</strong>.</p>
+                    <p>Please upgrade your plan to upload longer audio files.</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Upgrade Plan',
+                cancelButtonText: 'Choose Different File',
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#6b7280'
+            });
+            
+            if (result.isConfirmed) {
+                // Redirect to subscription page
+                window.location.href = 'subscription_checkout.php';
+            }
+            
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error validating audio file:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Could not read audio file. Please try a different file.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#667eea'
+        });
+        return false;
+    }
 }
 
 // Make functions available globally

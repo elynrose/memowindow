@@ -305,6 +305,24 @@
             
             <div style="text-align: center; margin-top: 1.5rem;">
                 <p style="color: #6b7280; margin-bottom: 1rem;">Or record your voice</p>
+                
+                <!-- Audio Length Limit Display -->
+                <div id="audioLimitInfo" style="margin-bottom: 1rem; padding: 12px; background: #f3f4f6; border-radius: 8px; display: none;">
+                    <p style="margin: 0; color: #374151; font-size: 14px;">
+                        <span id="packageName">Free Plan</span> allows up to <span id="maxLength">60</span> seconds
+                    </p>
+                </div>
+                
+                <!-- Countdown Timer -->
+                <div id="countdownTimer" style="display: none; margin-bottom: 1rem;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ef4444; margin-bottom: 8px;">
+                        <span id="timeRemaining">00:00</span>
+                    </div>
+                    <div style="width: 200px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0 auto;">
+                        <div id="progressBar" style="height: 100%; background: linear-gradient(90deg, #22c55e, #ef4444); border-radius: 2px; width: 100%; transition: width 0.1s ease;"></div>
+                    </div>
+                </div>
+                
                 <button id="btnRecord" type="button" class="record-button" style="display: flex; align-items: center; justify-content: center;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2V4c0-1.1.9-2 2-2zm6 8c0 3.3-2.7 6-6 6s-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8h-2z"/>
