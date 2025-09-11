@@ -196,6 +196,45 @@ try {
             font-size: 12px;
             font-weight: 500;
         }
+        
+        .admin-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .admin-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .status-paid {
             background: #d1fae5;
             color: #065f46;
@@ -264,6 +303,40 @@ try {
             <div class="stat-card">
                 <div class="stat-number">$<?php echo number_format($stats['total_revenue'] / 100, 2); ?></div>
                 <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="section">
+            <h2>⚙️ Admin Actions</h2>
+            <div class="admin-actions-grid">
+                <button onclick="exportData('memories')" class="admin-btn">
+                    📊 Export Memories
+                </button>
+                <button onclick="exportData('orders')" class="admin-btn">
+                    📈 Export Orders
+                </button>
+                <a href="analytics.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    📈 Analytics
+                </a>
+                <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    👥 Manage Users
+                </a>
+                <a href="admin_backups.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    🔒 Audio Backups
+                </a>
+                <a href="admin_products.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    🛒 Manage Products
+                </a>
+                <a href="admin_orders.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    📦 Manage Orders
+                </a>
+                <a href="admin_voice_clone.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    🎤 Voice Clone Settings
+                </a>
+                <a href="admin_subscriptions.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    💳 Subscription Management
+                </a>
             </div>
         </div>
 
@@ -376,48 +449,6 @@ try {
         </div>
         <?php endif; ?>
 
-        <!-- Admin Actions -->
-        <div class="section">
-            <h2>⚙️ Admin Actions</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
-                <button onclick="exportData('memories')" 
-                        style="background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
-                    📊 Export Memories
-                </button>
-                <button onclick="exportData('orders')" 
-                        style="background: #059669; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer;">
-                    📈 Export Orders
-                </button>
-                <a href="analytics.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #7c3aed; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    📈 Analytics
-                </a>
-                <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #dc2626; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    👥 Manage Users
-                </a>
-                <a href="admin_backups.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #059669; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    🔒 Audio Backups
-                </a>
-                <a href="admin_products.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    🛒 Manage Products
-                </a>
-                <a href="admin_orders.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #7c3aed; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    📦 Manage Orders
-                </a>
-                <a href="admin_voice_clone.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    🎤 Voice Clone Settings
-                </a>
-                <a href="admin_subscriptions.php?user_id=<?php echo urlencode($userFirebaseUID); ?>"
-                   style="background: #059669; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: block; text-align: center;">
-                    💳 Subscription Management
-                </a>
-            </div>
-        </div>
     </div>
 
     <!-- Image Modal -->
