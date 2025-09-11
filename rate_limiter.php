@@ -5,8 +5,8 @@
  */
 
 class RateLimiter {
-    private $maxRequests;
-    private $timeWindow;
+    public $maxRequests;
+    public $timeWindow;
     private $storageDir;
     
     public function __construct($maxRequests = 100, $timeWindow = 3600) {
