@@ -366,6 +366,28 @@
             font-weight: 600;
         }
         
+        .loading-packages {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .pricing-card h3 {
             font-size: 1.5rem;
             margin-bottom: 1rem;
@@ -654,47 +676,11 @@
             <h2 class="section-title">Choose Your Plan</h2>
             <p class="section-subtitle">Unlock the full potential of MemoWindow with our flexible subscription plans</p>
             
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Basic</h3>
-                    <div class="price">Free</div>
-                    <div class="price-period">forever</div>
-                    <ul class="pricing-features">
-                        <li>Generate up to 3 memories</li>
-                        <li>Memories available for 1 year</li>
-                        <li>Basic support</li>
-                        <li>Standard quality audio</li>
-                    </ul>
-                    <a href="login.html" class="cta-button">Get Started Free</a>
-                </div>
-                
-                <div class="pricing-card featured">
-                    <h3>Standard</h3>
-                    <div class="price">$9.99</div>
-                    <div class="price-period">per month</div>
-                    <ul class="pricing-features">
-                        <li>Generate up to 30 memories</li>
-                        <li>Memories available as long as subscribed</li>
-                        <li>Generate 1 voice clone + messages</li>
-                        <li>Priority support</li>
-                        <li>High quality audio</li>
-                    </ul>
-                    <a href="#" class="cta-button" onclick="startSubscription('standard', 'monthly')">Start Standard Plan</a>
-                </div>
-                
-                <div class="pricing-card">
-                    <h3>Premium</h3>
-                    <div class="price">$19.99</div>
-                    <div class="price-period">per month</div>
-                    <ul class="pricing-features">
-                        <li>Unlimited memories</li>
-                        <li>Generate 10 voice clones + messages</li>
-                        <li>Memories never expire</li>
-                        <li>Premium support</li>
-                        <li>Highest quality audio</li>
-                        <li>Advanced features</li>
-                    </ul>
-                    <a href="#" class="cta-button" onclick="startSubscription('premium', 'monthly')">Start Premium Plan</a>
+            <div class="pricing-grid" id="pricingGrid">
+                <!-- Packages will be loaded dynamically here -->
+                <div class="loading-packages">
+                    <div class="loading-spinner"></div>
+                    <p>Loading packages...</p>
                 </div>
             </div>
         </div>
@@ -836,6 +822,9 @@
         window.addEventListener('load', function() {
             console.log('Index page loaded, checking auth state...');
             
+            // Load packages dynamically
+            loadPackages();
+            
             // Check current user immediately
             const currentUser = auth.currentUser;
             if (currentUser) {
@@ -929,6 +918,71 @@
             // This would open a video modal or redirect to a video
             alert('Video demo coming soon! For now, try our app by clicking "Get Started"');
         });
+
+        // Load packages dynamically
+        async function loadPackages() {
+            try {
+                const response = await fetch('get_packages.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderPackages(data.packages);
+                } else {
+                    console.error('Failed to load packages:', data.error);
+                    showPackageError();
+                }
+            } catch (error) {
+                console.error('Error loading packages:', error);
+                showPackageError();
+            }
+        }
+        
+        function renderPackages(packages) {
+            const pricingGrid = document.getElementById('pricingGrid');
+            
+            if (!packages || packages.length === 0) {
+                showPackageError();
+                return;
+            }
+            
+            const packagesHTML = packages.map(package => {
+                const isPopular = package.is_popular;
+                const isFree = package.price_monthly === 0;
+                
+                return `
+                    <div class="pricing-card ${isPopular ? 'featured' : ''}">
+                        <h3>${package.name}</h3>
+                        <div class="price">
+                            ${isFree ? 'Free' : `$${package.price_monthly.toFixed(2)}`}
+                        </div>
+                        <div class="price-period">
+                            ${isFree ? 'forever' : 'per month'}
+                        </div>
+                        <ul class="pricing-features">
+                            ${package.features.map(feature => `<li>${feature}</li>`).join('')}
+                        </ul>
+                        ${isFree ? 
+                            '<a href="login.html" class="cta-button">Get Started Free</a>' :
+                            `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly')">Start ${package.name} Plan</a>`
+                        }
+                    </div>
+                `;
+            }).join('');
+            
+            pricingGrid.innerHTML = packagesHTML;
+        }
+        
+        function showPackageError() {
+            const pricingGrid = document.getElementById('pricingGrid');
+            pricingGrid.innerHTML = `
+                <div class="loading-packages">
+                    <p>Unable to load packages. Please refresh the page.</p>
+                    <button onclick="loadPackages()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
 
         // Subscription functionality
         window.startSubscription = function(packageSlug, billingCycle) {
