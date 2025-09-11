@@ -169,65 +169,16 @@ $statusOptions = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Orders - MemoWindow</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .header h1 { font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-        .header p { color: #64748b; font-size: 16px; }
-        
-        .actions { background: white; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .actions h3 { margin-bottom: 16px; color: #0f172a; }
-        .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-secondary { background: #6b7280; color: white; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        
+        /* Page-specific styles */
         .bulk-actions { background: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 20px; display: none; }
         .bulk-actions.show { display: block; }
         .bulk-actions select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; margin-right: 12px; }
         
-        .orders-table { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .table th { background: #f8fafc; padding: 16px; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; }
-        .table td { padding: 16px; border-bottom: 1px solid #f1f5f9; overflow: hidden; text-overflow: ellipsis; }
-        .table th:nth-child(1), .table td:nth-child(1) { width: 50px; } /* Checkbox */
-        .table th:nth-child(2), .table td:nth-child(2) { width: 200px; } /* Order ID */
-        .table th:nth-child(3), .table td:nth-child(3) { width: 200px; } /* Customer */
-        .table th:nth-child(4), .table td:nth-child(4) { width: 180px; } /* Product */
-        .table th:nth-child(5), .table td:nth-child(5) { width: 100px; } /* Amount */
-        .table th:nth-child(6), .table td:nth-child(6) { width: 120px; } /* Status */
-        .table th:nth-child(7), .table td:nth-child(7) { width: 140px; } /* Created */
-        .table th:nth-child(8), .table td:nth-child(8) { width: 120px; } /* Printful ID */
-        .table th:nth-child(9), .table td:nth-child(9) { width: 150px; } /* Actions */
-        .table tr:hover { background: #f8fafc; }
-        
-        .status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; text-transform: uppercase; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-processing { background: #dbeafe; color: #1e40af; }
-        .status-on_hold { background: #f3e8ff; color: #7c3aed; }
-        .status-fulfilled { background: #d1fae5; color: #065f46; }
-        .status-cancelled { background: #fee2e2; color: #991b1b; }
-        .status-failed { background: #fecaca; color: #dc2626; }
-        .status-returned { background: #fde68a; color: #b45309; }
-        
         .order-actions { display: flex; gap: 8px; }
         .order-actions select { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; }
         .order-actions button { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px; }
-        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; color: #374151; }
-        .pagination .current { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .pagination a:hover { background: #f3f4f6; }
-        
-        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; }
-        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
         
         .order-details { font-size: 12px; color: #64748b; }
         .order-id { font-weight: 600; color: #374151; }
@@ -235,43 +186,53 @@ $statusOptions = [
         
         .checkbox { margin-right: 8px; }
         
-        @media (max-width: 768px) {
-            .table { font-size: 14px; }
-            .table th, .table td { padding: 12px 8px; }
-            .action-buttons { flex-direction: column; }
-            .btn { justify-content: center; }
-        }
+        /* Table column widths */
+        .admin-table th:nth-child(1), .admin-table td:nth-child(1) { width: 50px; } /* Checkbox */
+        .admin-table th:nth-child(2), .admin-table td:nth-child(2) { width: 200px; } /* Order ID */
+        .admin-table th:nth-child(3), .admin-table td:nth-child(3) { width: 200px; } /* Customer */
+        .admin-table th:nth-child(4), .admin-table td:nth-child(4) { width: 180px; } /* Product */
+        .admin-table th:nth-child(5), .admin-table td:nth-child(5) { width: 100px; } /* Amount */
+        .admin-table th:nth-child(6), .admin-table td:nth-child(6) { width: 120px; } /* Status */
+        .admin-table th:nth-child(7), .admin-table td:nth-child(7) { width: 140px; } /* Created */
+        .admin-table th:nth-child(8), .admin-table td:nth-child(8) { width: 120px; } /* Printful ID */
+        .admin-table th:nth-child(9), .admin-table td:nth-child(9) { width: 150px; } /* Actions */
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>📦 Order Management</h1>
             <p>Manage orders, sync with Printful, and update order status</p>
         </div>
         
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
-        <?php endif; ?>
+        <?php include 'includes/admin_navigation.php'; ?>
         
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
-        
-        <div class="actions">
-            <h3>Order Actions</h3>
-            <div class="action-buttons">
-                <button onclick="syncOrders()" class="btn btn-primary">
-                    🔄 Sync Orders from Printful
-                </button>
-                <button onclick="selectAllOrders()" class="btn btn-secondary">
-                    ☑️ Select All
-                </button>
-                <button onclick="clearSelection()" class="btn btn-secondary">
-                    ☐ Clear Selection
-                </button>
+        <div class="admin-content">
+            <?php if ($success): ?>
+                <div class="admin-alert admin-alert-success"><?php echo htmlspecialchars($success); ?></div>
+            <?php endif; ?>
+            
+            <?php if ($error): ?>
+                <div class="admin-alert admin-alert-error"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>Order Actions</h2>
+                    <p>Manage and sync orders with Printful</p>
+                </div>
+                <div class="admin-btn-group">
+                    <button onclick="syncOrders()" class="admin-btn admin-btn-primary">
+                        🔄 Sync Orders from Printful
+                    </button>
+                    <button onclick="selectAllOrders()" class="admin-btn admin-btn-secondary">
+                        ☑️ Select All
+                    </button>
+                    <button onclick="clearSelection()" class="admin-btn admin-btn-secondary">
+                        ☐ Clear Selection
+                    </button>
+                </div>
             </div>
-        </div>
         
         <div class="bulk-actions" id="bulkActions">
             <strong>Bulk Actions:</strong>
@@ -280,12 +241,12 @@ $statusOptions = [
                     <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
                 <?php endforeach; ?>
             </select>
-            <button onclick="bulkUpdateStatus()" class="btn btn-warning">Update Selected</button>
+            <button onclick="bulkUpdateStatus()" class="admin-btn admin-btn-warning">Update Selected</button>
             <span id="selectedCount">0 orders selected</span>
         </div>
         
-        <div class="orders-table">
-            <table class="table">
+            <div class="admin-table-container">
+                <table class="admin-table">
                 <thead>
                     <tr>
                         <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
@@ -335,7 +296,7 @@ $statusOptions = [
                                 </td>
                                 <td><?php echo PriceManager::formatPrice($order['amount_paid']); ?></td>
                                 <td>
-                                    <span class="status status-<?php echo $order['status']; ?>">
+                                    <span class="admin-status admin-status-<?php echo $order['status']; ?>">
                                         <?php echo $statusOptions[$order['status']] ?? $order['status']; ?>
                                     </span>
                                 </td>
@@ -364,11 +325,11 @@ $statusOptions = [
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
-            </table>
-        </div>
-        
-        <?php if ($totalPages > 1): ?>
-            <div class="pagination">
+                </table>
+            </div>
+            
+            <?php if ($totalPages > 1): ?>
+                <div class="admin-pagination">
                 <?php if ($currentPage > 1): ?>
                     <a href="?user_id=<?php echo $userFirebaseUID; ?>&page=<?php echo $currentPage - 1; ?>">← Previous</a>
                 <?php endif; ?>
@@ -384,8 +345,9 @@ $statusOptions = [
                 <?php if ($currentPage < $totalPages): ?>
                     <a href="?user_id=<?php echo $userFirebaseUID; ?>&page=<?php echo $currentPage + 1; ?>">Next →</a>
                 <?php endif; ?>
-            </div>
-        <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
     
     <script>
