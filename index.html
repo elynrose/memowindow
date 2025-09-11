@@ -925,7 +925,15 @@
         // Load packages dynamically
         async function loadPackages() {
             try {
-                const response = await fetch('get_packages.php');
+                console.log('Loading packages from get_packages.php...');
+                const response = await fetch(`get_packages.php?t=${Date.now()}`);
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -936,6 +944,13 @@
                 }
             } catch (error) {
                 console.error('Error loading packages:', error);
+                console.error('Error details:', error.message);
+                
+                // If it's a JSON parse error, log the response text
+                if (error.message.includes('Unexpected token')) {
+                    console.error('This might be an HTML response instead of JSON');
+                }
+                
                 showPackageError();
             }
         }
