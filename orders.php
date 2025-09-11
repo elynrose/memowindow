@@ -430,6 +430,15 @@
         
     </div>
 
+    <!-- Image Modal -->
+    <div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+            <button onclick="closeImageModal()" style="position: absolute; top: -40px; right: 0; background: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; font-weight: bold;">×</button>
+            <img id="modalImage" src="" alt="Memory" style="max-width: 100%; max-height: 100%; border-radius: 8px;">
+            <div id="modalTitle" style="text-align: center; color: white; margin-top: 16px; font-size: 18px;"></div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>

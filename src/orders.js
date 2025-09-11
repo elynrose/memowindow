@@ -96,7 +96,9 @@ function displayOrders(orders) {
                 
                 <div class="order-details">
                     <img src="${order.memory_image_url}" 
-                         alt="MemoryWave" class="order-image">
+                         alt="MemoryWave" class="order-image"
+                         onclick="showImageModal('${order.memory_image_url}', '${order.memory_title || 'Untitled Memory'}')"
+                         style="cursor: pointer;">
                     
                     <div class="order-info">
                         <h4>${order.product_name}</h4>
@@ -230,5 +232,23 @@ window.cancelOrder = async function(orderId) {
         });
     }
 };
+
+// Image modal functions
+window.showImageModal = function(imageUrl, title) {
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('imageModal').style.display = 'flex';
+};
+
+window.closeImageModal = function() {
+    document.getElementById('imageModal').style.display = 'none';
+};
+
+// Close modal on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeImageModal();
+    }
+});
 
 // Orders functionality initialized
