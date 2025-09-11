@@ -1,18 +1,10 @@
 <?php
 require_once 'config.php';
 require_once 'VoiceCloneSettings.php';
-require_once 'secure_auth.php';
-
-// Start session if not already started
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Check session timeout
-checkSessionTimeout();
+require_once 'auth_check.php';
 
 // Require admin authentication
-requireSecureAdmin();
+$userFirebaseUID = requireAdmin();
 
 $settings = new VoiceCloneSettings();
 $message = '';
