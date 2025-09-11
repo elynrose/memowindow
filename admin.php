@@ -24,8 +24,8 @@ try {
     // Get statistics
     $stats = [];
     
-    // Total users (unique Firebase UIDs)
-    $stats['total_users'] = $pdo->query("SELECT COUNT(DISTINCT user_id) as count FROM wave_assets")->fetch()['count'];
+    // Total users (from users table)
+    $stats['total_users'] = $pdo->query("SELECT COUNT(*) as count FROM users")->fetch()['count'];
     
     // Total memories
     $stats['total_memories'] = $pdo->query("SELECT COUNT(*) as count FROM wave_assets")->fetch()['count'];
@@ -33,8 +33,8 @@ try {
     // Total orders
     $stats['total_orders'] = $pdo->query("SELECT COUNT(*) as count FROM orders")->fetch()['count'];
     
-    // Total revenue
-    $revenueResult = $pdo->query("SELECT SUM(amount_paid) as total FROM orders WHERE status = 'paid'");
+    // Total revenue (all orders with amount_paid > 0)
+    $revenueResult = $pdo->query("SELECT SUM(amount_paid) as total FROM orders WHERE amount_paid > 0");
     $stats['total_revenue'] = $revenueResult->fetch()['total'] ?? 0;
     
     // Recent memories
@@ -55,9 +55,9 @@ try {
     $recentOrders = $pdo->query("
         SELECT 
             o.*,
-            w.title as memory_title
+            p.name as product_name
         FROM orders o
-        LEFT JOIN wave_assets w ON o.memory_id = w.id
+        LEFT JOIN print_products p ON o.product_variant_id = p.product_key
         ORDER BY o.created_at DESC 
         LIMIT 10
     ")->fetchAll(PDO::FETCH_ASSOC);
@@ -317,8 +317,8 @@ try {
                             <?php echo htmlspecialchars($order['customer_name']); ?><br>
                             <small style="color: #64748b;"><?php echo htmlspecialchars($order['customer_email']); ?></small>
                         </td>
-                        <td><?php echo htmlspecialchars($order['memory_title'] ?: 'Untitled'); ?></td>
-                        <td><?php echo htmlspecialchars($order['product_id']); ?></td>
+                        <td><?php echo htmlspecialchars($order['product_name'] ?: 'Unknown Product'); ?></td>
+                        <td><?php echo htmlspecialchars($order['product_variant_id'] ?: 'N/A'); ?></td>
                         <td>$<?php echo number_format($order['amount_paid'] / 100, 2); ?></td>
                         <td>
                             <span class="status-badge status-<?php echo strtolower($order['status']); ?>">
