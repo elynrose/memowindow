@@ -58,10 +58,12 @@ async function loadOrders() {
         const data = await response.json();
         
         if (data.success) {
+            console.log('📦 Orders loaded:', data.orders);
             allOrders = data.orders; // Store all orders
             displayOrders(data.orders);
             initializeSearchAndFilter(); // Initialize search functionality
         } else {
+            console.error('❌ Failed to load orders:', data.error);
             showErrorState(data.error || 'Failed to load orders');
         }
         
@@ -80,8 +82,12 @@ function displayOrders(orders) {
     }
     
     const ordersHTML = orders.map(order => {
+        console.log('🖼️ Processing order image:', order.memory_image_url);
         const statusClass = `status-${order.status.toLowerCase()}`;
         const orderNumber = order.stripe_session_id ? order.stripe_session_id.slice(-8) : 'N/A';
+        const statusInfo = getStatusInfo(order.status);
+        const orderDate = new Date(order.created_at);
+        const lastUpdated = order.updated_at ? new Date(order.updated_at) : orderDate;
         
         return `
             <div class="order-card">
@@ -89,19 +95,45 @@ function displayOrders(orders) {
                     <div>
                         <h2 class="order-title">${order.memory_title || 'Untitled Memory'}</h2>
                         <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">
-                            Order #${orderNumber}
+                            Order #${orderNumber} • ${orderDate.toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric' 
+                            })}
                         </p>
+                        ${lastUpdated.getTime() !== orderDate.getTime() ? 
+                            `<p style="margin: 2px 0 0 0; color: #9ca3af; font-size: 12px;">
+                                Last updated: ${lastUpdated.toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </p>` : ''
+                        }
                     </div>
-                    <span class="order-status ${statusClass}">
-                        ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                    </span>
+                    <div style="text-align: right;">
+                        <span class="order-status ${statusClass}">
+                            <span class="status-icon">${statusInfo.icon}</span>
+                            ${statusInfo.label}
+                        </span>
+                        ${statusInfo.description ? 
+                            `<p style="margin: 4px 0 0 0; color: #6b7280; font-size: 11px; text-align: right;">
+                                ${statusInfo.description}
+                            </p>` : ''
+                        }
+                    </div>
                 </div>
+                
+                ${getOrderProgress(order.status)}
                 
                 <div class="order-details">
                     <img src="${order.memory_image_url}" 
                          alt="MemoryWave" class="order-image"
                          onclick="showImageModal('${order.memory_image_url}', '${order.memory_title || 'Untitled Memory'}')"
-                         style="cursor: pointer;">
+                         style="cursor: pointer;"
+                         onload="console.log('✅ Image loaded:', '${order.memory_image_url}')"
+                         onerror="console.error('❌ Image failed to load:', '${order.memory_image_url}'); this.style.border='2px solid red'; this.alt='Image failed to load';">
                     
                     <div class="order-info">
                         <h4>${order.product_name}</h4>
@@ -253,6 +285,93 @@ document.addEventListener('keydown', (e) => {
         closeImageModal();
     }
 });
+
+// Status information helper function
+function getStatusInfo(status) {
+    const statusMap = {
+        'pending': {
+            icon: '⏳',
+            label: 'Pending',
+            description: 'Payment processing'
+        },
+        'paid': {
+            icon: '✅',
+            label: 'Paid',
+            description: 'Payment confirmed'
+        },
+        'processing': {
+            icon: '🔄',
+            label: 'Processing',
+            description: 'Preparing your order'
+        },
+        'shipped': {
+            icon: '📦',
+            label: 'Shipped',
+            description: 'On its way to you'
+        },
+        'delivered': {
+            icon: '🎉',
+            label: 'Delivered',
+            description: 'Enjoy your memory!'
+        },
+        'cancelled': {
+            icon: '❌',
+            label: 'Cancelled',
+            description: 'Order cancelled'
+        },
+        'refunded': {
+            icon: '💰',
+            label: 'Refunded',
+            description: 'Refund processed'
+        }
+    };
+    
+    return statusMap[status.toLowerCase()] || {
+        icon: '❓',
+        label: status.charAt(0).toUpperCase() + status.slice(1),
+        description: ''
+    };
+}
+
+// Order progress indicator function
+function getOrderProgress(status) {
+    const steps = [
+        { key: 'pending', label: 'Payment', icon: '💳' },
+        { key: 'paid', label: 'Confirmed', icon: '✅' },
+        { key: 'processing', label: 'Processing', icon: '🔄' },
+        { key: 'shipped', label: 'Shipped', icon: '📦' },
+        { key: 'delivered', label: 'Delivered', icon: '🎉' }
+    ];
+    
+    const statusIndex = steps.findIndex(step => step.key === status.toLowerCase());
+    
+    // Don't show progress for cancelled or refunded orders
+    if (['cancelled', 'refunded'].includes(status.toLowerCase())) {
+        return '';
+    }
+    
+    return `
+        <div class="order-progress">
+            <div class="progress-steps">
+                ${steps.map((step, index) => {
+                    let stepClass = '';
+                    if (index < statusIndex) {
+                        stepClass = 'completed';
+                    } else if (index === statusIndex) {
+                        stepClass = 'current';
+                    }
+                    
+                    return `
+                        <div class="progress-step ${stepClass}">
+                            <div class="step-icon">${step.icon}</div>
+                            <div class="step-label">${step.label}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
 
 // Search and Filter functionality
 function initializeSearchAndFilter() {
