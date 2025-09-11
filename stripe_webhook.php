@@ -271,12 +271,23 @@ function saveOrderToDatabase($orderData) {
             (`user_id`, `stripe_session_id`, `status`, `amount`, `amount_paid`, 
              `memory_title`, `memory_image_url`, `product_name`, `product_variant_id`, 
              `quantity`, `unit_price`, `total_price`, `shipping_address`, 
-             `printful_order_id`, `created_at`, `updated_at`) 
+             `printful_order_id`, `items`, `created_at`, `updated_at`) 
             VALUES (:user_id, :stripe_session_id, :status, :amount, :amount_paid,
                     :memory_title, :memory_image_url, :product_name, :product_variant_id,
                     :quantity, :unit_price, :total_price, :shipping_address,
-                    :printful_order_id, NOW(), NOW())
+                    :printful_order_id, :items, NOW(), NOW())
         ");
+        
+        // Create items JSON
+        $items = json_encode([
+            [
+                'product_name' => $orderData['product_name'],
+                'product_variant_id' => $orderData['product_variant_id'],
+                'quantity' => $orderData['quantity'],
+                'unit_price' => $orderData['unit_price'],
+                'total_price' => $orderData['total_price']
+            ]
+        ]);
         
         $stmt->execute([
             ':user_id' => $orderData['user_id'],
@@ -292,7 +303,8 @@ function saveOrderToDatabase($orderData) {
             ':unit_price' => $orderData['unit_price'],
             ':total_price' => $orderData['total_price'],
             ':shipping_address' => $orderData['shipping_address'],
-            ':printful_order_id' => $orderData['printful_order_id']
+            ':printful_order_id' => $orderData['printful_order_id'],
+            ':items' => $items
         ]);
         
         return $pdo->lastInsertId();
