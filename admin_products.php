@@ -333,50 +333,9 @@ function syncProductsFromPrintful($pdo) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Management - MemoWindow Admin</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        body {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-            background: #f8fafc;
-            color: #0f172a;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        .header h1 {
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-        .nav-link {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid #e2e8f0;
+        /* Page-specific styles */
         }
         .product-grid {
             display: grid;
@@ -607,28 +566,25 @@ function syncProductsFromPrintful($pdo) {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>🛒 Product Management</h1>
             <p>Manage MemoWindow print products and pricing</p>
-            <div class="nav-links">
-                <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
-                <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Users</a>
-                <a href="analytics.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Analytics</a>
-                <a href="admin_backups.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Backups</a>
-            </div>
         </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
 
-        <!-- Success/Error Messages -->
-        <?php if (isset($success)): ?>
-            <div class="alert alert-success">✅ <?php echo htmlspecialchars($success); ?></div>
-        <?php endif; ?>
-        <?php if (isset($error)): ?>
-            <div class="alert alert-error">❌ <?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
+        <div class="admin-content">
+            <!-- Success/Error Messages -->
+            <?php if (isset($success)): ?>
+                <div class="admin-alert admin-alert-success">✅ <?php echo htmlspecialchars($success); ?></div>
+            <?php endif; ?>
+            <?php if (isset($error)): ?>
+                <div class="admin-alert admin-alert-error">❌ <?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
 
-        <!-- Sync Products from Printful -->
-        <div class="section">
+            <!-- Sync Products from Printful -->
+            <div class="admin-card">
             <h2>🔄 Sync Products from Printful Store</h2>
             <p>Fetch all available products from your Printful store and update the local database.</p>
             <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0ea5e9;">
@@ -892,5 +848,7 @@ function syncProductsFromPrintful($pdo) {
             }
         });
     </script>
+        </div>
+    </div>
 </body>
 </html>

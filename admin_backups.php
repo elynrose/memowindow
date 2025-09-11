@@ -110,49 +110,9 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Backup Management - MemoWindow Admin</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        body {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-            background: #f8fafc;
-            color: #0f172a;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        .header h1 {
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-        .nav-link {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
+        /* Page-specific styles */
         }
         .stat-card {
             background: white;
@@ -224,36 +184,34 @@ try {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>🔒 Audio Backup Management</h1>
             <p>Protect precious voice recordings with redundant backup system</p>
-            <div class="nav-links">
-                <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
-                <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Users</a>
-                <a href="analytics.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Analytics</a>
-            </div>
         </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
 
-        <!-- Backup Health Overview -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number success"><?php echo $healthStats['backed_up'] ?? 0; ?></div>
-                <div class="stat-label">Backed Up</div>
+        <div class="admin-content">
+            <!-- Backup Health Overview -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="number" style="color: #28a745;"><?php echo $healthStats['backed_up'] ?? 0; ?></div>
+                    <p>Backed Up</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number" style="color: #ffc107;"><?php echo $healthStats['pending'] ?? 0; ?></div>
+                    <p>Pending Backup</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number" style="color: #dc3545;"><?php echo $healthStats['failed'] ?? 0; ?></div>
+                    <p>Failed Backups</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number" style="color: #ffc107;"><?php echo $healthStats['needs_check'] ?? 0; ?></div>
+                    <p>Needs Verification</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number warning"><?php echo $healthStats['pending'] ?? 0; ?></div>
-                <div class="stat-label">Pending Backup</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number danger"><?php echo $healthStats['failed'] ?? 0; ?></div>
-                <div class="stat-label">Failed Backups</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number warning"><?php echo $healthStats['needs_check'] ?? 0; ?></div>
-                <div class="stat-label">Needs Verification</div>
-            </div>
-        </div>
 
         <!-- Action Buttons -->
         <div class="actions-bar">
@@ -440,5 +398,7 @@ try {
             location.reload();
         }, 120000);
     </script>
+        </div>
+    </div>
 </body>
 </html>

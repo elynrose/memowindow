@@ -923,9 +923,17 @@
                     return;
                 }
                 
-                console.log('Rendering', packages.length, 'packages');
+                // Filter out disabled packages
+                const activePackages = packages.filter(pkg => pkg.is_active !== false);
+                console.log('Rendering', activePackages.length, 'active packages (filtered from', packages.length, 'total)');
                 
-                const packagesHTML = packages.map(pkg => {
+                if (activePackages.length === 0) {
+                    console.error('No active packages to render');
+                    showPackageError();
+                    return;
+                }
+                
+                const packagesHTML = activePackages.map(pkg => {
                     const isPopular = pkg.is_popular;
                     const isFree = pkg.price_monthly === 0;
                     

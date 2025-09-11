@@ -8,7 +8,7 @@ $userFirebaseUID = $_GET['user_id'] ?? '';
 
 <nav class="admin-nav">
     <div class="admin-nav-container">
-        <div class="admin-nav-brand">
+        <div class="admin-nav-brand" style="margin-top: 20px;">
             <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-nav-logo">
                 🏠 Admin Dashboard
             </a>
@@ -49,9 +49,7 @@ $userFirebaseUID = $_GET['user_id'] ?? '';
             <a href="login.php" class="admin-nav-action">
                 ← Back to MemoWindow
             </a>
-            <a href="orders.php" class="admin-nav-action">
-                My Orders
-            </a>
+          
         </div>
     </div>
 </nav>
