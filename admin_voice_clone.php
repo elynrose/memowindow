@@ -37,116 +37,40 @@ $topUsers = $settings->getTopUsers();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Clone Settings - Admin</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f5f7fa;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        input[type="checkbox"] {
-            margin-right: 8px;
-        }
-        .btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn:hover {
-            background: #5a6fd8;
-        }
-        .alert {
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+        /* Page-specific styles */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
+        
         .stat-card {
             background: #f8f9fa;
             padding: 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             text-align: center;
         }
+        
         .stat-number {
             font-size: 24px;
             font-weight: bold;
             color: #667eea;
+            margin-bottom: 5px;
         }
+        
         .stat-label {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
-            margin-top: 5px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #f8f9fa;
-            font-weight: 500;
-        }
+        
         .status-enabled {
             color: #28a745;
             font-weight: bold;
         }
+        
         .status-disabled {
             color: #dc3545;
             font-weight: bold;
@@ -154,21 +78,24 @@ $topUsers = $settings->getTopUsers();
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>🎤 Voice Clone Settings</h1>
             <p>Manage voice cloning feature settings and monitor usage</p>
         </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
 
-        <?php if ($message): ?>
-            <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-        <?php endif; ?>
+        <div class="admin-content">
+            <?php if ($message): ?>
+                <div class="admin-alert admin-alert-success"><?php echo htmlspecialchars($message); ?></div>
+            <?php endif; ?>
 
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
+            <?php if ($error): ?>
+                <div class="admin-alert admin-alert-error"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
 
-        <div class="card">
+            <div class="admin-card">
             <h2>Feature Settings</h2>
             <form method="POST">
                 <div class="form-group">

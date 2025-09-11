@@ -73,89 +73,14 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - MemoWindow Admin</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        body {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-            background: #f8fafc;
-            color: #0f172a;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .header {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        .header h1 {
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        .header p {
-            margin: 0 0 16px 0;
-            opacity: 0.9;
-        }
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .nav-link {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        .nav-link:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        .search-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-            border: 1px solid #e2e8f0;
-        }
-        .search-box {
-            width: 100%;
-            max-width: 400px;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .filter-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid #d1d5db;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .filter-btn.active {
-            background: #2563eb;
-            color: white;
-            border-color: #2563eb;
-        }
+        /* Page-specific styles */
         .users-grid {
             display: grid;
             gap: 20px;
         }
+        
         .user-card {
             background: white;
             border-radius: 12px;
@@ -163,15 +88,18 @@ try {
             border: 1px solid #e2e8f0;
             transition: box-shadow 0.2s;
         }
+        
         .user-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        
         .user-header {
             display: flex;
             justify-content: space-between;
             align-items: start;
             margin-bottom: 16px;
         }
+        
         .user-id {
             font-family: monospace;
             background: #f1f5f9;
@@ -180,28 +108,33 @@ try {
             font-size: 12px;
             color: #475569;
         }
+        
         .user-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 16px;
             margin: 16px 0;
         }
+        
         .user-stat {
             text-align: center;
             padding: 12px;
             background: #f8fafc;
             border-radius: 8px;
         }
+        
         .user-stat-number {
             font-size: 20px;
             font-weight: 600;
-            color: #2563eb;
+            color: #667eea;
             margin-bottom: 4px;
         }
+        
         .user-stat-label {
             font-size: 12px;
             color: #64748b;
         }
+        
         .recent-titles {
             font-size: 12px;
             color: #64748b;
@@ -213,32 +146,13 @@ try {
             max-height: 60px;
             overflow: hidden;
         }
+        
         .user-actions {
             display: flex;
             gap: 8px;
             margin-top: 16px;
         }
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-        }
+        
         @media (max-width: 768px) {
             .user-header {
                 flex-direction: column;
@@ -251,29 +165,27 @@ try {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>👥 User Management</h1>
             <p>Manage MemoWindow users and their activity</p>
-            <div class="nav-links">
-                <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
-                <a href="login.php" class="nav-link">MemoWindow</a>
-                <a href="#" onclick="location.reload()" class="nav-link">Refresh</a>
-            </div>
         </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
 
-        <!-- Search and Filters -->
-        <div class="search-section">
-            <h3 style="margin: 0 0 16px 0;">🔍 Search Users</h3>
-            <input type="text" class="search-box" placeholder="Search by user ID, memory title, or activity..." 
-                   onkeyup="filterUsers(this.value)">
-            <div class="filter-buttons">
-                <button class="filter-btn active" onclick="filterByActivity('all')">All Users</button>
-                <button class="filter-btn" onclick="filterByActivity('active')">Active (7 days)</button>
-                <button class="filter-btn" onclick="filterByActivity('customers')">Customers</button>
-                <button class="filter-btn" onclick="filterByActivity('inactive')">Inactive (30+ days)</button>
+        <div class="admin-content">
+            <!-- Search and Filters -->
+            <div class="admin-search-section">
+                <h3 style="margin: 0 0 16px 0;">🔍 Search Users</h3>
+                <input type="text" class="admin-search-box" placeholder="Search by user ID, memory title, or activity..." 
+                       onkeyup="filterUsers(this.value)">
+                <div class="admin-filter-buttons">
+                    <button class="admin-filter-btn active" onclick="filterByActivity('all')">All Users</button>
+                    <button class="admin-filter-btn" onclick="filterByActivity('active')">Active (7 days)</button>
+                    <button class="admin-filter-btn" onclick="filterByActivity('customers')">Customers</button>
+                    <button class="admin-filter-btn" onclick="filterByActivity('inactive')">Inactive (30+ days)</button>
+                </div>
             </div>
-        </div>
 
         <!-- Users Grid -->
         <div class="users-grid" id="usersGrid">
@@ -342,17 +254,18 @@ try {
 
                     <div class="user-actions">
                         <a href="user_details.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=<?php echo urlencode($user['user_id']); ?>" 
-                           class="btn btn-primary">View Details</a>
+                           class="admin-btn admin-btn-sm">View Details</a>
                         <a href="orders.php" 
-                           class="btn btn-secondary">View Orders</a>
+                           class="admin-btn admin-btn-secondary admin-btn-sm">View Orders</a>
                         <?php if ($orders): ?>
                         <button onclick="exportUserData('<?php echo $user['user_id']; ?>')" 
-                                class="btn btn-secondary">Export Data</button>
+                                class="admin-btn admin-btn-secondary admin-btn-sm">Export Data</button>
                         <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+        </div>
         </div>
     </div>
 
@@ -375,7 +288,7 @@ try {
 
         function filterByActivity(filter) {
             // Update button states
-            document.querySelectorAll('.filter-btn').forEach(btn => {
+            document.querySelectorAll('.admin-filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
