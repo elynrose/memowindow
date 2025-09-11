@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { AudioProcessor } from '../utils/audioProcessor';
 import { StorageService } from '../services/storage';
+import VoiceClone from './VoiceClone';
 import './MemoryCreator.css';
 
 const MemoryCreator = ({ onMemoryCreated }) => {
@@ -12,6 +13,7 @@ const MemoryCreator = ({ onMemoryCreated }) => {
   const [currentPeaks, setCurrentPeaks] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [previewCanvas, setPreviewCanvas] = useState(null);
+  const [createdMemory, setCreatedMemory] = useState(null);
   
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -136,7 +138,8 @@ const MemoryCreator = ({ onMemoryCreated }) => {
         }
         
         // In a real app, you'd save to your database here
-        console.log('Memory created:', {
+        const memoryData = {
+          id: Date.now(),
           title,
           userId: currentUser.uid,
           imageUrl: uploadResult.waveformUrl,
@@ -144,7 +147,10 @@ const MemoryCreator = ({ onMemoryCreated }) => {
           qrUrl: qrApiUrl,
           playUrl: playPageUrl,
           uniqueId
-        });
+        };
+        
+        console.log('Memory created:', memoryData);
+        setCreatedMemory(memoryData);
       }
       
       // Show success message
@@ -297,6 +303,18 @@ const MemoryCreator = ({ onMemoryCreated }) => {
             </p>
           </div>
         </div>
+      )}
+
+      {/* Voice Cloning Section */}
+      {createdMemory && (
+        <VoiceClone 
+          memoryId={createdMemory.id}
+          audioUrl={createdMemory.audioUrl}
+          memoryTitle={createdMemory.title}
+          onCloneCreated={() => {
+            console.log('Voice clone created successfully');
+          }}
+        />
       )}
     </div>
   );
