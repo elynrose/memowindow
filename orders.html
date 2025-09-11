@@ -416,8 +416,8 @@
         
         <!-- Page Header -->
         <div class="page-header">
-            <h1 class="page-title">My Orders</h1>
-            <p class="page-subtitle">Track your MemoryWave print orders</p>
+            <h1 class="page-title" style="color:#FFFFFF;">My Orders</h1>
+            <p class="page-subtitle" style="margin-bottom: 50px; color:#FFFFFF;">Track your MemoryWave print orders</p>
         </div>
 
         <!-- Orders Container -->
