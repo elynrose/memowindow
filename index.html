@@ -965,7 +965,7 @@
                             ${package.features.map(feature => `<li>${feature}</li>`).join('')}
                         </ul>
                         ${isFree ? 
-                            '<a href="login.html" class="cta-button">Get Started Free</a>' :
+                            '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\')">Get Started Free</a>' :
                             `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly')">Start ${package.name} Plan</a>`
                         }
                     </div>
@@ -988,7 +988,7 @@
         }
 
         // Subscription functionality
-        window.startSubscription = function(packageSlug, billingCycle) {
+        window.startSubscription = async function(packageSlug, billingCycle) {
             console.log('startSubscription called with:', packageSlug, billingCycle);
             
             // Check if auth is available
@@ -1009,10 +1009,49 @@
                 return;
             }
             
-            // User is authenticated, redirect to subscription checkout
+            // User is authenticated, create Stripe checkout session
             const userId = currentUser.uid;
-            console.log('User authenticated, redirecting to subscription checkout with userId:', userId);
-            window.location.href = `subscription_checkout.php?user_id=${encodeURIComponent(userId)}`;
+            const userEmail = currentUser.email;
+            const userName = currentUser.displayName || currentUser.email;
+            
+            console.log('User authenticated, creating Stripe checkout session...');
+            
+            try {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Creating checkout...';
+                button.disabled = true;
+                
+                // Create checkout session
+                const response = await fetch(`create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(userId)}&user_email=${encodeURIComponent(userEmail)}&user_name=${encodeURIComponent(userName)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.redirect_url) {
+                        // Free plan - redirect to app
+                        console.log('Free plan activated, redirecting to app');
+                        window.location.href = data.redirect_url;
+                    } else if (data.checkout_url) {
+                        // Paid plan - redirect to Stripe checkout
+                        console.log('Redirecting to Stripe checkout:', data.checkout_url);
+                        window.location.href = data.checkout_url;
+                    }
+                } else {
+                    console.error('Failed to create checkout session:', data.error);
+                    alert('Error creating checkout session: ' + data.error);
+                    // Restore button
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error creating checkout session:', error);
+                alert('Error creating checkout session. Please try again.');
+                // Restore button
+                const button = event.target;
+                button.textContent = originalText;
+                button.disabled = false;
+            }
         };
     </script>
 </body>
