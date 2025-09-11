@@ -1,5 +1,5 @@
 // Orders page functionality
-import { getCurrentUser } from './auth.js';
+import { getCurrentUser } from './app-auth.js';
 
 let currentUser = null;
 
@@ -11,13 +11,17 @@ export function initOrders() {
 }
 
 async function waitForAuthAndLoadOrders() {
-    const maxAttempts = 50; // 5 seconds max wait
+    const maxAttempts = 100; // 10 seconds max wait
     let attempts = 0;
+    
+    console.log("🔍 Waiting for authentication...");
     
     while (attempts < maxAttempts) {
         currentUser = getCurrentUser();
+        console.log(`🔍 Attempt ${attempts + 1}: currentUser =`, currentUser ? 'authenticated' : 'null');
+        
         if (currentUser) {
-            // User authenticated, loading orders
+            console.log("✅ User authenticated, loading orders");
             await loadOrders();
             return;
         }
@@ -28,7 +32,7 @@ async function waitForAuthAndLoadOrders() {
     }
     
     // If we get here, authentication timed out
-    // Authentication timeout, showing login prompt
+    console.log("❌ Authentication timeout, showing login prompt");
     showLoginPrompt();
 }
 
