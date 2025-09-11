@@ -153,6 +153,10 @@
     gap: 4px;
 }
 
+.mobile-menu-toggle.hidden {
+    display: none !important;
+}
+
 .mobile-menu-toggle span {
     width: 25px;
     height: 3px;

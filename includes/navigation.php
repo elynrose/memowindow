@@ -4,15 +4,16 @@
 <!-- Modern Header -->
 <header class="header">
     <nav class="nav">
-        <a href="index.php" class="logo">
-            <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
-        </a>
         <!-- Mobile hamburger menu -->
-        <button id="mobileMenuToggle" class="mobile-menu-toggle hidden">
+        <button id="mobileMenuToggle" class="mobile-menu-toggle">
             <span></span>
             <span></span>
             <span></span>
         </button>
+        
+        <a href="index.php" class="logo">
+            <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+        </a>
         
         <div id="userInfo" class="user-info hidden">
             <a href="memories.php" class="header-link">My Memories</a>
