@@ -930,25 +930,25 @@
                 
                 console.log('Rendering', packages.length, 'packages');
                 
-                const packagesHTML = packages.map(package => {
-                    const isPopular = package.is_popular;
-                    const isFree = package.price_monthly === 0;
+                const packagesHTML = packages.map(pkg => {
+                    const isPopular = pkg.is_popular;
+                    const isFree = pkg.price_monthly === 0;
                     
                     return `
                         <div class="pricing-card ${isPopular ? 'featured' : ''}">
-                            <h3>${package.name}</h3>
+                            <h3>${pkg.name}</h3>
                             <div class="price">
-                                ${isFree ? 'Free' : `$${package.price_monthly.toFixed(2)}`}
+                                ${isFree ? 'Free' : `$${pkg.price_monthly.toFixed(2)}`}
                             </div>
                             <div class="price-period">
                                 ${isFree ? 'forever' : 'per month'}
                             </div>
                             <ul class="pricing-features">
-                                ${package.features.map(feature => `<li>${feature}</li>`).join('')}
+                                ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}
                             </ul>
                             ${isFree ? 
                                 '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\', this)">Get Started Free</a>' :
-                                `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly', this)">Start ${package.name} Plan</a>`
+                                `<a href="#" class="cta-button" onclick="startSubscription('${pkg.slug}', 'monthly', this)">Start ${pkg.name} Plan</a>`
                             }
                         </div>
                     `;
