@@ -1055,11 +1055,13 @@
                 }
                 
                 const data = await response.json();
+                console.log('Response data:', data);
                 
-                if (data.success) {
+                if (data.success && data.packages) {
+                    console.log('Rendering packages:', data.packages.length);
                     renderPackages(data.packages);
                 } else {
-                    console.error('Failed to load packages:', data.error);
+                    console.error('Failed to load packages:', data.error || 'No packages in response');
                     showPackageError();
                 }
             } catch (error) {
@@ -1076,38 +1078,54 @@
         }
         
         function renderPackages(packages) {
-            const pricingGrid = document.getElementById('pricingGrid');
-            
-            if (!packages || packages.length === 0) {
-                showPackageError();
-                return;
-            }
-            
-            const packagesHTML = packages.map(package => {
-                const isPopular = package.is_popular;
-                const isFree = package.price_monthly === 0;
+            try {
+                console.log('renderPackages called with:', packages);
+                const pricingGrid = document.getElementById('pricingGrid');
                 
-                return `
-                    <div class="pricing-card ${isPopular ? 'featured' : ''}">
-                        <h3>${package.name}</h3>
-                        <div class="price">
-                            ${isFree ? 'Free' : `$${package.price_monthly.toFixed(2)}`}
+                if (!pricingGrid) {
+                    console.error('pricingGrid element not found');
+                    return;
+                }
+                
+                if (!packages || packages.length === 0) {
+                    console.error('No packages to render');
+                    showPackageError();
+                    return;
+                }
+                
+                console.log('Rendering', packages.length, 'packages');
+                
+                const packagesHTML = packages.map(package => {
+                    const isPopular = package.is_popular;
+                    const isFree = package.price_monthly === 0;
+                    
+                    return `
+                        <div class="pricing-card ${isPopular ? 'featured' : ''}">
+                            <h3>${package.name}</h3>
+                            <div class="price">
+                                ${isFree ? 'Free' : `$${package.price_monthly.toFixed(2)}`}
+                            </div>
+                            <div class="price-period">
+                                ${isFree ? 'forever' : 'per month'}
+                            </div>
+                            <ul class="pricing-features">
+                                ${package.features.map(feature => `<li>${feature}</li>`).join('')}
+                            </ul>
+                            ${isFree ? 
+                                '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\', this)">Get Started Free</a>' :
+                                `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly', this)">Start ${package.name} Plan</a>`
+                            }
                         </div>
-                        <div class="price-period">
-                            ${isFree ? 'forever' : 'per month'}
-                        </div>
-                        <ul class="pricing-features">
-                            ${package.features.map(feature => `<li>${feature}</li>`).join('')}
-                        </ul>
-                        ${isFree ? 
-                            '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\', this)">Get Started Free</a>' :
-                            `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly', this)">Start ${package.name} Plan</a>`
-                        }
-                    </div>
-                `;
-            }).join('');
-            
-            pricingGrid.innerHTML = packagesHTML;
+                    `;
+                }).join('');
+                
+                pricingGrid.innerHTML = packagesHTML;
+                console.log('Packages rendered successfully');
+                
+            } catch (error) {
+                console.error('Error in renderPackages:', error);
+                showPackageError();
+            }
         }
         
         function showPackageError() {
