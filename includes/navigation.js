@@ -37,10 +37,38 @@ export function initNavigation() {
     if (els.ordersLink) {
         els.ordersLink.addEventListener('click', (e) => {
             e.preventDefault();
-            // Get current user and redirect to orders
+            
+            // Try multiple ways to get current user
+            let currentUser = null;
+            
+            // Method 1: Check window.auth
             if (window.auth && window.auth.currentUser) {
-                window.location.href = `orders.php?user_id=${encodeURIComponent(window.auth.currentUser.uid)}`;
+                currentUser = window.auth.currentUser;
+            }
+            
+            // Method 2: Check sessionStorage
+            if (!currentUser) {
+                const storedUser = sessionStorage.getItem('currentUser');
+                if (storedUser) {
+                    try {
+                        const userData = JSON.parse(storedUser);
+                        currentUser = userData;
+                    } catch (error) {
+                        console.error('Error parsing stored user:', error);
+                    }
+                }
+            }
+            
+            // Method 3: Check global getCurrentUser function
+            if (!currentUser && window.getCurrentUser) {
+                currentUser = window.getCurrentUser();
+            }
+            
+            if (currentUser && currentUser.uid) {
+                console.log('✅ User found, redirecting to orders');
+                window.location.href = `orders.php?user_id=${encodeURIComponent(currentUser.uid)}`;
             } else {
+                console.log('❌ No user found, redirecting to login');
                 window.location.href = 'login.php';
             }
         });

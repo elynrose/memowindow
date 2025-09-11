@@ -90,12 +90,13 @@ export function initAppAuth() {
   } else {
     // No stored user data found, waiting for Firebase auth
     // Set a timeout to redirect if Firebase auth doesn't respond
+    // But only redirect if we're not on the orders page (which handles its own auth)
     setTimeout(() => {
-      if (!currentUser) {
+      if (!currentUser && !window.location.pathname.includes('orders.php')) {
         // Firebase auth timeout, redirecting to login
         redirectToLogin();
       }
-    }, 3000); // 3 second timeout
+    }, 5000); // 5 second timeout, increased from 3
   }
   
   // Set up auth state listener
