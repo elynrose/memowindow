@@ -1,16 +1,10 @@
 <?php
 // admin_users.php - User management interface
-require_once 'secure_auth.php';
+require_once 'auth_check.php';
 require_once 'config.php';
 
-// Check session timeout
-if (!checkSessionTimeout()) {
-    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
-    exit;
-}
-
 // Require admin authentication
-$userFirebaseUID = requireSecureAdmin();
+$userFirebaseUID = requireAdmin();
 
 // Check if user is admin
 try {
@@ -259,9 +253,9 @@ try {
                     <?php endif; ?>
 
                     <div class="user-actions">
-                        <a href="user_details.php?target_user=<?php echo urlencode($user['user_id']); ?>" 
+                        <a href="user_details.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=<?php echo urlencode($user['user_id']); ?>" 
                            class="admin-btn admin-btn-sm">View Details</a>
-                        <a href="user_details.php?target_user=<?php echo urlencode($user['user_id']); ?>" 
+                        <a href="orders.php" 
                            class="admin-btn admin-btn-secondary admin-btn-sm">View Orders</a>
                         <?php if ($orders): ?>
                         <button onclick="exportUserData('<?php echo $user['user_id']; ?>')" 
@@ -327,7 +321,7 @@ try {
         }
 
         function exportUserData(userId) {
-            window.open(`export_user_data.php?target_user=${encodeURIComponent(userId)}`, '_blank');
+            window.open(`export_user_data.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=${encodeURIComponent(userId)}`, '_blank');
         }
 
         // Auto-refresh every 60 seconds

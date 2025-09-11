@@ -5,16 +5,9 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Load configuration and authentication
+// Database configuration
+// Load configuration
 require_once 'config.php';
-require_once 'secure_auth.php';
-
-// Check authentication
-if (!isLoggedIn()) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Authentication required']);
-    exit;
-}
 
 $dbHost = DB_HOST;
 $dbName = DB_NAME;
@@ -23,14 +16,14 @@ $dbPass = DB_PASS;
 $table = 'wave_assets';
 
 // Validate required parameters
-if (!isset($_POST['memory_id'])) {
+if (!isset($_POST['memory_id']) || !isset($_POST['user_id'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing memory ID']);
+    echo json_encode(['error' => 'Missing required parameters']);
     exit;
 }
 
 $memoryId = intval($_POST['memory_id']);
-$userId = getCurrentUser()['user_id'];
+$userId = $_POST['user_id'];
 
 if ($memoryId <= 0) {
     http_response_code(400);

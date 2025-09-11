@@ -415,7 +415,7 @@ async function createMemory() {
         }
         
         // Check subscription limits
-        const subscriptionResponse = await fetch(`check_subscription.php`);
+        const subscriptionResponse = await fetch(`check_subscription.php?user_id=${currentUser.uid}`);
         const subscriptionData = await subscriptionResponse.json();
         
         if (subscriptionData.success && !subscriptionData.limits.can_create_memory.allowed) {
@@ -694,7 +694,7 @@ async function loadUserWaveforms() {
         const currentUser = getCurrentUser();
         if (!currentUser) return;
         
-        const response = await fetch(`get_waveforms.php`);
+        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
         const data = await response.json();
         
         if (data.waveforms && data.waveforms.length > 0) {
@@ -821,7 +821,7 @@ async function loadUserAudioLimit() {
         }
         
         console.log('Loading audio limit for user:', currentUser.uid);
-        const response = await fetch(`get_user_audio_limit.php`);
+        const response = await fetch(`get_user_audio_limit.php?user_id=${currentUser.uid}`);
         const data = await response.json();
         
         console.log('Audio limit response:', data);

@@ -5,21 +5,17 @@
  */
 
 require_once 'config.php';
-require_once 'secure_auth.php';
 
 // Set JSON header
 header('Content-Type: application/json');
 
 try {
     // Get user ID from request
-    // Check authentication - session only
-    if (!isLoggedIn()) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Authentication required']);
-        exit;
-    }
+    $userId = $_GET['user_id'] ?? '';
     
-    $userId = getCurrentUser()['user_id'];
+    if (empty($userId)) {
+        throw new Exception('User ID is required');
+    }
     
     // Connect to database
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [

@@ -2,7 +2,6 @@
 import { getCurrentUser } from './app-auth.js';
 
 let currentUser = null;
-let allOrders = []; // Store all orders for filtering
 
 export function initOrders() {
     // Orders page loaded
@@ -54,16 +53,12 @@ async function loadOrders() {
         `;
         
         // Fetch orders from server
-        const response = await fetch(`get_orders.php`);
+        const response = await fetch(`get_orders.php?user_id=${currentUser.uid}`);
         const data = await response.json();
         
         if (data.success) {
-            console.log('📦 Orders loaded:', data.orders);
-            allOrders = data.orders; // Store all orders
             displayOrders(data.orders);
-            initializeSearchAndFilter(); // Initialize search functionality
         } else {
-            console.error('❌ Failed to load orders:', data.error);
             showErrorState(data.error || 'Failed to load orders');
         }
         
@@ -82,12 +77,8 @@ function displayOrders(orders) {
     }
     
     const ordersHTML = orders.map(order => {
-        console.log('🖼️ Processing order image:', order.memory_image_url);
         const statusClass = `status-${order.status.toLowerCase()}`;
         const orderNumber = order.stripe_session_id ? order.stripe_session_id.slice(-8) : 'N/A';
-        const statusInfo = getStatusInfo(order.status);
-        const orderDate = new Date(order.created_at);
-        const lastUpdated = order.updated_at ? new Date(order.updated_at) : orderDate;
         
         return `
             <div class="order-card">
@@ -95,45 +86,17 @@ function displayOrders(orders) {
                     <div>
                         <h2 class="order-title">${order.memory_title || 'Untitled Memory'}</h2>
                         <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">
-                            Order #${orderNumber} • ${orderDate.toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric' 
-                            })}
+                            Order #${orderNumber}
                         </p>
-                        ${lastUpdated.getTime() !== orderDate.getTime() ? 
-                            `<p style="margin: 2px 0 0 0; color: #9ca3af; font-size: 12px;">
-                                Last updated: ${lastUpdated.toLocaleDateString('en-US', { 
-                                    month: 'short', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
-                            </p>` : ''
-                        }
                     </div>
-                    <div style="text-align: right;">
-                        <span class="order-status ${statusClass}">
-                            <span class="status-icon">${statusInfo.icon}</span>
-                            ${statusInfo.label}
-                        </span>
-                        ${statusInfo.description ? 
-                            `<p style="margin: 4px 0 0 0; color: #6b7280; font-size: 11px; text-align: right;">
-                                ${statusInfo.description}
-                            </p>` : ''
-                        }
-                    </div>
+                    <span class="order-status ${statusClass}">
+                        ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </span>
                 </div>
-                
-                ${getOrderProgress(order.status)}
                 
                 <div class="order-details">
                     <img src="${order.memory_image_url}" 
-                         alt="MemoryWave" class="order-image"
-                         onclick="showImageModal('${order.memory_image_url}', '${order.memory_title || 'Untitled Memory'}')"
-                         style="cursor: pointer;"
-                         onload="console.log('✅ Image loaded:', '${order.memory_image_url}')"
-                         onerror="console.error('❌ Image failed to load:', '${order.memory_image_url}'); this.src='https://via.placeholder.com/120x80?text=No+Image'; this.style.border='2px solid #ccc';">
+                         alt="MemoryWave" class="order-image">
                     
                     <div class="order-info">
                         <h4>${order.product_name}</h4>
@@ -267,201 +230,5 @@ window.cancelOrder = async function(orderId) {
         });
     }
 };
-
-// Image modal functions
-window.showImageModal = function(imageUrl, title) {
-    document.getElementById('modalImage').src = imageUrl;
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('imageModal').style.display = 'flex';
-};
-
-window.closeImageModal = function() {
-    document.getElementById('imageModal').style.display = 'none';
-};
-
-// Close modal on escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeImageModal();
-    }
-});
-
-// Status information helper function
-function getStatusInfo(status) {
-    const statusMap = {
-        'pending': {
-            icon: '⏳',
-            label: 'Pending',
-            description: 'Payment processing'
-        },
-        'paid': {
-            icon: '✅',
-            label: 'Paid',
-            description: 'Payment confirmed'
-        },
-        'processing': {
-            icon: '🔄',
-            label: 'Processing',
-            description: 'Preparing your order'
-        },
-        'shipped': {
-            icon: '📦',
-            label: 'Shipped',
-            description: 'On its way to you'
-        },
-        'delivered': {
-            icon: '🎉',
-            label: 'Delivered',
-            description: 'Enjoy your memory!'
-        },
-        'cancelled': {
-            icon: '❌',
-            label: 'Cancelled',
-            description: 'Order cancelled'
-        },
-        'refunded': {
-            icon: '💰',
-            label: 'Refunded',
-            description: 'Refund processed'
-        }
-    };
-    
-    return statusMap[status.toLowerCase()] || {
-        icon: '❓',
-        label: status.charAt(0).toUpperCase() + status.slice(1),
-        description: ''
-    };
-}
-
-// Order progress indicator function
-function getOrderProgress(status) {
-    const steps = [
-        { key: 'pending', label: 'Payment', icon: '💳' },
-        { key: 'paid', label: 'Confirmed', icon: '✅' },
-        { key: 'processing', label: 'Processing', icon: '🔄' },
-        { key: 'shipped', label: 'Shipped', icon: '📦' },
-        { key: 'delivered', label: 'Delivered', icon: '🎉' }
-    ];
-    
-    const statusIndex = steps.findIndex(step => step.key === status.toLowerCase());
-    
-    // Don't show progress for cancelled or refunded orders
-    if (['cancelled', 'refunded'].includes(status.toLowerCase())) {
-        return '';
-    }
-    
-    return `
-        <div class="order-progress">
-            <div class="progress-steps">
-                ${steps.map((step, index) => {
-                    let stepClass = '';
-                    if (index < statusIndex) {
-                        stepClass = 'completed';
-                    } else if (index === statusIndex) {
-                        stepClass = 'current';
-                    }
-                    
-                    return `
-                        <div class="progress-step ${stepClass}">
-                            <div class="step-icon">${step.icon}</div>
-                            <div class="step-label">${step.label}</div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        </div>
-    `;
-}
-
-// Search and Filter functionality
-function initializeSearchAndFilter() {
-    const searchInput = document.getElementById('orderSearch');
-    const statusFilter = document.getElementById('statusFilter');
-    const dateFilter = document.getElementById('dateFilter');
-    const clearFilters = document.getElementById('clearFilters');
-    
-    if (!searchInput || !statusFilter || !dateFilter || !clearFilters) {
-        console.log('Search elements not found, skipping search initialization');
-        return;
-    }
-    
-    // Add event listeners
-    searchInput.addEventListener('input', filterOrders);
-    statusFilter.addEventListener('change', filterOrders);
-    dateFilter.addEventListener('change', filterOrders);
-    clearFilters.addEventListener('click', clearAllFilters);
-    
-    console.log('Search and filter functionality initialized');
-}
-
-function filterOrders() {
-    const searchTerm = document.getElementById('orderSearch')?.value.toLowerCase() || '';
-    const statusFilter = document.getElementById('statusFilter')?.value || '';
-    const dateFilter = document.getElementById('dateFilter')?.value || '';
-    
-    let filteredOrders = allOrders.filter(order => {
-        // Search filter
-        const matchesSearch = !searchTerm || 
-            order.stripe_session_id?.toLowerCase().includes(searchTerm) ||
-            order.memory_title?.toLowerCase().includes(searchTerm) ||
-            order.product_name?.toLowerCase().includes(searchTerm);
-        
-        // Status filter
-        const matchesStatus = !statusFilter || order.status === statusFilter;
-        
-        // Date filter
-        const matchesDate = !dateFilter || isDateInRange(order.created_at, dateFilter);
-        
-        return matchesSearch && matchesStatus && matchesDate;
-    });
-    
-    displayOrders(filteredOrders);
-    updateResultsCounter(filteredOrders.length, allOrders.length);
-}
-
-function isDateInRange(dateString, range) {
-    const orderDate = new Date(dateString);
-    const now = new Date();
-    
-    switch (range) {
-        case 'today':
-            return orderDate.toDateString() === now.toDateString();
-        case 'week':
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            return orderDate >= weekAgo;
-        case 'month':
-            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-            return orderDate >= monthAgo;
-        case 'quarter':
-            const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-            return orderDate >= quarterAgo;
-        case 'year':
-            const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-            return orderDate >= yearAgo;
-        default:
-            return true;
-    }
-}
-
-function clearAllFilters() {
-    document.getElementById('orderSearch').value = '';
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('dateFilter').value = '';
-    filterOrders();
-}
-
-function updateResultsCounter(filteredCount, totalCount) {
-    const resultsCounter = document.getElementById('resultsCounter');
-    const resultsText = document.getElementById('resultsText');
-    
-    if (resultsCounter && resultsText) {
-        if (filteredCount < totalCount) {
-            resultsText.textContent = `Showing ${filteredCount} of ${totalCount} orders`;
-            resultsCounter.style.display = 'block';
-        } else {
-            resultsCounter.style.display = 'none';
-        }
-    }
-}
 
 // Orders functionality initialized

@@ -6,20 +6,19 @@ header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once 'config.php';
-require_once 'secure_auth.php';
 
 try {
-    // Check authentication - session only
-    if (!isLoggedIn()) {
-        http_response_code(401);
+    // Validate user_id parameter
+    if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
+        http_response_code(400);
         echo json_encode([
             'success' => false,
-            'error' => 'Authentication required'
+            'error' => 'user_id parameter required'
         ]);
         exit;
     }
     
-    $userId = getCurrentUser()['user_id'];
+    $userId = $_GET['user_id'];
     
     // Connect to database
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [

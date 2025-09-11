@@ -182,7 +182,7 @@ window.loadMoreWaveforms = async function(offset) {
   try {
     // Loading more waveforms
     const currentUser = window.getCurrentUser();
-    const response = await fetch(`get_waveforms.php?offset=${offset}&limit=5`);
+    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
     
     if (!response.ok) throw new Error('Failed to load more waveforms');
     

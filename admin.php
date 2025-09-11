@@ -1,18 +1,12 @@
 <?php
 // admin.php - MemoWindow Admin Dashboard
-require_once 'secure_auth.php';
+require_once 'auth_check.php';
 require_once 'secure_db.php';
 
-// Check session timeout
-if (!checkSessionTimeout()) {
-    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
-    exit;
-}
-
 // Require admin authentication
-$userFirebaseUID = requireSecureAdmin();
+$userFirebaseUID = requireAdmin();
 
-// User is already verified as admin by requireSecureAdmin()
+// User is already verified as admin by requireAdmin()
 // Update last login using secure database helper
 try {
     updateAdminLastLogin($userFirebaseUID);
@@ -122,21 +116,8 @@ try {
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1>📊 MemoWindow Admin Dashboard</h1>
-                    <p>Manage users, orders, and analytics</p>
-                </div>
-                <div style="text-align: right;">
-                    <p style="margin: 0; color: #666; font-size: 14px;">
-                        Welcome, <?php echo htmlspecialchars(getCurrentUser()['name'] ?: getCurrentUser()['email']); ?>
-                    </p>
-                    <a href="<?php echo BASE_URL; ?>/login.php?logout=1" 
-                       style="color: #dc3545; text-decoration: none; font-size: 14px;">
-                        Logout
-                    </a>
-                </div>
-            </div>
+            <h1>📊 MemoWindow Admin Dashboard</h1>
+            <p>Manage users, orders, and analytics</p>
         </div>
         
         <?php include 'includes/admin_navigation.php'; ?>
@@ -175,25 +156,25 @@ try {
                     <button onclick="exportData('orders')" class="admin-btn">
                         📈 Export Orders
                     </button>
-                    <a href="analytics.php" class="admin-btn">
+                    <a href="analytics.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         📈 Analytics
                     </a>
-                    <a href="admin_users.php" class="admin-btn">
+                    <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         👥 Manage Users
                     </a>
-                    <a href="admin_backups.php" class="admin-btn">
+                    <a href="admin_backups.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         🔒 Audio Backups
                     </a>
-                    <a href="admin_products.php" class="admin-btn">
+                    <a href="admin_products.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         🛒 Manage Products
                     </a>
-                    <a href="admin_orders.php" class="admin-btn">
+                    <a href="admin_orders.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         📦 Manage Orders
                     </a>
-                    <a href="admin_voice_clone.php" class="admin-btn">
+                    <a href="admin_voice_clone.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         🎤 Voice Clone Settings
                     </a>
-                    <a href="admin_subscriptions.php" class="admin-btn">
+                    <a href="admin_subscriptions.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
                         💳 Subscription Management
                     </a>
                 </div>
@@ -348,7 +329,7 @@ try {
         }
 
         function exportData(type) {
-            window.open(`export_data.php?type=${type} `, '_blank');
+            window.open(`export_data.php?type=${type}&user_id=<?php echo urlencode($userFirebaseUID); ?>`, '_blank');
         }
 
         // Analytics now has dedicated page

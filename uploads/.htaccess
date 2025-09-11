@@ -1,5 +1,0 @@
-Options -Indexes
-Deny from all
-<Files ~ "\.(jpg|jpeg|png|gif|mp3|wav|m4a|aac|ogg|webm)$">
-Allow from all
-</Files>

@@ -1,5 +1,5 @@
 // Authentication functionality
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { auth, googleProvider, emailProvider } from '../firebase-config.php';
 
 let currentUser = null;
@@ -15,7 +15,7 @@ async function loadUserWaveforms(offset = 0, append = false) {
   }
   
   try {
-    const response = await fetch(`get_waveforms.php?offset=${offset}&limit=5`);
+    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
     
     if (!response.ok) throw new Error('Failed to load waveforms');
     
@@ -151,52 +151,18 @@ function resetLoginButton() {
 
 // Show user info - redirect to app page
 async function showUserInfo(user) {
-  // User authenticated, creating server-side session
+  // User authenticated, redirecting to app
   
-  try {
-    // Get Firebase ID token for server-side verification
-    const idToken = await user.getIdToken();
-    
-    // Create server-side session
-    const response = await fetch('firebase_login.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        idToken: idToken,
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      console.log('✅ Server-side session created successfully');
-      
-      // Store user data in sessionStorage for the app page
-      sessionStorage.setItem('currentUser', JSON.stringify({
-        uid: user.uid,
-        displayName: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL
-      }));
-      
-      // Redirect to the app page
-      window.location.href = 'app.php';
-    } else {
-      console.error('❌ Failed to create server-side session:', result.error);
-      // Still redirect to app, but session might not work
-      window.location.href = 'app.php';
-    }
-  } catch (error) {
-    console.error('❌ Error creating server-side session:', error);
-    // Still redirect to app, but session might not work
-    window.location.href = 'app.php';
-  }
+  // Store user data in sessionStorage for the app page
+  sessionStorage.setItem('currentUser', JSON.stringify({
+    uid: user.uid,
+    displayName: user.displayName,
+    email: user.email,
+    photoURL: user.photoURL
+  }));
+  
+  // Redirect to the app page
+  window.location.href = 'app.php';
 }
 
 // Initialize authentication
@@ -219,17 +185,6 @@ export function initAuth() {
   // Mark button as initialized
   els.btnLogin.dataset.initialized = 'true';
   
-  // Check for redirect result first
-  getRedirectResult(auth).then((result) => {
-    if (result) {
-      // User just signed in via redirect
-      console.log('✅ User signed in via redirect:', result.user);
-      // The onAuthStateChanged listener will handle the UI update
-    }
-  }).catch((error) => {
-    console.error('❌ Redirect result error:', error);
-  });
-
   // Set up auth state listener
   onAuthStateChanged(auth, (user) => {
     // Auth state changed
@@ -250,9 +205,11 @@ export function initAuth() {
       els.btnLogin.disabled = true;
       els.btnLogin.textContent = 'Signing in...';
       
-      // Use redirect instead of popup for better reliability
-      await signInWithRedirect(auth, googleProvider);
-      // The page will redirect to Google, then back to our app
+      // Attempting sign in with popup
+      const result = await signInWithPopup(auth, googleProvider);
+      // Sign in successful
+      
+      // The onAuthStateChanged listener handles the UI update automatically
       
     } catch (error) {
       console.error('❌ Login failed:', error);
@@ -388,7 +345,7 @@ export function initAuth() {
 // Function to check if user is admin and add admin link
 async function checkAdminStatus(userUID) {
   try {
-    const response = await fetch(`check_admin.php`);
+    const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
     const data = await response.json();
     
     if (data.is_admin) {
@@ -396,7 +353,7 @@ async function checkAdminStatus(userUID) {
       const userInfo = document.getElementById('userInfo');
       if (userInfo && !userInfo.querySelector('.admin-link')) {
         const adminLink = document.createElement('a');
-        adminLink.href = `admin.php`;
+        adminLink.href = `admin.php?user_id=${encodeURIComponent(userUID)}`;
         adminLink.className = 'admin-link';
         adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
         adminLink.textContent = 'Admin';

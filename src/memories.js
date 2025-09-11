@@ -68,7 +68,7 @@ async function loadMemories() {
         
         // Loading memories for user
         
-        const response = await fetch(`get_waveforms.php`);
+        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
         // API Response received
         
         if (!response.ok) {
@@ -531,7 +531,7 @@ window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
         const currentUser = getCurrentUser();
         
         // Check subscription limits first
-        const subscriptionResponse = await fetch(`check_subscription.php`);
+        const subscriptionResponse = await fetch(`check_subscription.php?user_id=${currentUser.uid}`);
         const subscriptionData = await subscriptionResponse.json();
         
         if (subscriptionData.success && !subscriptionData.limits.can_create_voice_clone.allowed) {

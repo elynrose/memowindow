@@ -41,7 +41,7 @@ try {
     if (!$priceId) {
         // For now, redirect to a simple success page since Stripe is not fully configured
         // In production, you would need to create Stripe products and prices first
-        header('Location: subscription_success.php' . urlencode($userId) . '&package_id=' . urlencode($package['id']) . '&package_name=' . urlencode($package['name']) . '&billing=' . urlencode($billing));
+        header('Location: subscription_success.php?user_id=' . urlencode($userId) . '&package_id=' . urlencode($package['id']) . '&package_name=' . urlencode($package['name']) . '&billing=' . urlencode($billing));
         exit;
     }
     
@@ -54,7 +54,7 @@ try {
         ]],
         'mode' => 'subscription',
         'success_url' => BASE_URL . '/subscription_success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => BASE_URL . '/subscription_checkout.php' . urlencode($userId),
+        'cancel_url' => BASE_URL . '/subscription_checkout.php?user_id=' . urlencode($userId),
         'customer_email' => $userEmail,
         'metadata' => [
             'user_id' => $userId,

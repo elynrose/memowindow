@@ -267,169 +267,31 @@
         }
         
         .order-status {
-            padding: 8px 16px;
-            border-radius: 25px;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s ease;
-        }
-        
-        .order-status:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        .status-icon {
-            font-size: 14px;
-            line-height: 1;
-        }
-        
-        .status-pending {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            color: #92400e;
-            border: 1px solid #f59e0b;
         }
         
         .status-paid {
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            background: #d1fae5;
             color: #065f46;
-            border: 1px solid #10b981;
         }
         
         .status-processing {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            background: #dbeafe;
             color: #1e40af;
-            border: 1px solid #3b82f6;
         }
         
         .status-shipped {
-            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            background: #e0e7ff;
             color: #3730a3;
-            border: 1px solid #6366f1;
         }
         
-        .status-delivered {
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-        
-        .status-cancelled {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-        
-        .status-refunded {
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-            color: #374151;
-            border: 1px solid #6b7280;
-        }
-        
-        /* Status with pulse animation for active statuses */
-        .status-pending::before,
-        .status-processing::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: inherit;
-            border-radius: inherit;
-            opacity: 0.3;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-        }
-        
-        /* Order progress indicator */
-        .order-progress {
-            margin: 16px 0;
-            padding: 12px;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .progress-steps {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        
-        .progress-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-            position: relative;
-        }
-        
-        .progress-step:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 12px;
-            left: 50%;
-            width: 100%;
-            height: 2px;
-            background: #e2e8f0;
-            z-index: 1;
-        }
-        
-        .progress-step.completed:not(:last-child)::after {
-            background: #10b981;
-        }
-        
-        .step-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            background: #e2e8f0;
-            color: #6b7280;
-            position: relative;
-            z-index: 2;
-            margin-bottom: 4px;
-        }
-        
-        .progress-step.completed .step-icon {
-            background: #10b981;
-            color: white;
-        }
-        
-        .progress-step.current .step-icon {
-            background: #3b82f6;
-            color: white;
-            animation: pulse 2s infinite;
-        }
-        
-        .step-label {
-            font-size: 10px;
-            color: #6b7280;
-            text-align: center;
-            font-weight: 500;
-        }
-        
-        .progress-step.completed .step-label,
-        .progress-step.current .step-label {
-            color: #374151;
-            font-weight: 600;
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
         }
         
         .order-details {
@@ -440,18 +302,12 @@
         }
         
         .order-image {
-            width: 120px;
-            height: 80px;
+            width: 80px;
+            height: 50px;
             border-radius: 8px;
             border: 1px solid #e6e9f2;
             object-fit: cover;
             background: white;
-            transition: transform 0.2s ease;
-        }
-        
-        .order-image:hover {
-            transform: scale(1.05);
-            border-color: #667eea;
         }
         
         .order-info {
@@ -564,57 +420,6 @@
             <p class="page-subtitle" style="margin-bottom: 50px; color:#FFFFFF;">Track your MemoryWave print orders</p>
         </div>
 
-        <!-- Search and Filter Section -->
-        <div class="search-filter-section" style="margin-bottom: 30px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
-            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                <!-- Search Input -->
-                <div style="flex: 1; min-width: 250px;">
-                    <input type="text" id="orderSearch" placeholder="Search orders by ID, memory title, or product..." 
-                           style="width: 100%; padding: 12px 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 14px; backdrop-filter: blur(5px);">
-                    <style>
-                        #orderSearch::placeholder { color: rgba(255,255,255,0.7); }
-                        #orderSearch:focus { outline: none; border-color: #667eea; background: rgba(255,255,255,0.15); }
-                    </style>
-                </div>
-                
-                <!-- Status Filter -->
-                <div>
-                    <select id="statusFilter" style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 14px; backdrop-filter: blur(5px); min-width: 150px;">
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="refunded">Refunded</option>
-                    </select>
-                </div>
-                
-                <!-- Date Filter -->
-                <div>
-                    <select id="dateFilter" style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 14px; backdrop-filter: blur(5px); min-width: 150px;">
-                        <option value="">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                        <option value="quarter">This Quarter</option>
-                        <option value="year">This Year</option>
-                    </select>
-                </div>
-                
-                <!-- Clear Filters -->
-                <button id="clearFilters" style="padding: 12px 20px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 14px; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s;">
-                    Clear Filters
-                </button>
-            </div>
-            
-            <!-- Results Counter -->
-            <div id="resultsCounter" style="margin-top: 15px; color: rgba(255,255,255,0.8); font-size: 14px; display: none;">
-                <span id="resultsText">Showing 0 of 0 orders</span>
-            </div>
-        </div>
-
         <!-- Orders Container -->
         <div id="ordersContainer">
             <div class="loading">
@@ -623,15 +428,6 @@
             </div>
         </div>
         
-    </div>
-
-    <!-- Image Modal -->
-    <div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
-            <button onclick="closeImageModal()" style="position: absolute; top: -40px; right: 0; background: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; font-weight: bold;">×</button>
-            <img id="modalImage" src="" alt="Memory" style="max-width: 100%; max-height: 100%; border-radius: 8px;">
-            <div id="modalTitle" style="text-align: center; color: white; margin-top: 16px; font-size: 18px;"></div>
-        </div>
     </div>
 
     <!-- Firebase SDK -->

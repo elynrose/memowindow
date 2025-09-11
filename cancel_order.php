@@ -2,22 +2,14 @@
 // cancel_order.php - Cancel and delete an order
 header('Content-Type: application/json');
 require_once 'config.php';
-require_once 'secure_auth.php';
 
 // Get parameters
 $orderId = $_POST['order_id'] ?? $_GET['order_id'] ?? '';
+$userId = $_POST['user_id'] ?? $_GET['user_id'] ?? '';
 $reason = $_POST['reason'] ?? $_GET['reason'] ?? 'User requested cancellation';
 
-// Check authentication - session only
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'error' => 'Authentication required']);
-    exit;
-}
-
-$userId = getCurrentUser()['user_id'];
-
 if (!$orderId || !$userId) {
-    echo json_encode(['success' => false, 'error' => 'Missing order ID or authentication required']);
+    echo json_encode(['success' => false, 'error' => 'Missing order ID or user ID']);
     exit;
 }
 

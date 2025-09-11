@@ -1015,7 +1015,7 @@
         async function updateNavigationForLoggedInUser(user) {
             try {
                 // Get user's subscription status
-                const response = await fetch(`get_user_subscription.php
+                const response = await fetch(`get_user_subscription.php?user_id=${encodeURIComponent(user.uid)}`);
                 const data = await response.json();
                 
                 const navSection = document.getElementById('nav-auth-section');
@@ -1032,7 +1032,7 @@
                             </div>
                             ${isFree ? 
                                 '<a href="#pricing" class="upgrade-button">Upgrade</a>' :
-                                '<a href="" class="upgrade-button">Manage</a>'
+                                '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(user.uid) + '" class="upgrade-button">Manage</a>'
                             }
                         </div>
                     `;
@@ -1198,7 +1198,7 @@
                 button.disabled = true;
                 
                 // Create checkout session
-                const url = `create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_email=${encodeURIComponent(userEmail)}&user_name=${encodeURIComponent(userName)}`;
+                const url = `create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(userId)}&user_email=${encodeURIComponent(userEmail)}&user_name=${encodeURIComponent(userName)}`;
                 console.log('Making request to:', url);
                 
                 const response = await fetch(url);

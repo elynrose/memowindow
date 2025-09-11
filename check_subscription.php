@@ -1,19 +1,17 @@
 <?php
 require_once 'config.php';
-require_once 'secure_auth.php';
 require_once 'SubscriptionManager.php';
 
 header('Content-Type: application/json');
 
 try {
-    // Check authentication - session only
-    if (!isLoggedIn()) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Authentication required']);
+    $userId = $_GET['user_id'] ?? '';
+    
+    if (!$userId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'User ID required']);
         exit;
     }
-    
-    $userId = getCurrentUser()['user_id'];
     
     $subscriptionManager = new SubscriptionManager();
     $limits = $subscriptionManager->getUserLimits($userId);

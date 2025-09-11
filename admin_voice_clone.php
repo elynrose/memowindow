@@ -1,16 +1,10 @@
 <?php
 require_once 'config.php';
 require_once 'VoiceCloneSettings.php';
-require_once 'secure_auth.php';
+require_once 'auth_check.php';
 
-// Check session timeout
-if (!checkSessionTimeout()) {
-    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
-    exit;
-}
-
-// Require admin authentication
-$userFirebaseUID = requireSecureAdmin();
+// Require admin authentication using Firebase
+$userFirebaseUID = requireAdmin();
 
 $settings = new VoiceCloneSettings();
 $message = '';
@@ -81,104 +75,6 @@ $topUsers = $settings->getTopUsers();
             color: #dc3545;
             font-weight: bold;
         }
-        
-        /* Form Styling */
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .form-group input[type="checkbox"] {
-            margin-right: 8px;
-            transform: scale(1.2);
-        }
-        
-        .form-group input[type="number"] {
-            width: 100%;
-            max-width: 200px;
-            padding: 10px 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s ease;
-        }
-        
-        .form-group input[type="number"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-group small {
-            display: block;
-            color: #666;
-            font-size: 12px;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-        
-        .btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        
-        .btn:hover {
-            background: #5a67d8;
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
-        /* Card Styling */
-        .admin-card {
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .admin-card h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        /* Alert Styling */
-        .admin-alert {
-            padding: 12px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .admin-alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .admin-alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
     </style>
 </head>
 <body>
@@ -200,7 +96,7 @@ $topUsers = $settings->getTopUsers();
             <?php endif; ?>
 
             <div class="admin-card">
-            <h2>Feature Settings</h2>
+            <h2 style="margin-bottom: 20px;">Feature Settings</h2>
             <form method="POST">
                 <div class="form-group">
                     <label>
@@ -230,8 +126,8 @@ $topUsers = $settings->getTopUsers();
             </form>
         </div>
 
-        <div class="admin-card">
-            <h2>Current Status</h2>
+        <div class="card">
+            <h2 style="margin-bottom: 20px;">Current Status</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number">

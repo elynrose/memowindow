@@ -25,9 +25,6 @@ function loadEnv($path) {
 
 $env = loadEnv(__DIR__ . '/.env');
 
-// Firebase Configuration
-define('FIREBASE_API_KEY', $env['FIREBASE_API_KEY'] ?? 'your_firebase_api_key_here');
-
 // Stripe Configuration
 define('STRIPE_PUBLISHABLE_KEY', $env['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_test_your_stripe_publishable_key_here');
 define('STRIPE_SECRET_KEY', $env['STRIPE_SECRET_KEY'] ?? 'sk_test_your_stripe_secret_key_here');
@@ -59,10 +56,10 @@ $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
 $basePath = $scriptDir === '/' ? '' : $scriptDir;
 
-// Use local URL for development, production URL for production
+// Use production URL for QR codes and external links, local URL for internal operations
 if ($host === 'localhost' || $host === 'localhost:8000' || strpos($host, '127.0.0.1') !== false) {
-    // Development environment - use localhost for all URLs including checkout
-    define('BASE_URL', $protocol . $host . $basePath);
+    // Development environment - use production URL for QR codes
+    define('BASE_URL', 'https://www.memowindow.com');
     define('LOCAL_URL', $protocol . $host . $basePath);
 } else {
     // Production environment

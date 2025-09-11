@@ -4,53 +4,6 @@ import { auth } from '../firebase-config.php';
 
 let currentUser = null;
 
-// Create server-side session from Firebase user
-async function createServerSession(user) {
-  try {
-    console.log('🔍 Creating server session for user:', user.uid);
-    
-    // Get Firebase ID token for server-side verification
-    const idToken = await user.getIdToken();
-    console.log('🔍 Got Firebase ID token');
-    
-    // Create server-side session
-    const response = await fetch('firebase_login.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        idToken: idToken,
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      })
-    });
-    
-    console.log('🔍 Firebase login response status:', response.status);
-    
-    if (!response.ok) {
-      console.error('Failed to create server session:', response.status);
-      return false;
-    }
-    
-    const result = await response.json();
-    console.log('🔍 Firebase login response:', result);
-    
-    if (result.success) {
-      console.log('✅ Server session created successfully');
-      return true;
-    } else {
-      console.error('Server session creation failed:', result.error);
-      return false;
-    }
-  } catch (error) {
-    console.error('Error creating server session:', error);
-    return false;
-  }
-}
-
 // Get DOM elements for app page
 const getElements = () => ({
   userInfo: document.getElementById('userInfo'),
@@ -88,9 +41,6 @@ async function showUserInfo(user) {
   if (els.ordersLink) {
     els.ordersLink.href = `orders.php`;
   }
-  
-  // Create server-side session
-  await createServerSession(user);
   
   // Check if user is admin and add admin link
   checkAdminStatus(user.uid);
@@ -161,7 +111,7 @@ export function initAppAuth() {
         photoURL: user.photoURL
       };
       sessionStorage.setItem('currentUser', JSON.stringify(userData));
-      showUserInfo(user); // Pass the actual Firebase user object
+      showUserInfo(userData);
     } else {
       // User is logged out - redirect to login
       sessionStorage.removeItem('currentUser');
@@ -173,34 +123,11 @@ export function initAppAuth() {
   if (els.btnLogout) {
     els.btnLogout.addEventListener('click', async () => {
       try {
-        console.log('🚪 Logging out...');
-        
-        // Call server-side logout to destroy PHP session
-        const response = await fetch('logout.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        const result = await response.json();
-        console.log('🔍 Server logout response:', result);
-        
-        // Sign out from Firebase
         await signOut(auth);
-        console.log('✅ Firebase sign out successful');
-        
-        // Clear client-side storage
         sessionStorage.removeItem('currentUser');
-        localStorage.removeItem('currentUser');
-        
-        // Redirect to login
         redirectToLogin();
-        
       } catch (error) {
-        console.error('❌ Logout failed:', error);
-        // Even if logout fails, redirect to login
-        redirectToLogin();
+        console.error('Logout failed:', error);
       }
     });
   }
@@ -209,7 +136,7 @@ export function initAppAuth() {
 // Function to check if user is admin and add admin link
 async function checkAdminStatus(userUID) {
   try {
-    const response = await fetch(`check_admin.php`);
+    const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
     const data = await response.json();
     
     if (data.is_admin) {
@@ -217,7 +144,7 @@ async function checkAdminStatus(userUID) {
       const userInfo = document.getElementById('userInfo');
       if (userInfo && !userInfo.querySelector('.admin-link')) {
         const adminLink = document.createElement('a');
-        adminLink.href = `admin.php`;
+        adminLink.href = `admin.php?user_id=${encodeURIComponent(userUID)}`;
         adminLink.className = 'admin-link';
         adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
         adminLink.textContent = 'Admin';
@@ -251,7 +178,7 @@ async function loadSubscriptionStatus(userId) {
   
   try {
     // Get user's subscription status
-    const response = await fetch(`get_user_subscription.php`);
+    const response = await fetch(`get_user_subscription.php?user_id=${encodeURIComponent(userId)}`);
     const data = await response.json();
     
     if (data.success) {
@@ -265,7 +192,7 @@ async function loadSubscriptionStatus(userId) {
         </div>
         ${isFree ? 
           '<a href="index.php#pricing" class="upgrade-button">Upgrade</a>' :
-          '<a href="subscription_checkout.php" class="upgrade-button">Manage</a>'
+          '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(userId) + '" class="upgrade-button">Manage</a>'
         }
       `;
     } else {

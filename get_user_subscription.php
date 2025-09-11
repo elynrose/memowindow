@@ -2,18 +2,15 @@
 // get_user_subscription.php - Get user's current subscription status
 header('Content-Type: application/json');
 require_once 'config.php';
-require_once 'secure_auth.php';
 require_once 'SubscriptionManager.php';
 
 try {
-    // Check authentication - session only
-    if (!isLoggedIn()) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Authentication required']);
-        exit;
-    }
+    // Get user ID from parameter
+    $userId = $_GET['user_id'] ?? '';
     
-    $userId = getCurrentUser()['user_id'];
+    if (!$userId) {
+        throw new Exception('User ID is required');
+    }
     
     $subscriptionManager = new SubscriptionManager();
     
