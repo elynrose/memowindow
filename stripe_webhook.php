@@ -73,6 +73,60 @@ try {
         echo json_encode(['status' => 'success']);
     }
     
+    // Handle subscription events
+    if ($event['type'] == 'customer.subscription.created' || 
+        $event['type'] == 'customer.subscription.updated') {
+        
+        $subscription = $event['data']['object'];
+        $customerId = $subscription['customer'];
+        
+        // Get customer details to find user_id
+        $customer = \Stripe\Customer::retrieve($customerId);
+        $userId = $customer->metadata['user_id'] ?? null;
+        
+        if ($userId) {
+            // Get subscription package from metadata or price
+            $packageSlug = $subscription['metadata']['package_slug'] ?? 'standard';
+            
+            require_once 'SubscriptionManager.php';
+            $subscriptionManager = new SubscriptionManager();
+            $package = $subscriptionManager->getPackageBySlug($packageSlug);
+            
+            if ($package) {
+                // Update user subscription in database
+                $subscriptionManager->createOrUpdateSubscription(
+                    $userId,
+                    $package['id'],
+                    $subscription['id'],
+                    $customerId,
+                    $subscription['status']
+                );
+            }
+        }
+        
+        http_response_code(200);
+        echo json_encode(['status' => 'subscription_updated']);
+    }
+    
+    // Handle subscription cancellation
+    if ($event['type'] == 'customer.subscription.deleted') {
+        $subscription = $event['data']['object'];
+        $customerId = $subscription['customer'];
+        
+        // Get customer details to find user_id
+        $customer = \Stripe\Customer::retrieve($customerId);
+        $userId = $customer->metadata['user_id'] ?? null;
+        
+        if ($userId) {
+            require_once 'SubscriptionManager.php';
+            $subscriptionManager = new SubscriptionManager();
+            $subscriptionManager->cancelSubscription($userId);
+        }
+        
+        http_response_code(200);
+        echo json_encode(['status' => 'subscription_cancelled']);
+    }
+    
 } catch (\Stripe\Exception\SignatureVerificationException $e) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid signature']);

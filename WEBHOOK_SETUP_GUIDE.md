@@ -9,14 +9,22 @@ This guide will help you set up the Stripe webhook to automatically send orders 
 1. Go to: https://dashboard.stripe.com/test/webhooks
 2. Click **"Add endpoint"**
 3. **Endpoint URL**: `http://localhost/memowindow/stripe_webhook.php`
-4. **Events to send**: Select `checkout.session.completed`
+4. **Events to send**: Select these events:
+   - `checkout.session.completed` (for print orders)
+   - `customer.subscription.created` (for new subscriptions)
+   - `customer.subscription.updated` (for subscription changes)
+   - `customer.subscription.deleted` (for subscription cancellations)
 5. Click **"Add endpoint"**
 
 ### For Production:
 1. Go to: https://dashboard.stripe.com/webhooks
 2. Click **"Add endpoint"**
 3. **Endpoint URL**: `https://www.memorywindow.com/stripe_webhook.php`
-4. **Events to send**: Select `checkout.session.completed`
+4. **Events to send**: Select these events:
+   - `checkout.session.completed` (for print orders)
+   - `customer.subscription.created` (for new subscriptions)
+   - `customer.subscription.updated` (for subscription changes)
+   - `customer.subscription.deleted` (for subscription cancellations)
 5. Click **"Add endpoint"**
 
 ## Step 2: Get the Webhook Secret
