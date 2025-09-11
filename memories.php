@@ -472,16 +472,14 @@
             // Fallback: show error message
             const container = document.getElementById("memoriesContainer");
             if (container) {
-                container.innerHTML = \`
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Memories</h3>
-                        <p>There was a problem loading the memories module. Please refresh the page.</p>
-                        <button onclick="location.reload()" class="create-memory-btn" style="margin-top: 1rem;">
-                            Refresh Page
-                        </button>
-                    </div>
-                \`;
+                container.innerHTML = "<div class=\"empty-state\">" +
+                    "<div class=\"empty-state-icon\">⚠️</div>" +
+                    "<h3>Error Loading Memories</h3>" +
+                    "<p>There was a problem loading the memories module. Please refresh the page.</p>" +
+                    "<button onclick=\"location.reload()\" class=\"create-memory-btn\" style=\"margin-top: 1rem;\">" +
+                        "Refresh Page" +
+                    "</button>" +
+                "</div>";
             }
         });
         
