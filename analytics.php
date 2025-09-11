@@ -120,49 +120,9 @@ for ($date = $startDate; $date <= $endDate; $date = date('Y-m-d', strtotime($dat
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics - MemoWindow Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        body {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-            background: #f8fafc;
-            color: #0f172a;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .header {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-        .header h1 {
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        .nav-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-        .nav-link {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
+        /* Page-specific styles */
         }
         .stat-card {
             background: white;
@@ -242,35 +202,33 @@ for ($date = $startDate; $date <= $endDate; $date = date('Y-m-d', strtotime($dat
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>📈 Analytics Dashboard</h1>
             <p>MemoWindow performance metrics and insights</p>
-            <div class="nav-links">
-                <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
-                <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">Users</a>
-                <a href="login.php" class="nav-link">MemoWindow</a>
-            </div>
         </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
 
-        <!-- Key Metrics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number"><?php echo number_format($totalStats['total_users'] ?? 0); ?></div>
-                <div class="stat-label">Total Users</div>
-                <div class="stat-change positive">+<?php echo $totalStats['active_users_7d'] ?? 0; ?> this week</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo number_format($totalStats['total_memories'] ?? 0); ?></div>
-                <div class="stat-label">Memories Created</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo number_format($totalStats['total_orders'] ?? 0); ?></div>
-                <div class="stat-label">Total Orders</div>
-                <div class="stat-change positive">+<?php echo $totalStats['orders_7d'] ?? 0; ?> this week</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">$<?php echo number_format(($totalStats['total_revenue'] ?? 0) / 100, 2); ?></div>
+        <div class="admin-content">
+            <!-- Key Metrics -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo number_format($totalStats['total_users'] ?? 0); ?></div>
+                    <p>Total Users</p>
+                    <small style="color: #28a745;">+<?php echo $totalStats['active_users_7d'] ?? 0; ?> this week</small>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo number_format($totalStats['total_memories'] ?? 0); ?></div>
+                    <p>Memories Created</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo number_format($totalStats['total_orders'] ?? 0); ?></div>
+                    <p>Total Orders</p>
+                    <small style="color: #28a745;">+<?php echo $totalStats['orders_7d'] ?? 0; ?> this week</small>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number">$<?php echo number_format(($totalStats['total_revenue'] ?? 0) / 100, 2); ?></div>
                 <div class="stat-label">Total Revenue</div>
             </div>
         </div>
@@ -479,5 +437,7 @@ for ($date = $startDate; $date <= $endDate; $date = date('Y-m-d', strtotime($dat
             location.reload();
         }, 300000);
     </script>
+        </div>
+    </div>
 </body>
 </html>

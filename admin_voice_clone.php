@@ -96,7 +96,7 @@ $topUsers = $settings->getTopUsers();
             <?php endif; ?>
 
             <div class="admin-card">
-            <h2>Feature Settings</h2>
+            <h2 style="margin-bottom: 20px;">Feature Settings</h2>
             <form method="POST">
                 <div class="form-group">
                     <label>
@@ -127,7 +127,7 @@ $topUsers = $settings->getTopUsers();
         </div>
 
         <div class="card">
-            <h2>Current Status</h2>
+            <h2 style="margin-bottom: 20px;">Current Status</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number">
@@ -147,7 +147,7 @@ $topUsers = $settings->getTopUsers();
         </div>
 
         <div class="card">
-            <h2>Usage Statistics (<?php echo date('F Y'); ?>)</h2>
+            <h2 style="margin-bottom: 20px;">Usage Statistics (<?php echo date('F Y'); ?>)</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number"><?php echo $usageStats['total_users'] ?? 0; ?></div>
@@ -166,7 +166,7 @@ $topUsers = $settings->getTopUsers();
 
         <?php if (!empty($topUsers)): ?>
         <div class="card">
-            <h2>Top Users This Month</h2>
+            <h2 style="margin-bottom: 20px;">Top Users This Month</h2>
             <table>
                 <thead>
                     <tr>
@@ -186,12 +186,7 @@ $topUsers = $settings->getTopUsers();
         </div>
         <?php endif; ?>
 
-        <div class="card">
-            <h2>Quick Actions</h2>
-            <p>
-                <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="btn">← Back to Admin Dashboard</a>
-            </p>
-        </div>
+       
     </div>
 </body>
 </html>

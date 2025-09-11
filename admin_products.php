@@ -586,7 +586,7 @@ function syncProductsFromPrintful($pdo) {
             <!-- Sync Products from Printful -->
             <div class="admin-card">
             <h2>🔄 Sync Products from Printful Store</h2>
-            <p>Fetch all available products from your Printful store and update the local database.</p>
+            <p style="margin-bottom: 40px;">Fetch all available products from your Printful store and update the local database.</p>
             <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #0ea5e9;">
                 <h4 style="margin: 0 0 8px 0; color: #0c4a6e;">ℹ️ Sync Template Info</h4>
                 <p style="margin: 0; color: #374151;">
@@ -613,7 +613,7 @@ function syncProductsFromPrintful($pdo) {
 
         <!-- Add New Product -->
         <div class="section">
-            <h2>➕ Add New Product</h2>
+            <h2 style="margin-bottom: 20px;">➕ Add New Product</h2>
             <form method="POST">
                 <input type="hidden" name="action" value="add_product">
                 <div class="form-grid">
@@ -656,7 +656,7 @@ function syncProductsFromPrintful($pdo) {
 
         <!-- Current Products -->
         <div class="section">
-            <h2>📦 Current Products 
+            <h2 style="margin-bottom: 20px; margin-top: 40px;">📦 Current Products 
                 <span style="font-size: 14px; font-weight: normal; color: #64748b;">
                     (<?php echo $totalCount; ?> total, page <?php echo $currentPage; ?> of <?php echo $totalPages; ?>)
                 </span>

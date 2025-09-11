@@ -34,100 +34,9 @@ function formatDate($timestamp) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backup Storage Admin - MemoWindow</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            color: #1a202c;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            color: #2d3748;
-            margin-bottom: 8px;
-        }
-        
-        .header p {
-            color: #718096;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .stat-card h3 {
-            color: #4a5568;
-            margin-bottom: 12px;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 4px;
-        }
-        
-        .stat-label {
-            color: #718096;
-            font-size: 14px;
-        }
-        
-        .folder-section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .folder-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .folder-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d3748;
-        }
-        
-        .folder-count {
-            background: #e2e8f0;
+        /* Page-specific styles */
             color: #4a5568;
             padding: 4px 12px;
             border-radius: 20px;
@@ -208,42 +117,37 @@ function formatDate($timestamp) {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>🔄 Backup Storage Admin</h1>
             <p>Local backup storage management for MemoWindow files</p>
-            
-            <div class="nav-links">
-                <a href="admin.php" class="nav-link">← Back to Admin</a>
-                <a href="backup_admin.php" class="nav-link active">Backup Storage</a>
-            </div>
         </div>
         
-        <!-- Overall Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Files</h3>
-                <div class="stat-value"><?php echo number_format($stats['total_files']); ?></div>
-                <div class="stat-label">Backed up files</div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Total Size</h3>
-                <div class="stat-value"><?php echo formatBytes($stats['total_size']); ?></div>
-                <div class="stat-label">Storage used</div>
-            </div>
-            
-            <div class="stat-card">
-                <h3>Backup Status</h3>
-                <div class="stat-value"><?php echo $stats['total_files'] > 0 ? '✅ Active' : '⚠️ Empty'; ?></div>
-                <div class="stat-label">System status</div>
-            </div>
-        </div>
+        <?php include 'includes/admin_navigation.php'; ?>
         
-        <!-- Folder Details -->
-        <?php foreach ($folders as $folder): ?>
-        <div class="folder-section">
-            <div class="folder-header">
+        <div class="admin-content">
+            <!-- Overall Statistics -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo number_format($stats['total_files']); ?></div>
+                    <p>Total Files</p>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo formatBytes($stats['total_size']); ?></div>
+                    <p>Total Size</p>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo $stats['total_files'] > 0 ? '✅ Active' : '⚠️ Empty'; ?></div>
+                    <p>Backup Status</p>
+                </div>
+            </div>
+        
+            <!-- Folder Details -->
+            <?php foreach ($folders as $folder): ?>
+            <div class="admin-card">
+                <div class="admin-card-header">
                 <h2 class="folder-title">
                     <?php 
                     $icons = [
@@ -298,6 +202,7 @@ function formatDate($timestamp) {
                 <p><strong>Automatic:</strong> Files are automatically backed up when uploaded and deleted when removed.</p>
                 <p><strong>Non-blocking:</strong> Backup failures don't affect the main upload/delete operations.</p>
             </div>
+        </div>
         </div>
     </div>
 </body>

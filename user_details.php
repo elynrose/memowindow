@@ -66,25 +66,9 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Details - <?php echo substr($targetUserID, 0, 20); ?>... - MemoWindow Admin</title>
+    <link rel="stylesheet" href="includes/admin_styles.css">
     <style>
-        body {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-            background: #f8fafc;
-            color: #0f172a;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
+        /* Page-specific styles */
         .user-id {
             font-family: monospace;
             background: rgba(255,255,255,0.2);
@@ -92,12 +76,6 @@ try {
             border-radius: 4px;
             font-size: 14px;
         }
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid #e2e8f0;
         }
         .stats-grid {
             display: grid;
@@ -168,40 +146,48 @@ try {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="admin-container">
+        <div class="admin-header">
             <h1>👤 User Details</h1>
             <p>User ID: <span class="user-id"><?php echo htmlspecialchars($targetUserID); ?></span></p>
-            <div>
-                <a href="admin_users.php?user_id=<?php echo urlencode($adminUID); ?>" class="nav-link">← Back to Users</a>
-                <a href="admin.php?user_id=<?php echo urlencode($adminUID); ?>" class="nav-link">Dashboard</a>
-            </div>
+        </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
+
+        <!-- Custom Back Button for User Details -->
+        <div class="admin-content" style="margin-top: 20px;">
+            <a href="admin_users.php?user_id=<?php echo urlencode($adminUID); ?>" class="admin-btn admin-btn-secondary" style="margin-bottom: 20px;">
+                ← Back to Users
+            </a>
         </div>
 
-        <!-- User Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number"><?php echo count($userMemories); ?></div>
-                <div class="stat-label">Total Memories</div>
+        <div class="admin-content">
+            <!-- User Statistics -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo count($userMemories); ?></div>
+                    <p>Total Memories</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo count($userOrders); ?></div>
+                    <p>Total Orders</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number">$<?php echo number_format($totalSpent / 100, 2); ?></div>
+                    <p>Total Spent</p>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="number"><?php echo $firstActivity ? date('M j, Y', strtotime($firstActivity)) : 'N/A'; ?></div>
+                    <p>First Activity</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo count($userOrders); ?></div>
-                <div class="stat-label">Total Orders</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">$<?php echo number_format($totalSpent / 100, 2); ?></div>
-                <div class="stat-label">Total Spent</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number"><?php echo $firstActivity ? date('M j, Y', strtotime($firstActivity)) : 'N/A'; ?></div>
-                <div class="stat-label">First Activity</div>
-            </div>
-        </div>
 
-        <!-- User's Memories -->
-        <?php if (!empty($userMemories)): ?>
-        <div class="section">
-            <h2>💕 User's Memories (<?php echo count($userMemories); ?>)</h2>
+            <!-- User's Memories -->
+            <?php if (!empty($userMemories)): ?>
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>💕 User's Memories (<?php echo count($userMemories); ?>)</h2>
+                </div>
             <div class="memory-grid">
                 <?php foreach ($userMemories as $memory): ?>
                 <div class="memory-card">
@@ -229,11 +215,14 @@ try {
         </div>
         <?php endif; ?>
 
-        <!-- User's Orders -->
-        <?php if (!empty($userOrders)): ?>
-        <div class="section">
-            <h2>🛒 User's Orders (<?php echo count($userOrders); ?>)</h2>
-            <table class="table">
+            <!-- User's Orders -->
+            <?php if (!empty($userOrders)): ?>
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>🛒 User's Orders (<?php echo count($userOrders); ?>)</h2>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
                 <thead>
                     <tr>
                         <th>Order ID</th>
@@ -293,5 +282,7 @@ try {
             }
         });
     </script>
+        </div>
+    </div>
 </body>
 </html>

@@ -231,7 +231,7 @@ try {
 
         <!-- Recent Backup Activity -->
         <div class="section">
-            <h2>📋 Memory Backup Status</h2>
+            <h2 style="margin-bottom: 20px;">📋 Memory Backup Status</h2>
             <?php if (isset($error)): ?>
                 <div style="color: #dc2626; text-align: center; padding: 20px;">
                     Error: <?php echo htmlspecialchars($error); ?>
