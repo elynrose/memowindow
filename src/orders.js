@@ -133,7 +133,7 @@ function displayOrders(orders) {
                          onclick="showImageModal('${order.memory_image_url}', '${order.memory_title || 'Untitled Memory'}')"
                          style="cursor: pointer;"
                          onload="console.log('✅ Image loaded:', '${order.memory_image_url}')"
-                         onerror="console.error('❌ Image failed to load:', '${order.memory_image_url}'); this.style.border='2px solid red'; this.alt='Image failed to load';">
+                         onerror="console.error('❌ Image failed to load:', '${order.memory_image_url}'); this.src='https://via.placeholder.com/120x80?text=No+Image'; this.style.border='2px solid #ccc';">
                     
                     <div class="order-info">
                         <h4>${order.product_name}</h4>
