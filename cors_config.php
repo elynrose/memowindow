@@ -159,8 +159,8 @@ function logCORSViolation($origin, $referer) {
     error_log("CORS_VIOLATION: " . json_encode($logEntry));
 }
 
-// Auto-set CORS headers if this file is included
-if (!headers_sent()) {
+// Auto-set CORS headers if this file is included and no output has been sent
+if (!headers_sent() && !defined('SKIP_AUTO_CORS')) {
     setSecureCORSHeaders();
 }
 ?>

@@ -103,7 +103,8 @@ class FunctionalityTestSuite {
             
             // Test user creation
             $testUserId = 'test_user_' . time();
-            $userId = createUser($testUserId, 'test@example.com', 'Test User');
+            $testEmail = 'test_' . time() . '@example.com';
+            $userId = createUser($testUserId, $testEmail, 'Test User');
             
             if (!$userId) {
                 return false;

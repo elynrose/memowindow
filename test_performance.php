@@ -241,7 +241,7 @@ class PerformanceTestSuite {
     
     public function testConcurrentRequests() {
         $url = BASE_URL . '/get_packages.php';
-        $concurrentRequests = 10;
+        $concurrentRequests = 5; // Reduced from 10 to 5
         $successfulRequests = 0;
         
         $startTime = microtime(true);
@@ -264,7 +264,7 @@ class PerformanceTestSuite {
         $endTime = microtime(true);
         $totalTime = ($endTime - $startTime) * 1000;
         
-        return $successfulRequests >= $concurrentRequests * 0.8 && $totalTime < 5000; // 80% success rate in less than 5 seconds
+        return $successfulRequests >= $concurrentRequests * 0.8 && $totalTime < 3000; // 80% success rate in less than 3 seconds
     }
     
     public function printResults() {

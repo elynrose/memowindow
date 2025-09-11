@@ -214,9 +214,12 @@ function createUser($firebaseUID, $email = null, $name = null) {
         return $existing['id'];
     }
     
+    // Use display_name as fallback for name
+    $displayName = $name ?: 'User';
+    
     return $db->insert(
-        "INSERT INTO users (firebase_uid, email, name, created_at) VALUES (?, ?, ?, NOW())",
-        [$firebaseUID, $email, $name]
+        "INSERT INTO users (firebase_uid, email, name, password, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())",
+        [$firebaseUID, $email, $name, 'temp_password', $displayName]
     );
 }
 
@@ -226,7 +229,7 @@ function createUser($firebaseUID, $email = null, $name = null) {
 function updateUserLastLogin($firebaseUID) {
     $db = SecureDB::getInstance();
     return $db->execute(
-        "UPDATE users SET last_login = NOW() WHERE firebase_uid = ?",
+        "UPDATE users SET last_login_at = NOW() WHERE firebase_uid = ?",
         [$firebaseUID]
     );
 }
@@ -237,7 +240,7 @@ function updateUserLastLogin($firebaseUID) {
 function updateAdminLastLogin($firebaseUID) {
     $db = SecureDB::getInstance();
     return $db->execute(
-        "UPDATE admin_users SET last_login = NOW() WHERE firebase_uid = ?",
+        "UPDATE admin_users SET last_login_at = NOW() WHERE firebase_uid = ?",
         [$firebaseUID]
     );
 }
