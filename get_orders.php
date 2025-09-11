@@ -35,14 +35,14 @@ try {
     ]);
 
     // Get user's orders with memory details
-    // Join with users table to match Firebase UID and wave_assets for image URLs
+    // Join with users table to match Firebase UID
     $stmt = $pdo->prepare("
         SELECT 
             o.id,
             o.stripe_session_id,
             o.printful_order_id,
             o.memory_title,
-            COALESCE(w.image_url, o.memory_image_url) as memory_image_url,
+            o.memory_image_url,
             o.product_name,
             o.product_variant_id,
             o.quantity,
@@ -56,7 +56,6 @@ try {
             o.amount_paid
         FROM orders o
         JOIN users u ON o.user_id = u.id
-        LEFT JOIN wave_assets w ON o.memory_id = w.id
         WHERE u.firebase_uid = :user_id
         ORDER BY o.created_at DESC
     ");
