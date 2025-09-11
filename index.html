@@ -836,18 +836,16 @@
             // Check current user immediately
             const currentUser = auth.currentUser;
             if (currentUser) {
-                console.log('Current user found, redirecting to app.html');
-                window.location.href = 'app.html';
-                return;
+                console.log('Current user found, staying on homepage for subscription access');
+                // Don't redirect - let logged-in users access subscription buttons
             }
             
             // Also set up auth state listener as backup
             auth.onAuthStateChanged(function(user) {
                 console.log('Auth state changed on index:', user ? 'Logged in' : 'Logged out');
                 if (user) {
-                    // User is signed in, redirect to app.html
-                    console.log('User is logged in, redirecting to app.html');
-                    window.location.href = 'app.html';
+                    // User is signed in, but don't redirect - let them access subscription buttons
+                    console.log('User is logged in, staying on homepage for subscription access');
                 }
             });
         });
