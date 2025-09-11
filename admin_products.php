@@ -583,8 +583,6 @@ function syncProductsFromPrintful($pdo) {
                 <div class="admin-alert admin-alert-error">❌ <?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-
-            
             <!-- Sync Products from Printful -->
             <div class="admin-card">
             <h2>🔄 Sync Products from Printful Store</h2>
