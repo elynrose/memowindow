@@ -877,6 +877,105 @@
             console.log('Auth object made globally available:', window.auth);
         }, 100);
         
+        // Load packages dynamically
+        async function loadPackages() {
+            try {
+                console.log('Loading packages from get_packages.php...');
+                const response = await fetch(`get_packages.php?t=${Date.now()}`);
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success && data.packages) {
+                    console.log('Rendering packages:', data.packages.length);
+                    renderPackages(data.packages);
+                } else {
+                    console.error('Failed to load packages:', data.error || 'No packages in response');
+                    showPackageError();
+                }
+            } catch (error) {
+                console.error('Error loading packages:', error);
+                console.error('Error details:', error.message);
+                
+                // If it's a JSON parse error, log the response text
+                if (error.message.includes('Unexpected token')) {
+                    console.error('This might be an HTML response instead of JSON');
+                }
+                
+                showPackageError();
+            }
+        }
+        
+        function renderPackages(packages) {
+            try {
+                console.log('renderPackages called with:', packages);
+                const pricingGrid = document.getElementById('pricingGrid');
+                
+                if (!pricingGrid) {
+                    console.error('pricingGrid element not found');
+                    return;
+                }
+                
+                if (!packages || packages.length === 0) {
+                    console.error('No packages to render');
+                    showPackageError();
+                    return;
+                }
+                
+                console.log('Rendering', packages.length, 'packages');
+                
+                const packagesHTML = packages.map(package => {
+                    const isPopular = package.is_popular;
+                    const isFree = package.price_monthly === 0;
+                    
+                    return `
+                        <div class="pricing-card ${isPopular ? 'featured' : ''}">
+                            <h3>${package.name}</h3>
+                            <div class="price">
+                                ${isFree ? 'Free' : `$${package.price_monthly.toFixed(2)}`}
+                            </div>
+                            <div class="price-period">
+                                ${isFree ? 'forever' : 'per month'}
+                            </div>
+                            <ul class="pricing-features">
+                                ${package.features.map(feature => `<li>${feature}</li>`).join('')}
+                            </ul>
+                            ${isFree ? 
+                                '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\', this)">Get Started Free</a>' :
+                                `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly', this)">Start ${package.name} Plan</a>`
+                            }
+                        </div>
+                    `;
+                }).join('');
+                
+                pricingGrid.innerHTML = packagesHTML;
+                console.log('Packages rendered successfully');
+                
+            } catch (error) {
+                console.error('Error in renderPackages:', error);
+                showPackageError();
+            }
+        }
+        
+        function showPackageError() {
+            const pricingGrid = document.getElementById('pricingGrid');
+            pricingGrid.innerHTML = `
+                <div class="loading-packages">
+                    <p>Unable to load packages. Please refresh the page.</p>
+                    <p><small>Make sure you're accessing the local development server: <strong>http://localhost/memowindow</strong></small></p>
+                    <button onclick="loadPackages()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
+
         // Check if user is already logged in and redirect to app
         window.addEventListener('load', function() {
             console.log('Index page loaded, checking auth state...');
@@ -1041,105 +1140,6 @@
             // This would open a video modal or redirect to a video
             alert('Video demo coming soon! For now, try our app by clicking "Get Started"');
         });
-
-        // Load packages dynamically
-        async function loadPackages() {
-            try {
-                console.log('Loading packages from get_packages.php...');
-                const response = await fetch(`get_packages.php?t=${Date.now()}`);
-                console.log('Response status:', response.status);
-                console.log('Response ok:', response.ok);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Response data:', data);
-                
-                if (data.success && data.packages) {
-                    console.log('Rendering packages:', data.packages.length);
-                    renderPackages(data.packages);
-                } else {
-                    console.error('Failed to load packages:', data.error || 'No packages in response');
-                    showPackageError();
-                }
-            } catch (error) {
-                console.error('Error loading packages:', error);
-                console.error('Error details:', error.message);
-                
-                // If it's a JSON parse error, log the response text
-                if (error.message.includes('Unexpected token')) {
-                    console.error('This might be an HTML response instead of JSON');
-                }
-                
-                showPackageError();
-            }
-        }
-        
-        function renderPackages(packages) {
-            try {
-                console.log('renderPackages called with:', packages);
-                const pricingGrid = document.getElementById('pricingGrid');
-                
-                if (!pricingGrid) {
-                    console.error('pricingGrid element not found');
-                    return;
-                }
-                
-                if (!packages || packages.length === 0) {
-                    console.error('No packages to render');
-                    showPackageError();
-                    return;
-                }
-                
-                console.log('Rendering', packages.length, 'packages');
-                
-                const packagesHTML = packages.map(package => {
-                    const isPopular = package.is_popular;
-                    const isFree = package.price_monthly === 0;
-                    
-                    return `
-                        <div class="pricing-card ${isPopular ? 'featured' : ''}">
-                            <h3>${package.name}</h3>
-                            <div class="price">
-                                ${isFree ? 'Free' : `$${package.price_monthly.toFixed(2)}`}
-                            </div>
-                            <div class="price-period">
-                                ${isFree ? 'forever' : 'per month'}
-                            </div>
-                            <ul class="pricing-features">
-                                ${package.features.map(feature => `<li>${feature}</li>`).join('')}
-                            </ul>
-                            ${isFree ? 
-                                '<a href="#" class="cta-button" onclick="startSubscription(\'basic\', \'monthly\', this)">Get Started Free</a>' :
-                                `<a href="#" class="cta-button" onclick="startSubscription('${package.slug}', 'monthly', this)">Start ${package.name} Plan</a>`
-                            }
-                        </div>
-                    `;
-                }).join('');
-                
-                pricingGrid.innerHTML = packagesHTML;
-                console.log('Packages rendered successfully');
-                
-            } catch (error) {
-                console.error('Error in renderPackages:', error);
-                showPackageError();
-            }
-        }
-        
-        function showPackageError() {
-            const pricingGrid = document.getElementById('pricingGrid');
-            pricingGrid.innerHTML = `
-                <div class="loading-packages">
-                    <p>Unable to load packages. Please refresh the page.</p>
-                    <p><small>Make sure you're accessing the local development server: <strong>http://localhost/memowindow</strong></small></p>
-                    <button onclick="loadPackages()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-                        Try Again
-                    </button>
-                </div>
-            `;
-        }
 
         // Subscription functionality
         window.startSubscription = async function(packageSlug, billingCycle, buttonElement) {
