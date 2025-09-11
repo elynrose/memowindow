@@ -170,7 +170,18 @@ function showLoginPrompt() {
 
 // Global function for canceling orders
 window.cancelOrder = async function(orderId) {
-    if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+    const result = await Swal.fire({
+        title: 'Cancel Order?',
+        text: 'Are you sure you want to cancel this order? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, cancel it!',
+        cancelButtonText: 'Keep order'
+    });
+    
+    if (!result.isConfirmed) {
         return;
     }
     
@@ -186,15 +197,33 @@ window.cancelOrder = async function(orderId) {
         const data = await response.json();
         
         if (data.success) {
-            alert('Order cancelled successfully!');
+            Swal.fire({
+                icon: 'success',
+                title: 'Order Cancelled!',
+                text: 'Your order has been cancelled successfully.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#22c55e'
+            });
             await loadOrders(); // Reload orders to show updated status
         } else {
-            alert('Error cancelling order: ' + (data.error || 'Unknown error'));
+            Swal.fire({
+                icon: 'error',
+                title: 'Cancellation Failed',
+                text: 'Error cancelling order: ' + (data.error || 'Unknown error'),
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc2626'
+            });
         }
         
     } catch (error) {
         console.error('Error:', error);
-        alert('Error cancelling order. Please try again.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'Error cancelling order. Please try again.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#dc2626'
+        });
     }
 };
 

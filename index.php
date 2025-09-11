@@ -13,6 +13,9 @@
     <!-- Firebase -->
     <script type="module" src="firebase-config.php"></script>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- Navigation Styles -->
     <link rel="stylesheet" href="includes/navigation.css">
     
@@ -1131,7 +1134,13 @@
         // Video play button functionality
         document.querySelector('.play-button').addEventListener('click', function() {
             // This would open a video modal or redirect to a video
-            alert('Video demo coming soon! For now, try our app by clicking "Get Started"');
+            Swal.fire({
+                icon: 'info',
+                title: 'Demo Coming Soon!',
+                text: 'Video demo coming soon! For now, try our app by clicking "Get Started"',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#667eea'
+            });
         });
 
         // Subscription functionality
@@ -1201,14 +1210,26 @@
                     }
                 } else {
                     console.error('Failed to create checkout session:', data.error);
-                    alert('Error creating checkout session: ' + data.error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Checkout Error',
+                        text: 'Error creating checkout session: ' + data.error,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#dc2626'
+                    });
                     // Restore button
                     button.textContent = originalText;
                     button.disabled = false;
                 }
             } catch (error) {
                 console.error('Error creating checkout session:', error);
-                alert('Error creating checkout session. Please try again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Error creating checkout session. Please try again.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc2626'
+                });
                 // Restore button
                 const button = buttonElement;
                 button.textContent = originalText;

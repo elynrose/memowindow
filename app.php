@@ -277,7 +277,7 @@
     <?php include 'includes/navigation.php'; ?>
 
     <!-- Main Content -->
-    <div class="wrap">
+    <div class="wrap" style="margin: 100px auto; max-width: 1200px;">
         
         <!-- Memory Title Card -->
         <div class="card">
@@ -347,6 +347,9 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- App Scripts -->
     <script type="module" src="src/app-auth.js"></script>

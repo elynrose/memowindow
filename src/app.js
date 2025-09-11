@@ -311,7 +311,13 @@ async function startRecording() {
         
     } catch (error) {
         console.error('Error starting recording:', error);
-        alert('Could not access microphone. Please check permissions.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Microphone Access Required',
+            text: 'Could not access microphone. Please check permissions.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#667eea'
+        });
     }
 }
 
@@ -337,7 +343,13 @@ function validateForm() {
 // Create memory
 async function createMemory() {
     if (!titleInput.value.trim() || selectedFiles.length === 0) {
-        alert('Please enter a title and select audio files.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Missing Information',
+            text: 'Please enter a title and select audio files.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#667eea'
+        });
         return;
     }
     
@@ -672,7 +684,18 @@ function displayWaveforms(waveforms) {
 
 // Delete waveform
 window.deleteWaveform = async function(waveformId) {
-    if (!confirm('Are you sure you want to delete this memory?')) return;
+    const result = await Swal.fire({
+        title: 'Delete Memory?',
+        text: 'Are you sure you want to delete this memory?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+    
+    if (!result.isConfirmed) return;
     
     try {
         const currentUser = getCurrentUser();

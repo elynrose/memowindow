@@ -254,6 +254,9 @@
   <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <!-- Auth Script -->
   <script type="module" src="src/auth.js"></script>
   <script type="module" src="includes/navigation.js"></script>

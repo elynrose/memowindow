@@ -422,6 +422,9 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- App Scripts -->
     <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>

@@ -215,7 +215,13 @@ export function initAuth() {
       console.error('❌ Login failed:', error);
       console.error('❌ Error code:', error.code);
       console.error('❌ Error message:', error.message);
-      alert('Login failed: ' + error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: error.message,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc2626'
+      });
       resetLoginButton();
     }
   });
@@ -228,7 +234,13 @@ export function initAuth() {
       const password = els.passwordInput.value;
       
       if (!email || !password) {
-        alert('Please enter both email and password');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Information',
+          text: 'Please enter both email and password',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#667eea'
+        });
         return;
       }
       
@@ -251,7 +263,13 @@ export function initAuth() {
         errorMessage = 'Too many failed attempts. Please try again later';
       }
       
-      alert(errorMessage);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Error',
+        text: errorMessage,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc2626'
+      });
       
       els.btnEmailLogin.disabled = false;
       els.btnEmailLogin.textContent = 'Sign In';
@@ -265,12 +283,24 @@ export function initAuth() {
       const password = els.passwordInput.value;
       
       if (!email || !password) {
-        alert('Please enter both email and password');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Information',
+          text: 'Please enter both email and password',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#667eea'
+        });
         return;
       }
       
       if (password.length < 6) {
-        alert('Password must be at least 6 characters long');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Password Too Short',
+          text: 'Password must be at least 6 characters long',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#667eea'
+        });
         return;
       }
       
@@ -291,7 +321,13 @@ export function initAuth() {
         errorMessage = 'Password is too weak. Please choose a stronger password';
       }
       
-      alert(errorMessage);
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Error',
+        text: errorMessage,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc2626'
+      });
       
       els.btnEmailRegister.disabled = false;
       els.btnEmailRegister.textContent = 'Register';
