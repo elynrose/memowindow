@@ -98,10 +98,8 @@ function requireSecureAdmin() {
 
 /**
  * Get current user ID from session
+ * Note: This function is already defined in auth_check.php
  */
-function getCurrentUserId() {
-    return $_SESSION['current_user_id'] ?? null;
-}
 
 /**
  * Check if current user is admin
