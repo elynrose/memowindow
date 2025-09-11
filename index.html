@@ -845,13 +845,6 @@
             auth.onAuthStateChanged(function(user) {
                 console.log('Auth state changed on index:', user ? 'Logged in' : 'Logged out');
                 if (user) {
-                    // Check if there's an intended action before redirecting
-                    const intendedAction = localStorage.getItem('intendedAction');
-                    if (intendedAction) {
-                        console.log('Intended action found, not redirecting to app.html');
-                        return;
-                    }
-                    
                     // User is signed in, redirect to app.html
                     console.log('User is logged in, redirecting to app.html');
                     window.location.href = 'app.html';
@@ -1031,13 +1024,6 @@
             // Check if auth is available
             if (!window.auth) {
                 console.error('Auth not available after wait, redirecting to login');
-                // Store the intended action and redirect to login
-                localStorage.setItem('intendedAction', JSON.stringify({
-                    action: 'subscribe',
-                    package: packageSlug,
-                    billing: billingCycle
-                }));
-                console.log('Stored intended action:', localStorage.getItem('intendedAction'));
                 window.location.href = 'login.html';
                 return;
             }
@@ -1047,13 +1033,8 @@
             console.log('Current user:', currentUser);
             
             if (!currentUser) {
-                // User not authenticated, store intended action and redirect to login
-                console.log('User not authenticated, storing intended action and redirecting to login');
-                localStorage.setItem('intendedAction', JSON.stringify({
-                    action: 'subscribe',
-                    package: packageSlug,
-                    billing: billingCycle
-                }));
+                // User not authenticated, redirect to login
+                console.log('User not authenticated, redirecting to login');
                 window.location.href = 'login.html';
                 return;
             }

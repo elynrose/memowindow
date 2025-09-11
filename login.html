@@ -263,129 +263,24 @@
         // Check current user immediately
         const currentUser = auth.currentUser;
         if (currentUser) {
-            console.log('Current user found, checking for intended action...');
-            
-            const intendedAction = localStorage.getItem('intendedAction');
-            if (intendedAction) {
-                try {
-                    const action = JSON.parse(intendedAction);
-                    console.log('Found intended action:', action);
-                    
-                    if (action.action === 'subscribe') {
-                        // Clear the intended action
-                        localStorage.removeItem('intendedAction');
-                        
-                        // Create subscription checkout session
-                        console.log('Creating subscription checkout session...');
-                        createSubscriptionCheckout(action.package, action.billing, currentUser);
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Error parsing intended action:', e);
-                    localStorage.removeItem('intendedAction');
-                }
-            }
-            
-            console.log('No intended action, redirecting to app.html');
-            window.location.href = 'app.html';
+            console.log('Current user found, redirecting to subscription page...');
+            window.location.href = 'subscription_checkout.php?user_id=' + encodeURIComponent(currentUser.uid);
             return;
-        } else {
-            // User is not logged in, check if there's an intended action
-            console.log('User not logged in, checking for intended action...');
-            const intendedAction = localStorage.getItem('intendedAction');
-            if (intendedAction) {
-                try {
-                    const action = JSON.parse(intendedAction);
-                    console.log('Found intended action for logged-out user:', action);
-                    console.log('Will process after user logs in...');
-                } catch (e) {
-                    console.error('Error parsing intended action:', e);
-                    localStorage.removeItem('intendedAction');
-                }
-            } else {
-                console.log('No intended action found for logged-out user');
-            }
         }
         
         // Also set up auth state listener as backup
         auth.onAuthStateChanged(function(user) {
             console.log('Auth state changed on login:', user ? 'Logged in' : 'Logged out');
             if (user) {
-                // User is signed in, check for intended action
-                console.log('User is logged in, checking for intended action...');
-                console.log('User object:', user);
-                
-                const intendedAction = localStorage.getItem('intendedAction');
-                console.log('Intended action from localStorage:', intendedAction);
-                
-                if (intendedAction) {
-                    try {
-                        const action = JSON.parse(intendedAction);
-                        console.log('Found intended action:', action);
-                        
-                        if (action.action === 'subscribe') {
-                            // Clear the intended action
-                            localStorage.removeItem('intendedAction');
-                            
-                            // Create subscription checkout session
-                            console.log('Creating subscription checkout session...');
-                            createSubscriptionCheckout(action.package, action.billing, user);
-                            return;
-                        }
-                    } catch (e) {
-                        console.error('Error parsing intended action:', e);
-                        localStorage.removeItem('intendedAction');
-                    }
-                }
-                
-                // Default redirect to app.html
-                console.log('No intended action, redirecting to app.html');
-                window.location.href = 'app.html';
+                // User is signed in, redirect to subscription page
+                console.log('User is logged in, redirecting to subscription page...');
+                window.location.href = 'subscription_checkout.php?user_id=' + encodeURIComponent(user.uid);
             } else {
                 console.log('User logged out, no action needed');
             }
         });
     });
     
-    // Function to create subscription checkout session
-    async function createSubscriptionCheckout(packageSlug, billingCycle, user) {
-        try {
-            console.log('Creating checkout session for:', packageSlug, billingCycle);
-            console.log('User object:', user);
-            
-            const url = `create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(user.uid)}&user_email=${encodeURIComponent(user.email)}&user_name=${encodeURIComponent(user.displayName || user.email)}`;
-            console.log('Making request to:', url);
-            
-            const response = await fetch(url);
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-            
-            const data = await response.json();
-            console.log('Checkout response:', data);
-            
-            if (data.success) {
-                if (data.redirect_url) {
-                    // Free plan - redirect to app
-                    console.log('Free plan activated, redirecting to app');
-                    window.location.href = data.redirect_url;
-                } else if (data.checkout_url) {
-                    // Paid plan - redirect to Stripe checkout
-                    console.log('Redirecting to Stripe checkout:', data.checkout_url);
-                    window.location.href = data.checkout_url;
-                }
-            } else {
-                console.error('Failed to create checkout session:', data.error);
-                alert('Error creating checkout session: ' + data.error);
-                // Fallback to app
-                window.location.href = 'app.html';
-            }
-        } catch (error) {
-            console.error('Error creating checkout session:', error);
-            alert('Error creating checkout session. Please try again.');
-            // Fallback to app
-            window.location.href = 'app.html';
-        }
-    }
 
     // Initialize authentication
     import { initAuth } from './src/auth.js';
