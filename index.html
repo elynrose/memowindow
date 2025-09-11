@@ -976,14 +976,15 @@
             `;
         }
 
+        // Load packages immediately (don't wait for window load)
+        console.log('Loading packages immediately...');
+        loadPackages();
+        
         // Check if user is already logged in and redirect to app
         window.addEventListener('load', function() {
             console.log('Index page loaded, checking auth state...');
             console.log('Auth object:', auth);
             console.log('Auth currentUser:', auth.currentUser);
-            
-            // Load packages dynamically
-            loadPackages();
             
             // Check current user immediately
             const currentUser = auth.currentUser;
