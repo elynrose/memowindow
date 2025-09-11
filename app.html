@@ -10,6 +10,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
+    <!-- Navigation Styles -->
+    <link rel="stylesheet" href="includes/navigation.css">
+    
     <style>
         /* Reset and Base Styles */
         * {
@@ -25,127 +28,7 @@
             color: #333;
             line-height: 1.6;
         }
-        
-        /* Modern Header */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 1000;
-            padding: 1rem 0;
-        }
-        
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: #667eea;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 2px solid #667eea;
-        }
-        
-        .header-link {
-            color: #000;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-        
-        .header-link:hover {
-            background: rgba(0, 0, 0, 0.1);
-            color: #333;
-        }
-        
-        .subscription-status {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-right: 1rem;
-        }
-        
-        .subscription-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            font-size: 0.85rem;
-        }
-        
-        .subscription-plan {
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .subscription-status-text {
-            font-size: 0.75rem;
-            color: #666;
-        }
-        
-        .upgrade-button {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 15px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.8rem;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .upgrade-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
-        }
-        
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-        
-        /* Main Content */
-        .wrap {
-            padding: 8rem 1rem!important;
-            max-width: 1200px;
-            margin: 0 auto;
-            margin-top: 50px;
-        }
-        
-        /* Utility Classes */
-        .hidden {
-            display: none !important;
-        }
-        
+
         .loading {
             text-align: center;
             padding: 2rem;
@@ -255,41 +138,7 @@
         }
         
         /* Responsive Design */
-        @media (max-width: 767px) {
-            .header {
-                padding: 0.75rem 0;
-            }
-            
-            .nav {
-                padding: 0 0.75rem;
-            }
-            
-            .wrap {
-                padding: 2rem 0.75rem;
-            }
-            
-            .user-info {
-                gap: 0.5rem;
-            }
-            
-            .header-link {
-                padding: 0.4rem 0.6rem;
-                font-size: 0.8rem;
-            }
-            
-            .subscription-status {
-                flex-direction: column;
-                gap: 0.5rem;
-                align-items: center;
-                margin-right: 0.5rem;
-            }
-            
-            .subscription-info {
-                align-items: center;
-                text-align: center;
-            }
-        }
-        
+
         /* Page-specific styles will be injected here */
         
         /* App-specific styles */
@@ -425,26 +274,7 @@
     </style>
 </head>
 <body>
-    <!-- Modern Header -->
-    <header class="header">
-        <nav class="nav">
-            <a href="index.html" class="logo">
-                <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
-            </a>
-            <div id="userInfo" class="user-info hidden">
-                <div id="subscriptionStatus" class="subscription-status">
-                    <!-- Subscription status will be populated by JavaScript -->
-                </div>
-                <a href="memories.html" class="header-link">My Memories</a>
-                <a id="ordersLink" href="#" class="header-link">My Orders</a>
-                <a id="btnLogout" href="#" class="header-link">Sign Out</a>
-                <div class="user-profile">
-                    <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
-                    <span id="userName">Loading...</span>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <?php include 'includes/navigation.php'; ?>
 
     <!-- Main Content -->
     <div class="wrap">
@@ -523,13 +353,18 @@
     <script type="module" src="src/storage.js"></script>
     <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
+    <script type="module" src="includes/navigation.js"></script>
     
     <!-- Template initialization -->
     <script type="module">
         import { initAppAuth } from './src/app-auth.js';
+        import { initNavigation } from './includes/navigation.js';
         
         // Initialize authentication for all pages
         initAppAuth();
+        
+        // Initialize navigation
+        initNavigation();
         
         // Page-specific initialization will be injected here
         

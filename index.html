@@ -13,6 +13,9 @@
     <!-- Firebase -->
     <script type="module" src="firebase-config.php"></script>
     
+    <!-- Navigation Styles -->
+    <link rel="stylesheet" href="includes/navigation.css">
+    
     <style>
         * {
             margin: 0;
@@ -607,22 +610,7 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <nav class="nav">
-            <a href="#" class="logo"><img src="images/logo.png" alt="MemoWindow" style="width: 280px; height: 50px;"></a>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#faq">FAQ</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-            <div id="nav-auth-section">
-                <!-- This will be populated by JavaScript -->
-                <a href="login.html" class="cta-button" id="login-button">Get Started</a>
-            </div>
-        </nav>
-    </header>
+    <?php include 'includes/navigation.php'; ?>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -849,7 +837,7 @@
                 <div class="footer-section">
                     <h3>Support</h3>
                     <p><a href="mailto:support@memorywindow.com">support@memorywindow.com</a></p>
-                    <p><a href="tel:+1-555-0123">+1 (555) 012-3456</a></p>
+                    <p><a href="tel:+1-203-450-2800">+1 203-450-2800</a></p>
                     <p>Mon-Fri 9AM-6PM EST</p>
                 </div>
                 
@@ -870,11 +858,15 @@
     <script type="module">
         // Import Firebase modules
         import { auth } from './firebase-config.php';
+        import { initNavigation } from './includes/navigation.js';
         
         // Make auth globally available after a short delay to ensure initialization
         setTimeout(() => {
             window.auth = auth;
             console.log('Auth object made globally available:', window.auth);
+            
+            // Initialize navigation
+            initNavigation();
         }, 100);
         
         // Load packages dynamically

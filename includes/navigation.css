@@ -1,0 +1,146 @@
+/* Navigation Styles - Reusable component */
+
+/* Modern Header */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1000;
+    padding: 1rem 0;
+}
+
+.nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #667eea;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #667eea;
+}
+
+.header-link {
+    color: #000;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.header-link:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.subscription-status {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: 1rem;
+}
+
+.subscription-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 0.85rem;
+}
+
+.subscription-plan {
+    font-weight: 600;
+    color: #333;
+}
+
+.subscription-status-text {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.upgrade-button {
+    background: #667eea;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.upgrade-button:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+    .header {
+        padding: 0.75rem 0;
+    }
+    
+    .nav {
+        padding: 0 0.75rem;
+    }
+    
+    .user-info {
+        gap: 0.5rem;
+    }
+    
+    .header-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .subscription-status {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+        margin-right: 0.5rem;
+    }
+    
+    .subscription-info {
+        align-items: center;
+    }
+    
+    .upgrade-button {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+}

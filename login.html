@@ -13,6 +13,9 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- Navigation Styles -->
+  <link rel="stylesheet" href="includes/navigation.css">
+  
   <style>
     /* Modern Clean Design System */
     * {
@@ -201,6 +204,8 @@
   </style>
 </head>
 <body>
+  <?php include 'includes/navigation.php'; ?>
+  
   <div class="login-container">
     <div class="logo">
       <img src="images/logo.png" alt="MemoWindow">
@@ -251,10 +256,12 @@
   
   <!-- Auth Script -->
   <script type="module" src="src/auth.js"></script>
+  <script type="module" src="includes/navigation.js"></script>
   
   <script type="module">
     // Import Firebase modules
     import { auth } from './firebase-config.php';
+    import { initNavigation } from './includes/navigation.js';
     
     // Check if user is already logged in and redirect to app
     window.addEventListener('load', function() {
@@ -288,6 +295,9 @@
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🔐 MemoWindow Login Initializing...');
+      
+      // Initialize navigation
+      initNavigation();
       
       // Debug: Check if button exists
       const btnLogin = document.getElementById('btnLogin');
