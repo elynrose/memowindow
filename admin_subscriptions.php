@@ -1,10 +1,15 @@
 <?php
-require_once 'auth_check.php';
-require_once 'config.php';
 require_once 'secure_auth.php';
+require_once 'config.php';
 
-// Check if user is admin
-requireAdmin();
+// Check session timeout
+if (!checkSessionTimeout()) {
+    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
+    exit;
+}
+
+// Require admin authentication
+$userFirebaseUID = requireSecureAdmin();
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);

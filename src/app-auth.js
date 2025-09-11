@@ -136,7 +136,7 @@ export function initAppAuth() {
 // Function to check if user is admin and add admin link
 async function checkAdminStatus(userUID) {
   try {
-    const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
+    const response = await fetch(`check_admin.php`);
     const data = await response.json();
     
     if (data.is_admin) {
@@ -144,7 +144,7 @@ async function checkAdminStatus(userUID) {
       const userInfo = document.getElementById('userInfo');
       if (userInfo && !userInfo.querySelector('.admin-link')) {
         const adminLink = document.createElement('a');
-        adminLink.href = `admin.php?user_id=${encodeURIComponent(userUID)}`;
+        adminLink.href = `admin.php`;
         adminLink.className = 'admin-link';
         adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
         adminLink.textContent = 'Admin';
@@ -178,7 +178,7 @@ async function loadSubscriptionStatus(userId) {
   
   try {
     // Get user's subscription status
-    const response = await fetch(`get_user_subscription.php?user_id=${encodeURIComponent(userId)}`);
+    const response = await fetch(`get_user_subscription.php`);
     const data = await response.json();
     
     if (data.success) {
@@ -192,7 +192,7 @@ async function loadSubscriptionStatus(userId) {
         </div>
         ${isFree ? 
           '<a href="index.php#pricing" class="upgrade-button">Upgrade</a>' :
-          '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(userId) + '" class="upgrade-button">Manage</a>'
+          '<a href="subscription_checkout.php" class="upgrade-button">Manage</a>'
         }
       `;
     } else {

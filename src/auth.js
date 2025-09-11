@@ -15,7 +15,7 @@ async function loadUserWaveforms(offset = 0, append = false) {
   }
   
   try {
-    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
+    const response = await fetch(`get_waveforms.php?offset=${offset}&limit=5`);
     
     if (!response.ok) throw new Error('Failed to load waveforms');
     
@@ -151,18 +151,48 @@ function resetLoginButton() {
 
 // Show user info - redirect to app page
 async function showUserInfo(user) {
-  // User authenticated, redirecting to app
+  // User authenticated, creating server-side session
   
-  // Store user data in sessionStorage for the app page
-  sessionStorage.setItem('currentUser', JSON.stringify({
-    uid: user.uid,
-    displayName: user.displayName,
-    email: user.email,
-    photoURL: user.photoURL
-  }));
-  
-  // Redirect to the app page
-  window.location.href = 'app.php';
+  try {
+    // Get Firebase ID token for server-side verification
+    const idToken = await user.getIdToken();
+    
+    // Create server-side session
+    const response = await fetch('firebase_login.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        idToken: idToken
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('✅ Server-side session created successfully');
+      
+      // Store user data in sessionStorage for the app page
+      sessionStorage.setItem('currentUser', JSON.stringify({
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL
+      }));
+      
+      // Redirect to the app page
+      window.location.href = 'app.php';
+    } else {
+      console.error('❌ Failed to create server-side session:', result.error);
+      // Still redirect to app, but session might not work
+      window.location.href = 'app.php';
+    }
+  } catch (error) {
+    console.error('❌ Error creating server-side session:', error);
+    // Still redirect to app, but session might not work
+    window.location.href = 'app.php';
+  }
 }
 
 // Initialize authentication
@@ -345,7 +375,7 @@ export function initAuth() {
 // Function to check if user is admin and add admin link
 async function checkAdminStatus(userUID) {
   try {
-    const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
+    const response = await fetch(`check_admin.php`);
     const data = await response.json();
     
     if (data.is_admin) {
@@ -353,7 +383,7 @@ async function checkAdminStatus(userUID) {
       const userInfo = document.getElementById('userInfo');
       if (userInfo && !userInfo.querySelector('.admin-link')) {
         const adminLink = document.createElement('a');
-        adminLink.href = `admin.php?user_id=${encodeURIComponent(userUID)}`;
+        adminLink.href = `admin.php`;
         adminLink.className = 'admin-link';
         adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
         adminLink.textContent = 'Admin';

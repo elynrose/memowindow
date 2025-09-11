@@ -1,26 +1,21 @@
 <?php
 // admin_backups.php - Audio backup management interface
-require_once 'auth_check.php';
+require_once 'secure_auth.php';
 require_once 'config.php';
 
-// Require admin authentication
-$userFirebaseUID = requireAdmin();
+// Check session timeout
+if (!checkSessionTimeout()) {
+    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
+    exit;
+}
 
-// Check if user is admin
+// Require admin authentication
+$userFirebaseUID = requireSecureAdmin();
+
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
-    
-    $adminCheck = $pdo->prepare("SELECT * FROM admin_users WHERE firebase_uid = :uid AND is_admin = 1");
-    $adminCheck->execute([':uid' => $userFirebaseUID]);
-    $adminUser = $adminCheck->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$adminUser) {
-        http_response_code(403);
-        echo "Access denied. Admin privileges required.";
-        exit;
-    }
     
     // Setup backup tables if they don't exist
     $pdo->exec("
@@ -331,7 +326,7 @@ try {
 
         async function viewBackupDetails(memoryId) {
             try {
-                const response = await fetch(`get_backup_details.php?memory_id=${memoryId}&user_id=<?php echo urlencode($userFirebaseUID); ?>`);
+                const response = await fetch(`get_backup_details.php?memory_id=${memoryId} `);
                 const details = await response.text();
                 
                 document.getElementById('backupDetails').innerHTML = details;
@@ -386,7 +381,7 @@ try {
         }
 
         function exportBackupReport() {
-            window.open(`export_data.php?type=backups&user_id=<?php echo urlencode($userFirebaseUID); ?>`, '_blank');
+            window.open(`export_data.php?type=backups `, '_blank');
         }
 
         function showBackupSettings() {

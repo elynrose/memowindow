@@ -1,7 +1,7 @@
 <?php
 // admin_cancel_order.php - Admin function to cancel and delete orders
 header('Content-Type: application/json');
-require_once 'auth_check.php';
+require_once 'secure_auth.php';
 require_once 'config.php';
 
 // Require admin authentication

@@ -1,10 +1,16 @@
 <?php
 require_once 'config.php';
 require_once 'VoiceCloneSettings.php';
-require_once 'auth_check.php';
+require_once 'secure_auth.php';
 
-// Require admin authentication using Firebase
-$userFirebaseUID = requireAdmin();
+// Check session timeout
+if (!checkSessionTimeout()) {
+    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
+    exit;
+}
+
+// Require admin authentication
+$userFirebaseUID = requireSecureAdmin();
 
 $settings = new VoiceCloneSettings();
 $message = '';

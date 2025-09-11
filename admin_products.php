@@ -1,14 +1,19 @@
 <?php
 // admin_products.php - Print products management interface
-require_once 'auth_check.php';
+require_once 'secure_auth.php';
 require_once 'config.php';
 require_once 'PriceManager.php';
-require_once 'secure_auth.php';
+
+// Check session timeout
+if (!checkSessionTimeout()) {
+    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
+    exit;
+}
 
 // Require admin authentication
-$userFirebaseUID = requireAdmin();
+$userFirebaseUID = requireSecureAdmin();
 
-// User is already verified as admin by requireAdmin()
+// User is already verified as admin by requireSecureAdmin()
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -726,8 +731,8 @@ function syncProductsFromPrintful($pdo) {
             <?php if ($totalPages > 1): ?>
             <div class="pagination">
                 <?php if ($currentPage > 1): ?>
-                    <a href="?user_id=<?php echo urlencode($userFirebaseUID); ?>&page=1" class="pagination-btn">« First</a>
-                    <a href="?user_id=<?php echo urlencode($userFirebaseUID); ?>&page=<?php echo $currentPage - 1; ?>" class="pagination-btn">‹ Previous</a>
+                    <a href="?page=1" class="pagination-btn">« First</a>
+                    <a href="?page=<?php echo $currentPage - 1; ?>" class="pagination-btn">‹ Previous</a>
                 <?php endif; ?>
                 
                 <?php
@@ -736,15 +741,15 @@ function syncProductsFromPrintful($pdo) {
                 
                 for ($i = $startPage; $i <= $endPage; $i++):
                 ?>
-                    <a href="?user_id=<?php echo urlencode($userFirebaseUID); ?>&page=<?php echo $i; ?>" 
+                    <a href="?page=<?php echo $i; ?>" 
                        class="pagination-btn <?php echo $i === $currentPage ? 'active' : ''; ?>">
                         <?php echo $i; ?>
                     </a>
                 <?php endfor; ?>
                 
                 <?php if ($currentPage < $totalPages): ?>
-                    <a href="?user_id=<?php echo urlencode($userFirebaseUID); ?>&page=<?php echo $currentPage + 1; ?>" class="pagination-btn">Next ›</a>
-                    <a href="?user_id=<?php echo urlencode($userFirebaseUID); ?>&page=<?php echo $totalPages; ?>" class="pagination-btn">Last »</a>
+                    <a href="?page=<?php echo $currentPage + 1; ?>" class="pagination-btn">Next ›</a>
+                    <a href="?page=<?php echo $totalPages; ?>" class="pagination-btn">Last »</a>
                 <?php endif; ?>
             </div>
             <?php endif; ?>

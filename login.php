@@ -274,6 +274,29 @@
   <script type="module" src="src/auth.js"></script>
   <script type="module" src="includes/navigation.js"></script>
   
+  <!-- Handle logout parameter -->
+  <script type="module">
+    import { auth } from './firebase-config.php';
+    
+    // Check for logout parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logout') === '1') {
+      console.log('🚪 Logout requested, signing out...');
+      auth.signOut().then(() => {
+        console.log('✅ Successfully signed out');
+        // Clear any session data
+        if (typeof(Storage) !== "undefined") {
+          localStorage.removeItem('user');
+          sessionStorage.clear();
+        }
+        // Redirect to clean login page
+        window.location.href = 'login.php';
+      }).catch((error) => {
+        console.error('❌ Error signing out:', error);
+      });
+    }
+  </script>
+  
   <script type="module">
     // Import Firebase modules
     import { auth } from './firebase-config.php';

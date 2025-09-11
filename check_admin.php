@@ -5,16 +5,28 @@
  */
 
 require_once 'config.php';
+require_once 'secure_auth.php';
 
 // Set JSON header
 header('Content-Type: application/json');
 
 try {
     // Get user ID from request
-    $userId = $_GET['user_id'] ?? '';
+        // Get user ID from session or URL parameter (for backward compatibility)
+    $userId = null;
     
-    if (empty($userId)) {
-        throw new Exception('User ID is required');
+    // Check session first
+    if (isLoggedIn()) {
+        $userId = getCurrentUser()['user_id'];
+    } else {
+        // Fallback to URL parameter for backward compatibility
+        $userId = $_GET['user_id'] ?? null;
+    }
+    
+    if (!$userId) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
     }
     
     // Connect to database

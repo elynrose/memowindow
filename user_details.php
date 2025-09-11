@@ -1,6 +1,6 @@
 <?php
 // user_details.php - Detailed user information
-require_once 'auth_check.php';
+require_once 'secure_auth.php';
 require_once 'config.php';
 
 // Require admin authentication
@@ -8,7 +8,7 @@ $adminUID = requireAdmin();
 $targetUserID = $_GET['target_user'] ?? '';
 
 if (!$targetUserID) {
-    header('Location: admin_users.php?user_id=' . $adminUID);
+    header('Location: admin_users.php');
     exit;
 }
 
@@ -156,7 +156,7 @@ try {
 
         <!-- Custom Back Button for User Details -->
         <div class="admin-content" style="margin-top: 20px;">
-            <a href="admin_users.php?user_id=<?php echo urlencode($adminUID); ?>" class="admin-btn admin-btn-secondary" style="margin-bottom: 20px;">
+            <a href="admin_users.php" class="admin-btn admin-btn-secondary" style="margin-bottom: 20px;">
                 ← Back to Users
             </a>
         </div>

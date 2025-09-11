@@ -1,13 +1,24 @@
 <?php
 // export_data.php - Export data for admin users
 require_once 'config.php';
+require_once 'secure_auth.php';
 
-$userFirebaseUID = $_GET['user_id'] ?? '';
 $exportType = $_GET['type'] ?? '';
 
+// Get user ID from session or URL parameter (for backward compatibility)
+$userFirebaseUID = null;
+
+// Check session first
+if (isLoggedIn()) {
+    $userFirebaseUID = getCurrentUser()['user_id'];
+} else {
+    // Fallback to URL parameter for backward compatibility
+    $userFirebaseUID = $_GET['user_id'] ?? null;
+}
+
 if (!$userFirebaseUID || !$exportType) {
-    http_response_code(400);
-    echo "Missing parameters";
+    http_response_code(401);
+    echo "Authentication required or missing parameters";
     exit;
 }
 
