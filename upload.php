@@ -1,11 +1,15 @@
 <?php
 // upload.php
+// Updated with secure authentication and validation
 // Requires: PHP with cURL (recommended), MySQL (PDO), write permissions to ./uploads and ./uploads/qr
 
 header('Content-Type: application/json');
 
-// Load configuration
+// Load configuration and secure modules
 require_once 'config.php';
+require_once 'secure_auth.php';
+require_once 'secure_upload.php';
+require_once 'secure_db.php';
 
 // --- CONFIG --- //
 $dbHost = DB_HOST;
@@ -24,11 +28,13 @@ $qrApiEndpoint  = 'https://api.qrserver.com/v1/create-qr-code/'; // external QR 
 if (!is_dir($uploadDir))   { mkdir($uploadDir, 0755, true); }
 if (!is_dir($uploadQrDir)) { mkdir($uploadQrDir, 0755, true); }
 
-// Validate authentication and Firebase Storage URLs
-if (!isset($_POST['user_id']) || empty($_POST['user_id'])) {
-  http_response_code(401);
-  echo json_encode(['error' => 'Authentication required - user_id missing']);
-  exit;
+// Secure authentication check
+try {
+    $userId = requireSecureAuth();
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
 }
 
 if (!isset($_POST['image_url']) || empty($_POST['image_url'])) {
@@ -49,41 +55,32 @@ if (!isset($_POST['title']) || empty(trim($_POST['title']))) {
   exit;
 }
 
-// Get URLs from POST data
-$imageUrl = $_POST['image_url'];
-$qrUrl = $_POST['qr_url'];
+// Get and validate URLs from POST data
+$imageUrl = sanitizeInput($_POST['image_url'], 'url');
+$qrUrl = sanitizeInput($_POST['qr_url'], 'url');
 
-if (!filter_var($imageUrl, FILTER_VALIDATE_URL) || !str_contains($imageUrl, 'firebasestorage.googleapis.com')) {
-  http_response_code(400);
-  echo json_encode(['error' => 'Invalid Firebase Storage image URL']);
-  exit;
+// Validate URLs using secure upload handler
+$uploader = new SecureUpload();
+
+if (!$uploader->validateFirebaseStorageURL($imageUrl)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid Firebase Storage image URL']);
+    exit;
 }
 
-// Allow QR API URLs or Firebase Storage URLs
-if (!filter_var($qrUrl, FILTER_VALIDATE_URL) && $qrUrl !== 'TEMP_QR_URL') {
-  http_response_code(400);
-  echo json_encode(['error' => 'Invalid QR URL']);
-  exit;
+if (!$uploader->validateQRCodeURL($qrUrl)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid QR URL']);
+    exit;
 }
 
-// Save to MySQL
+// Save to MySQL using secure database helper
 try {
-  // First try to connect to MySQL server (without database)
-  $pdo = new PDO("mysql:host=$dbHost;charset=utf8mb4", $dbUser, $dbPass, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-  ]);
+  $db = SecureDB::getInstance();
   
-  // Create database if it doesn't exist
-  $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-  
-  // Now connect to the specific database
-  $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName;charset=utf8mb4", $dbUser, $dbPass, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-  ]);
-
-  // Ensure table exists (idempotent)
-  $pdo->exec("
-    CREATE TABLE IF NOT EXISTS `$table` (
+  // Ensure table exists (idempotent) - using secure table name validation
+  $db->getPDO()->exec("
+    CREATE TABLE IF NOT EXISTS `wave_assets` (
       `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       `user_id` VARCHAR(255) NOT NULL,
       `unique_id` VARCHAR(255) NULL,
@@ -99,39 +96,33 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ");
 
-  $stmt = $pdo->prepare("INSERT INTO `$table` (`user_id`,`unique_id`,`title`,`original_name`,`image_url`,`qr_url`,`audio_url`,`play_url`) VALUES (:user_id,:unique_id,:title,:original_name,:image_url,:qr_url,:audio_url,:play_url)");
-  $stmt->execute([
-    ':user_id'       => $_POST['user_id'],
-    ':unique_id'     => isset($_POST['unique_id']) ? $_POST['unique_id'] : null,
-    ':title'         => trim($_POST['title']),
-    ':original_name' => isset($_POST['original_name']) ? $_POST['original_name'] : null,
-    ':image_url'     => $imageUrl,
-    ':qr_url'        => $qrUrl,
-    ':audio_url'     => isset($_POST['audio_url']) ? $_POST['audio_url'] : null,
-    ':play_url'      => isset($_POST['play_url']) ? $_POST['play_url'] : null,
-  ]);
+  // Insert using secure database helper
+  $memoryId = $db->insert(
+    "INSERT INTO wave_assets (user_id, unique_id, title, original_name, image_url, qr_url, audio_url, play_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      $userId,
+      isset($_POST['unique_id']) ? sanitizeInput($_POST['unique_id']) : null,
+      sanitizeInput(trim($_POST['title'])),
+      isset($_POST['original_name']) ? sanitizeInput($_POST['original_name']) : null,
+      $imageUrl,
+      $qrUrl,
+      isset($_POST['audio_url']) ? sanitizeInput($_POST['audio_url'], 'url') : null,
+      isset($_POST['play_url']) ? sanitizeInput($_POST['play_url'], 'url') : null,
+    ]);
 
   echo json_encode([
     'success' => true,
     'image_url' => $imageUrl,
     'qr_url'    => $qrUrl,
-    'id'        => $pdo->lastInsertId(),
+    'id'        => $memoryId,
     'message' => 'Memory saved successfully'
   ]);
-} catch (PDOException $e) {
+} catch (Exception $e) {
   http_response_code(500);
   
-  // Provide more specific error messages
-  if ($e->getCode() == 1045) {
-    echo json_encode([
-      'error' => 'Database authentication failed', 
-      'detail' => 'Please check MySQL username/password in upload.php config',
-      'suggestion' => 'Try accessing phpMyAdmin at http://localhost/phpmyadmin to verify credentials'
-    ]);
-  } else {
-    echo json_encode(['error' => 'Database error', 'detail' => $e->getMessage(), 'code' => $e->getCode()]);
-  }
-} catch (Throwable $e) {
-  http_response_code(500);
-  echo json_encode(['error' => 'General error', 'detail' => $e->getMessage()]);
+  // Log the full error for debugging
+  error_log("Upload error: " . $e->getMessage());
+  
+  // Return generic error message to user
+  echo json_encode(['error' => 'Failed to save memory. Please try again.']);
 }

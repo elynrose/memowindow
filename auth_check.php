@@ -1,6 +1,8 @@
 <?php
 // auth_check.php - Centralized authentication check for all pages
+// Updated to use secure authentication system
 require_once 'config.php';
+require_once 'secure_auth.php';
 
 // Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
@@ -8,54 +10,21 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 // Function to check if user is authenticated
+// Updated to use secure authentication with backward compatibility
 function requireAuth() {
-    // Check if user_id is provided in URL parameters
-    $userId = $_GET['user_id'] ?? $_POST['user_id'] ?? null;
-    
-    if (!$userId) {
-        // Redirect to login page if no user_id provided
-        header('Location: ' . BASE_URL . '/login.php');
-        exit;
-    }
-    
-    // Store user_id in session for this request
-    $_SESSION['current_user_id'] = $userId;
-    
-    return $userId;
+    return requireSecureAuth();
 }
 
 // Function to get current user ID
+// Updated to use secure session-based storage
 function getCurrentUserId() {
-    return $_SESSION['current_user_id'] ?? $_GET['user_id'] ?? $_POST['user_id'] ?? null;
+    return $_SESSION['current_user_id'] ?? null;
 }
 
 // Function to check if user is admin
+// Updated to use secure admin authentication
 function requireAdmin() {
-    $userId = requireAuth();
-    
-    try {
-        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]);
-        
-        // Check if user is admin
-        $stmt = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = ?");
-        $stmt->execute([$userId]);
-        $user = $stmt->fetch();
-        
-        if (!$user || !$user['is_admin']) {
-            // Redirect to login page if not admin
-            header('Location: ' . BASE_URL . '/login.php?error=access_denied');
-            exit;
-        }
-        
-        return $userId;
-        
-    } catch (PDOException $e) {
-        // Redirect to login page on database error
-        header('Location: ' . BASE_URL . '/login.php?error=database_error');
-        exit;
-    }
+    return requireSecureAdmin();
 }
 
 // Function to redirect to login if not authenticated

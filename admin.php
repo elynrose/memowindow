@@ -1,44 +1,29 @@
 <?php
 // admin.php - MemoWindow Admin Dashboard
 require_once 'auth_check.php';
+require_once 'secure_db.php';
 
 // Require admin authentication
 $userFirebaseUID = requireAdmin();
 
 // User is already verified as admin by requireAdmin()
-// Update last login
+// Update last login using secure database helper
 try {
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
-    
-    $pdo->prepare("UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE firebase_uid = :uid")
-        ->execute([':uid' => $userFirebaseUID]);
-    
-} catch (PDOException $e) {
+    updateAdminLastLogin($userFirebaseUID);
+} catch (Exception $e) {
     // Continue even if update fails
+    error_log("Failed to update admin last login: " . $e->getMessage());
 }
 
-// Get dashboard data
+// Get dashboard data using secure database helper
 try {
-    // Get statistics
-    $stats = [];
+    $db = SecureDB::getInstance();
     
-    // Total users (from users table)
-    $stats['total_users'] = $pdo->query("SELECT COUNT(*) as count FROM users")->fetch()['count'];
+    // Get statistics using secure methods
+    $stats = getDashboardStats();
     
-    // Total memories
-    $stats['total_memories'] = $pdo->query("SELECT COUNT(*) as count FROM wave_assets")->fetch()['count'];
-    
-    // Total orders
-    $stats['total_orders'] = $pdo->query("SELECT COUNT(*) as count FROM orders")->fetch()['count'];
-    
-    // Total revenue (all orders with amount_paid > 0)
-    $revenueResult = $pdo->query("SELECT SUM(amount_paid) as total FROM orders WHERE amount_paid > 0");
-    $stats['total_revenue'] = $revenueResult->fetch()['total'] ?? 0;
-    
-    // Recent memories
-    $recentMemories = $pdo->query("
+    // Recent memories using secure database helper
+    $recentMemories = $db->fetchAll("
         SELECT 
             w.id,
             w.title,
@@ -49,10 +34,10 @@ try {
         FROM wave_assets w 
         ORDER BY w.created_at DESC 
         LIMIT 10
-    ")->fetchAll(PDO::FETCH_ASSOC);
+    ");
     
-    // Recent orders
-    $recentOrders = $pdo->query("
+    // Recent orders using secure database helper
+    $recentOrders = $db->fetchAll("
         SELECT 
             o.*,
             p.name as product_name
@@ -60,10 +45,10 @@ try {
         LEFT JOIN print_products p ON o.product_variant_id = p.product_key
         ORDER BY o.created_at DESC 
         LIMIT 10
-    ")->fetchAll(PDO::FETCH_ASSOC);
+    ");
     
-    // Daily stats for last 7 days
-    $dailyStats = $pdo->query("
+    // Daily stats for last 7 days using secure database helper
+    $dailyStats = $db->fetchAll("
         SELECT 
             DATE(created_at) as date,
             COUNT(*) as memories_created,
@@ -72,10 +57,12 @@ try {
         WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
         GROUP BY DATE(created_at)
         ORDER BY date DESC
-    ")->fetchAll(PDO::FETCH_ASSOC);
+    ");
     
-} catch (PDOException $e) {
-    $stats = ['error' => $e->getMessage()];
+} catch (Exception $e) {
+    // Log error but don't expose details to user
+    error_log("Admin dashboard error: " . $e->getMessage());
+    $stats = ['error' => 'Failed to load dashboard data'];
     $recentMemories = [];
     $recentOrders = [];
     $dailyStats = [];
