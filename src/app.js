@@ -10,7 +10,7 @@ let mediaRecorder = null;
 let audioChunks = [];
 
 // Audio limit and countdown variables
-let maxAudioLength = 60; // Default 1 minute
+let maxAudioLength = 100; // Default Basic plan limit
 let countdownInterval = null;
 let recordingStartTime = null;
 
@@ -812,8 +812,8 @@ async function loadUserAudioLimit() {
             console.log('No user logged in, using default audio limit');
             // Show default limit info even when not logged in
             if (packageName && maxLength) {
-                packageName.textContent = 'Free Plan';
-                maxLength.textContent = '60';
+                packageName.textContent = 'Basic';
+                maxLength.textContent = '100';
                 audioLimitInfo.style.display = 'block';
             }
             return;

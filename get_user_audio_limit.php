@@ -14,10 +14,17 @@ try {
     $subscriptionManager = new SubscriptionManager();
     $userSubscription = $subscriptionManager->getUserSubscription($userId);
     
-    // Default to free plan if no subscription
-    $maxAudioLength = 60; // 1 minute default
+    // Get the basic/free plan as default
+    $basicPackage = $subscriptionManager->getPackageBySlug('basic');
+    $maxAudioLength = 60; // fallback default
     $packageName = 'Free Plan';
     
+    if ($basicPackage) {
+        $maxAudioLength = intval($basicPackage['max_audio_length_seconds'] ?? 60);
+        $packageName = $basicPackage['name'];
+    }
+    
+    // Override with user's subscription if they have one
     if ($userSubscription && $userSubscription['status'] === 'active') {
         $package = $subscriptionManager->getPackageBySlug($userSubscription['package_slug']);
         if ($package) {
