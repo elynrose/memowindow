@@ -138,7 +138,7 @@ try {
             p.size as product_size,
             p.material as product_material
         FROM orders o
-        LEFT JOIN print_products p ON o.product_id = p.product_key
+        LEFT JOIN print_products p ON o.product_variant_id = p.product_key
         ORDER BY o.created_at DESC
         LIMIT $itemsPerPage OFFSET $offset
     ");
