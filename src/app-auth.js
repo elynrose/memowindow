@@ -4,6 +4,53 @@ import { auth } from '../firebase-config.php';
 
 let currentUser = null;
 
+// Create server-side session from Firebase user
+async function createServerSession(user) {
+  try {
+    console.log('🔍 Creating server session for user:', user.uid);
+    
+    // Get Firebase ID token for server-side verification
+    const idToken = await user.getIdToken();
+    console.log('🔍 Got Firebase ID token');
+    
+    // Create server-side session
+    const response = await fetch('firebase_login.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        idToken: idToken,
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      })
+    });
+    
+    console.log('🔍 Firebase login response status:', response.status);
+    
+    if (!response.ok) {
+      console.error('Failed to create server session:', response.status);
+      return false;
+    }
+    
+    const result = await response.json();
+    console.log('🔍 Firebase login response:', result);
+    
+    if (result.success) {
+      console.log('✅ Server session created successfully');
+      return true;
+    } else {
+      console.error('Server session creation failed:', result.error);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error creating server session:', error);
+    return false;
+  }
+}
+
 // Get DOM elements for app page
 const getElements = () => ({
   userInfo: document.getElementById('userInfo'),
@@ -41,6 +88,9 @@ async function showUserInfo(user) {
   if (els.ordersLink) {
     els.ordersLink.href = `orders.php`;
   }
+  
+  // Create server-side session
+  await createServerSession(user);
   
   // Check if user is admin and add admin link
   checkAdminStatus(user.uid);
@@ -111,7 +161,7 @@ export function initAppAuth() {
         photoURL: user.photoURL
       };
       sessionStorage.setItem('currentUser', JSON.stringify(userData));
-      showUserInfo(userData);
+      showUserInfo(user); // Pass the actual Firebase user object
     } else {
       // User is logged out - redirect to login
       sessionStorage.removeItem('currentUser');
