@@ -1,6 +1,7 @@
 <?php
 require_once 'auth_check.php';
 require_once 'config.php';
+require_once 'secure_auth.php';
 
 // Check if user is admin
 requireAdmin();
@@ -11,6 +12,11 @@ try {
     
     // Handle form submissions
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Verify CSRF token
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            die('CSRF token verification failed');
+        }
+        
         $action = $_POST['action'] ?? '';
         
         if ($action === 'update_package') {
@@ -234,6 +240,7 @@ try {
                         <form method="POST" class="package-form">
                             <input type="hidden" name="action" value="update_package">
                             <input type="hidden" name="package_id" value="<?= $package['id'] ?>">
+                            <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                             
                             <div class="admin-form-group">
                                 <label>Package Name</label>

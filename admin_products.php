@@ -3,6 +3,7 @@
 require_once 'auth_check.php';
 require_once 'config.php';
 require_once 'PriceManager.php';
+require_once 'secure_auth.php';
 
 // Require admin authentication
 $userFirebaseUID = requireAdmin();
@@ -62,6 +63,11 @@ try {
 
 // Handle product management actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Verify CSRF token
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        die('CSRF token verification failed');
+    }
+    
     $action = $_POST['action'] ?? '';
     
     try {
@@ -605,6 +611,7 @@ function syncProductsFromPrintful($pdo) {
             </div>
             <form method="POST" style="display: inline-block;">
                 <input type="hidden" name="action" value="sync_products">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 <button type="submit" class="btn btn-primary" onclick="return confirm('⚠️ WARNING: This will DELETE ALL existing products and replace them with fresh data from Printful. This cannot be undone. Continue?')">
                     🔄 Replace All Products from Printful
                 </button>
@@ -616,6 +623,7 @@ function syncProductsFromPrintful($pdo) {
             <h2 style="margin-bottom: 20px;">➕ Add New Product</h2>
             <form method="POST">
                 <input type="hidden" name="action" value="add_product">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Product Key</label>
@@ -753,6 +761,7 @@ function syncProductsFromPrintful($pdo) {
             <form method="POST" id="editForm">
                 <input type="hidden" name="action" value="update_product">
                 <input type="hidden" name="product_id" id="editProductId">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                 
                 <div class="form-grid">
                     <div class="form-group">
