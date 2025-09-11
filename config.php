@@ -59,10 +59,10 @@ $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
 $basePath = $scriptDir === '/' ? '' : $scriptDir;
 
-// Use production URL for QR codes and external links, local URL for internal operations
+// Use local URL for development, production URL for production
 if ($host === 'localhost' || $host === 'localhost:8000' || strpos($host, '127.0.0.1') !== false) {
-    // Development environment - use production URL for QR codes
-    define('BASE_URL', 'https://www.memowindow.com');
+    // Development environment - use localhost for all URLs including checkout
+    define('BASE_URL', $protocol . $host . $basePath);
     define('LOCAL_URL', $protocol . $host . $basePath);
 } else {
     // Production environment
