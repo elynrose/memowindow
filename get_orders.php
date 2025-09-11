@@ -26,6 +26,7 @@ try {
     ]);
 
     // Get user's orders with memory details
+    // Join with users table to match Firebase UID
     $stmt = $pdo->prepare("
         SELECT 
             o.id,
@@ -45,7 +46,8 @@ try {
             o.updated_at,
             o.amount_paid
         FROM orders o
-        WHERE o.user_id = :user_id
+        JOIN users u ON o.user_id = u.id
+        WHERE u.firebase_uid = :user_id
         ORDER BY o.created_at DESC
     ");
     
