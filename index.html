@@ -818,6 +818,9 @@
         // Import Firebase modules
         import { auth } from './firebase-config.php';
         
+        // Make auth globally available
+        window.auth = auth;
+        
         // Check if user is already logged in and redirect to app
         window.addEventListener('load', function() {
             console.log('Index page loaded, checking auth state...');
@@ -986,16 +989,29 @@
 
         // Subscription functionality
         window.startSubscription = function(packageSlug, billingCycle) {
+            console.log('startSubscription called with:', packageSlug, billingCycle);
+            
+            // Check if auth is available
+            if (!window.auth) {
+                console.error('Auth not available, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
             // Check if user is authenticated
-            const currentUser = auth.currentUser;
+            const currentUser = window.auth.currentUser;
+            console.log('Current user:', currentUser);
+            
             if (!currentUser) {
                 // User not authenticated, redirect to login
+                console.log('User not authenticated, redirecting to login');
                 window.location.href = 'login.html';
                 return;
             }
             
             // User is authenticated, redirect to subscription checkout
             const userId = currentUser.uid;
+            console.log('User authenticated, redirecting to subscription checkout with userId:', userId);
             window.location.href = `subscription_checkout.php?user_id=${encodeURIComponent(userId)}`;
         };
     </script>
