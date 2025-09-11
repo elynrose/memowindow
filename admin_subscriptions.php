@@ -326,8 +326,8 @@ try {
         </div>
         
         <div class="nav">
-            <a href="admin.php">← Back to Admin</a>
-            <a href="admin_voice_clone.php">Voice Clone Settings</a>
+            <a href="admin.php?user_id=<?php echo urlencode($_GET['user_id'] ?? ''); ?>">← Back to Admin</a>
+            <a href="admin_voice_clone.php?user_id=<?php echo urlencode($_GET['user_id'] ?? ''); ?>">Voice Clone Settings</a>
         </div>
         
         <div class="content">

@@ -170,7 +170,7 @@ try {
             <h1>Subscription Failed</h1>
             <p><?= htmlspecialchars($error ?? 'An error occurred while processing your subscription.') ?></p>
             
-            <a href="subscription_checkout.php" class="btn">Try Again</a>
+            <a href="subscription_checkout.php?user_id=<?= urlencode($userId ?? '') ?>" class="btn">Try Again</a>
         <?php endif; ?>
     </div>
 </body>
