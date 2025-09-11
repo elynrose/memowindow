@@ -5,16 +5,14 @@ require_once 'secure_auth.php';
 
 $exportType = $_GET['type'] ?? '';
 
-// Get user ID from session or URL parameter (for backward compatibility)
-$userFirebaseUID = null;
-
-// Check session first
-if (isLoggedIn()) {
-    $userFirebaseUID = getCurrentUser()['user_id'];
-} else {
-    // Fallback to URL parameter for backward compatibility
-    $userFirebaseUID = $_GET['user_id'] ?? null;
+// Check authentication - session only
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
 }
+
+$userFirebaseUID = getCurrentUser()['user_id'];
 
 if (!$userFirebaseUID || !$exportType) {
     http_response_code(401);

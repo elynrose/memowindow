@@ -8,16 +8,13 @@ require_once 'secure_auth.php';
 $orderId = $_POST['order_id'] ?? $_GET['order_id'] ?? '';
 $reason = $_POST['reason'] ?? $_GET['reason'] ?? 'User requested cancellation';
 
-// Get user ID from session or URL parameter (for backward compatibility)
-$userId = null;
-
-// Check session first
-if (isLoggedIn()) {
-    $userId = getCurrentUser()['user_id'];
-} else {
-    // Fallback to URL parameter for backward compatibility
-    $userId = $_POST['user_id'] ?? $_GET['user_id'] ?? null;
+// Check authentication - session only
+if (!isLoggedIn()) {
+    echo json_encode(['success' => false, 'error' => 'Authentication required']);
+    exit;
 }
+
+$userId = getCurrentUser()['user_id'];
 
 if (!$orderId || !$userId) {
     echo json_encode(['success' => false, 'error' => 'Missing order ID or authentication required']);
