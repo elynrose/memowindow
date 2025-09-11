@@ -472,7 +472,7 @@
             // Fallback: show error message
             const container = document.getElementById("memoriesContainer");
             if (container) {
-                container.innerHTML = `
+                container.innerHTML = \`
                     <div class="empty-state">
                         <div class="empty-state-icon">⚠️</div>
                         <h3>Error Loading Memories</h3>
@@ -481,7 +481,7 @@
                             Refresh Page
                         </button>
                     </div>
-                `;
+                \`;
             }
         });
         
