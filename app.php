@@ -416,11 +416,29 @@
                 <input type="file" id="fileInput" multiple accept="audio/*" style="display: none;">
             </div>
             
+            <!-- Audio Limit Info -->
+            <div id="audioLimitInfo" style="margin-bottom: 1rem; padding: 12px; background: #f3f4f6; border-radius: 8px; display: block;">
+                <p style="margin: 0; color: #374151; font-size: 14px;">
+                    <span id="packageName">Your Plan</span> allows up to <span id="maxLength">100</span> seconds
+                </p>
+            </div>
+            
+            <!-- Countdown Timer -->
+            <div id="countdownTimer" style="display: none; margin-bottom: 1rem;">
+                <div style="font-size: 24px; font-weight: bold; color: #ef4444; margin-bottom: 8px;">
+                    <span id="timeRemaining">00:00</span>
+                </div>
+                <div style="width: 200px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0 auto;">
+                    <div id="progressBar" style="height: 100%; background: linear-gradient(90deg, #22c55e, #ef4444); border-radius: 2px; width: 100%; transition: width 0.1s ease;"></div>
+                </div>
+            </div>
+            
             <div style="text-align: center; margin-top: 1.5rem;">
                 <p style="color: #6b7280; margin-bottom: 1rem;">Or record your voice</p>
                 <button id="btnRecord" type="button" class="record-button" style="display: flex; align-items: center; justify-content: center;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 1c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2s2-.9 2-2V3c0-1.1-.9-2-2-2zm-1 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    <svg id="recordIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                     </svg>
                 </button>
             </div>

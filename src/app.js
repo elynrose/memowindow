@@ -16,7 +16,7 @@ let recordingStartTime = null;
 
 // DOM elements
 let fileInput, fileUploadArea, btnRecord, btnCreate, titleInput, waveformList, memoryPreview, previewCanvas, previewStatus;
-let audioLimitInfo, countdownTimer, timeRemaining, progressBar, packageName, maxLength;
+let audioLimitInfo, countdownTimer, timeRemaining, progressBar, packageName, maxLength, recordIcon;
 
 // Initialize app functionality
 export function initApp() {
@@ -26,6 +26,7 @@ export function initApp() {
     fileInput = document.getElementById('fileInput');
     fileUploadArea = document.getElementById('fileUploadArea');
     btnRecord = document.getElementById('btnRecord');
+    recordIcon = document.getElementById('recordIcon');
     btnCreate = document.getElementById('btnCreate');
     titleInput = document.getElementById('titleInput');
     waveformList = document.getElementById('waveformList');
@@ -375,7 +376,7 @@ function stopRecording() {
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
         isRecording = false;
         btnRecord.classList.remove('recording');
-        btnRecord.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2V4c0-1.1.9-2 2-2zm6 8c0 3.3-2.7 6-6 6s-6-2.7-6-6H4c0 4.4 3.6 8 8 8s8-3.6 8-8h-2z"/></svg>';
+        btnRecord.innerHTML = '<svg id="recordIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>';
         
         // Stop countdown timer
         stopCountdownTimer();
