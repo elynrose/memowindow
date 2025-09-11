@@ -27,7 +27,7 @@ function verifyFirebaseToken($idToken) {
  */
 function requireSecureAuth() {
     // Check for Authorization header (new secure method)
-    $headers = getallheaders();
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? null;
     
     if ($authHeader && strpos($authHeader, 'Bearer ') === 0) {
