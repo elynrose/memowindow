@@ -30,7 +30,6 @@ try {
         SELECT 
             o.id,
             o.stripe_session_id,
-            o.memory_id,
             o.printful_order_id,
             o.memory_title,
             o.memory_image_url,
@@ -44,9 +43,6 @@ try {
             o.tracking_number,
             o.created_at,
             o.updated_at,
-            o.product_id,
-            o.customer_name,
-            o.customer_email,
             o.amount_paid
         FROM orders o
         WHERE o.user_id = :user_id
