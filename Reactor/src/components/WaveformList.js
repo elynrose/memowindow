@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import './WaveformList.css';
 
@@ -28,7 +28,7 @@ const WaveformList = ({ refreshTrigger }) => {
     }
   ];
 
-  const loadWaveforms = async () => {
+  const loadWaveforms = useCallback(async () => {
     if (!currentUser) return;
     
     setLoading(true);
@@ -50,14 +50,14 @@ const WaveformList = ({ refreshTrigger }) => {
       setError('Failed to load memories. Please try again.');
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
   useEffect(() => {
     loadWaveforms();
-  }, [currentUser, refreshTrigger]);
+  }, [currentUser, refreshTrigger, loadWaveforms]);
 
   const deleteWaveform = async (waveformId) => {
-    if (!confirm('Are you sure you want to delete this memory?')) return;
+    if (!window.confirm('Are you sure you want to delete this memory?')) return;
     
     try {
       // In a real app, you'd make an API call here
