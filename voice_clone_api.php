@@ -242,7 +242,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     header('Content-Type: application/json');
     
     $action = $_POST['action'] ?? '';
-    $userId = $_POST['user_id'] ?? '';
+    
+    // Get user ID from session
+    if (!isLoggedIn()) {
+        echo json_encode(['success' => false, 'error' => 'Authentication required']);
+        exit;
+    }
+    $userId = getCurrentUser()['user_id'];
     
     try {
         $voiceAPI = new VoiceCloneAPI();

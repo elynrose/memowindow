@@ -1,5 +1,5 @@
 // Authentication functionality
-import { signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { auth, googleProvider, emailProvider } from '../firebase-config.php';
 
 let currentUser = null;
@@ -164,7 +164,11 @@ async function showUserInfo(user) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        idToken: idToken
+        idToken: idToken,
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
       })
     });
     
@@ -215,6 +219,17 @@ export function initAuth() {
   // Mark button as initialized
   els.btnLogin.dataset.initialized = 'true';
   
+  // Check for redirect result first
+  getRedirectResult(auth).then((result) => {
+    if (result) {
+      // User just signed in via redirect
+      console.log('✅ User signed in via redirect:', result.user);
+      // The onAuthStateChanged listener will handle the UI update
+    }
+  }).catch((error) => {
+    console.error('❌ Redirect result error:', error);
+  });
+
   // Set up auth state listener
   onAuthStateChanged(auth, (user) => {
     // Auth state changed
@@ -235,11 +250,9 @@ export function initAuth() {
       els.btnLogin.disabled = true;
       els.btnLogin.textContent = 'Signing in...';
       
-      // Attempting sign in with popup
-      const result = await signInWithPopup(auth, googleProvider);
-      // Sign in successful
-      
-      // The onAuthStateChanged listener handles the UI update automatically
+      // Use redirect instead of popup for better reliability
+      await signInWithRedirect(auth, googleProvider);
+      // The page will redirect to Google, then back to our app
       
     } catch (error) {
       console.error('❌ Login failed:', error);

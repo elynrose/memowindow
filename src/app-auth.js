@@ -173,11 +173,34 @@ export function initAppAuth() {
   if (els.btnLogout) {
     els.btnLogout.addEventListener('click', async () => {
       try {
+        console.log('🚪 Logging out...');
+        
+        // Call server-side logout to destroy PHP session
+        const response = await fetch('logout.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        const result = await response.json();
+        console.log('🔍 Server logout response:', result);
+        
+        // Sign out from Firebase
         await signOut(auth);
+        console.log('✅ Firebase sign out successful');
+        
+        // Clear client-side storage
         sessionStorage.removeItem('currentUser');
+        localStorage.removeItem('currentUser');
+        
+        // Redirect to login
         redirectToLogin();
+        
       } catch (error) {
-        console.error('Logout failed:', error);
+        console.error('❌ Logout failed:', error);
+        // Even if logout fails, redirect to login
+        redirectToLogin();
       }
     });
   }

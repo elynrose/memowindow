@@ -282,17 +282,35 @@
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('logout') === '1') {
       console.log('🚪 Logout requested, signing out...');
-      auth.signOut().then(() => {
+      
+      // Call server-side logout first
+      fetch('logout.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }).then(() => {
+        // Then sign out from Firebase
+        return auth.signOut();
+      }).then(() => {
         console.log('✅ Successfully signed out');
         // Clear any session data
         if (typeof(Storage) !== "undefined") {
           localStorage.removeItem('user');
+          localStorage.removeItem('currentUser');
           sessionStorage.clear();
         }
         // Redirect to clean login page
         window.location.href = 'login.php';
       }).catch((error) => {
         console.error('❌ Error signing out:', error);
+        // Clear storage anyway
+        if (typeof(Storage) !== "undefined") {
+          localStorage.removeItem('user');
+          localStorage.removeItem('currentUser');
+          sessionStorage.clear();
+        }
+        window.location.href = 'login.php';
       });
     }
   </script>
