@@ -88,6 +88,45 @@
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
         
+        .subscription-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .subscription-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.9rem;
+        }
+        
+        .subscription-plan {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .subscription-status-text {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .upgrade-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .upgrade-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+        
         /* Hero Section */
         .hero {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -532,6 +571,17 @@
                 display: none;
             }
             
+            .subscription-status {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+            }
+            
+            .subscription-info {
+                align-items: center;
+                text-align: center;
+            }
+            
             .hero h1 {
                 font-size: 2.5rem;
             }
@@ -567,7 +617,10 @@
                 <li><a href="#faq">FAQ</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
-            <a href="login.html" class="cta-button">Get Started</a>
+            <div id="nav-auth-section">
+                <!-- This will be populated by JavaScript -->
+                <a href="login.html" class="cta-button" id="login-button">Get Started</a>
+            </div>
         </nav>
     </header>
 
@@ -838,6 +891,7 @@
             if (currentUser) {
                 console.log('Current user found, staying on homepage for subscription access');
                 // Don't redirect - let logged-in users access subscription buttons
+                updateNavigationForLoggedInUser(currentUser);
             }
             
             // Also set up auth state listener as backup
@@ -846,9 +900,72 @@
                 if (user) {
                     // User is signed in, but don't redirect - let them access subscription buttons
                     console.log('User is logged in, staying on homepage for subscription access');
+                    updateNavigationForLoggedInUser(user);
+                } else {
+                    // User logged out, show login button
+                    updateNavigationForLoggedOutUser();
                 }
             });
         });
+        
+        // Function to update navigation for logged-in users
+        async function updateNavigationForLoggedInUser(user) {
+            try {
+                // Get user's subscription status
+                const response = await fetch(`get_user_subscription.php?user_id=${encodeURIComponent(user.uid)}`);
+                const data = await response.json();
+                
+                const navSection = document.getElementById('nav-auth-section');
+                
+                if (data.success) {
+                    const subscription = data.subscription;
+                    const isFree = subscription.package_slug === 'free' || !data.has_subscription;
+                    
+                    navSection.innerHTML = `
+                        <div class="subscription-status">
+                            <div class="subscription-info">
+                                <div class="subscription-plan">${subscription.package_name} Plan</div>
+                                <div class="subscription-status-text">${isFree ? 'Free Tier' : 'Active'}</div>
+                            </div>
+                            ${isFree ? 
+                                '<a href="#pricing" class="upgrade-button">Upgrade</a>' :
+                                '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(user.uid) + '" class="upgrade-button">Manage</a>'
+                            }
+                        </div>
+                    `;
+                } else {
+                    // Fallback if subscription check fails
+                    navSection.innerHTML = `
+                        <div class="subscription-status">
+                            <div class="subscription-info">
+                                <div class="subscription-plan">Free Plan</div>
+                                <div class="subscription-status-text">Free Tier</div>
+                            </div>
+                            <a href="#pricing" class="upgrade-button">Upgrade</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error fetching subscription status:', error);
+                // Fallback to upgrade button
+                const navSection = document.getElementById('nav-auth-section');
+                navSection.innerHTML = `
+                    <div class="subscription-status">
+                        <div class="subscription-info">
+                            <div class="subscription-plan">Free Plan</div>
+                            <div class="subscription-status-text">Free Tier</div>
+                        </div>
+                        <a href="#pricing" class="upgrade-button">Upgrade</a>
+                    </div>
+                `;
+            }
+        }
+        
+        // Function to update navigation for logged-out users
+        function updateNavigationForLoggedOutUser() {
+            const navSection = document.getElementById('nav-auth-section');
+            navSection.innerHTML = '<a href="login.html" class="cta-button">Get Started</a>';
+        }
 
     </script>
 
