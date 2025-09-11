@@ -263,7 +263,31 @@
         // Check current user immediately
         const currentUser = auth.currentUser;
         if (currentUser) {
-            console.log('Current user found, redirecting to app.html');
+            console.log('Current user found, checking for intended action...');
+            
+            const intendedAction = localStorage.getItem('intendedAction');
+            if (intendedAction) {
+                try {
+                    const action = JSON.parse(intendedAction);
+                    console.log('Found intended action:', action);
+                    
+                    if (action.action === 'subscribe') {
+                        // Clear the intended action
+                        localStorage.removeItem('intendedAction');
+                        
+                        // Redirect to subscription checkout
+                        const url = `create_direct_checkout.php?package=${encodeURIComponent(action.package)}&billing=${encodeURIComponent(action.billing)}&user_id=${encodeURIComponent(currentUser.uid)}&user_email=${encodeURIComponent(currentUser.email)}&user_name=${encodeURIComponent(currentUser.displayName || currentUser.email)}`;
+                        console.log('Redirecting to subscription checkout:', url);
+                        window.location.href = url;
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error parsing intended action:', e);
+                    localStorage.removeItem('intendedAction');
+                }
+            }
+            
+            console.log('No intended action, redirecting to app.html');
             window.location.href = 'app.html';
             return;
         }
@@ -272,8 +296,33 @@
         auth.onAuthStateChanged(function(user) {
             console.log('Auth state changed on login:', user ? 'Logged in' : 'Logged out');
             if (user) {
-                // User is signed in, redirect to app.html
-                console.log('User is logged in, redirecting to app.html');
+                // User is signed in, check for intended action
+                console.log('User is logged in, checking for intended action...');
+                
+                const intendedAction = localStorage.getItem('intendedAction');
+                if (intendedAction) {
+                    try {
+                        const action = JSON.parse(intendedAction);
+                        console.log('Found intended action:', action);
+                        
+                        if (action.action === 'subscribe') {
+                            // Clear the intended action
+                            localStorage.removeItem('intendedAction');
+                            
+                            // Redirect to subscription checkout
+                            const url = `create_direct_checkout.php?package=${encodeURIComponent(action.package)}&billing=${encodeURIComponent(action.billing)}&user_id=${encodeURIComponent(user.uid)}&user_email=${encodeURIComponent(user.email)}&user_name=${encodeURIComponent(user.displayName || user.email)}`;
+                            console.log('Redirecting to subscription checkout:', url);
+                            window.location.href = url;
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing intended action:', e);
+                        localStorage.removeItem('intendedAction');
+                    }
+                }
+                
+                // Default redirect to app.html
+                console.log('No intended action, redirecting to app.html');
                 window.location.href = 'app.html';
             }
         });

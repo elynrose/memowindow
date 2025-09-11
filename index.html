@@ -994,6 +994,12 @@
             // Check if auth is available
             if (!window.auth) {
                 console.error('Auth not available, redirecting to login');
+                // Store the intended action and redirect to login
+                localStorage.setItem('intendedAction', JSON.stringify({
+                    action: 'subscribe',
+                    package: packageSlug,
+                    billing: billingCycle
+                }));
                 window.location.href = 'login.html';
                 return;
             }
@@ -1003,8 +1009,13 @@
             console.log('Current user:', currentUser);
             
             if (!currentUser) {
-                // User not authenticated, redirect to login
-                console.log('User not authenticated, redirecting to login');
+                // User not authenticated, store intended action and redirect to login
+                console.log('User not authenticated, storing intended action and redirecting to login');
+                localStorage.setItem('intendedAction', JSON.stringify({
+                    action: 'subscribe',
+                    package: packageSlug,
+                    billing: billingCycle
+                }));
                 window.location.href = 'login.html';
                 return;
             }
@@ -1015,6 +1026,7 @@
             const userName = currentUser.displayName || currentUser.email;
             
             console.log('User authenticated, creating Stripe checkout session...');
+            console.log('User details:', { userId, userEmail, userName });
             
             try {
                 // Show loading state
@@ -1024,8 +1036,13 @@
                 button.disabled = true;
                 
                 // Create checkout session
-                const response = await fetch(`create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(userId)}&user_email=${encodeURIComponent(userEmail)}&user_name=${encodeURIComponent(userName)}`);
+                const url = `create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(userId)}&user_email=${encodeURIComponent(userEmail)}&user_name=${encodeURIComponent(userName)}`;
+                console.log('Making request to:', url);
+                
+                const response = await fetch(url);
                 const data = await response.json();
+                
+                console.log('Response:', data);
                 
                 if (data.success) {
                     if (data.redirect_url) {
