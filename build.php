@@ -13,25 +13,25 @@ try {
     
     echo "🔄 Regenerating pages from template...\n";
     
-    // Generate app.html
+    // Generate app.php
     if ($processor->generateAppPage()) {
-        echo "✅ Generated app.html\n";
+        echo "✅ Generated app.php\n";
     } else {
-        echo "❌ Failed to generate app.html\n";
+        echo "❌ Failed to generate app.php\n";
     }
     
-    // Generate memories.html
+    // Generate memories.php
     if ($processor->generateMemoriesPage()) {
-        echo "✅ Generated memories.html\n";
+        echo "✅ Generated memories.php\n";
     } else {
-        echo "❌ Failed to generate memories.html\n";
+        echo "❌ Failed to generate memories.php\n";
     }
     
-    // Generate orders.html
+    // Generate orders.php
     if ($processor->generateOrdersPage()) {
-        echo "✅ Generated orders.html\n";
+        echo "✅ Generated orders.php\n";
     } else {
-        echo "❌ Failed to generate orders.html\n";
+        echo "❌ Failed to generate orders.php\n";
     }
     
     echo "\n🎉 Build complete! All pages have been regenerated from templates.\n";

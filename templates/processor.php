@@ -34,7 +34,7 @@ class TemplateProcessor {
     }
     
     /**
-     * Generate app.html from template
+     * Generate app.php from template
      */
     public function generateAppPage() {
         $pageData = [
@@ -44,11 +44,11 @@ class TemplateProcessor {
             'PAGE_SCRIPTS' => $this->getAppScripts()
         ];
         
-        return $this->savePage($pageData, 'app.html');
+        return $this->savePage($pageData, 'app.php');
     }
     
     /**
-     * Generate memories.html from template
+     * Generate memories.php from template
      */
     public function generateMemoriesPage() {
         $pageData = [
@@ -58,11 +58,11 @@ class TemplateProcessor {
             'PAGE_SCRIPTS' => $this->getMemoriesScripts()
         ];
         
-        return $this->savePage($pageData, 'memories.html');
+        return $this->savePage($pageData, 'memories.php');
     }
     
     /**
-     * Generate orders.html from template
+     * Generate orders.php from template
      */
     public function generateOrdersPage() {
         $pageData = [
@@ -72,7 +72,7 @@ class TemplateProcessor {
             'PAGE_SCRIPTS' => $this->getOrdersScripts()
         ];
         
-        return $this->savePage($pageData, 'orders.html');
+        return $this->savePage($pageData, 'orders.php');
     }
     
     /**
@@ -439,7 +439,7 @@ class TemplateProcessor {
         <div class="page-header">
             <h1 class="page-title">My Memories</h1>
             <p class="page-subtitle">Your beautiful waveform memories, ready to share and print</p>
-            <a href="app.html" class="create-memory-btn">
+            <a href="app.php" class="create-memory-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
                 </svg>
@@ -725,21 +725,21 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_NAME'])) {
     echo "🔄 Generating pages from template...\n";
     
     if ($processor->generateAppPage()) {
-        echo "✅ Generated app.html\n";
+        echo "✅ Generated app.php\n";
     } else {
-        echo "❌ Failed to generate app.html\n";
+        echo "❌ Failed to generate app.php\n";
     }
     
     if ($processor->generateMemoriesPage()) {
-        echo "✅ Generated memories.html\n";
+        echo "✅ Generated memories.php\n";
     } else {
-        echo "❌ Failed to generate memories.html\n";
+        echo "❌ Failed to generate memories.php\n";
     }
     
     if ($processor->generateOrdersPage()) {
-        echo "✅ Generated orders.html\n";
+        echo "✅ Generated orders.php\n";
     } else {
-        echo "❌ Failed to generate orders.html\n";
+        echo "❌ Failed to generate orders.php\n";
     }
     
     echo "🎉 Template generation complete!\n";
