@@ -70,14 +70,14 @@ try {
         
     } elseif ($exportType === 'orders') {
         // Export orders data
-        fputcsv($output, ['ID', 'Stripe Session', 'Customer Name', 'Customer Email', 'Memory Title', 'Product', 'Amount', 'Status', 'Printful Order ID', 'Created At']);
+        fputcsv($output, ['ID', 'Stripe Session', 'Customer Name', 'Customer Email', 'Product', 'Amount', 'Status', 'Printful Order ID', 'Created At']);
         
         $stmt = $pdo->query("
             SELECT 
                 o.*,
-                w.title as memory_title
+                p.name as product_name
             FROM orders o
-            LEFT JOIN wave_assets w ON o.memory_id = w.id
+            LEFT JOIN print_products p ON o.product_variant_id = p.product_key
             ORDER BY o.created_at DESC
         ");
         
@@ -87,8 +87,7 @@ try {
                 $row['stripe_session_id'],
                 $row['customer_name'],
                 $row['customer_email'],
-                $row['memory_title'],
-                $row['product_id'],
+                $row['product_name'] ?? 'Unknown Product',
                 '$' . number_format($row['amount_paid'] / 100, 2),
                 $row['status'],
                 $row['printful_order_id'],
