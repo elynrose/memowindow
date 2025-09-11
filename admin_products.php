@@ -173,7 +173,7 @@ try {
             COUNT(o.id) as order_count,
             SUM(o.amount_paid) / 100 as total_revenue
         FROM print_products p
-        LEFT JOIN orders o ON p.product_key = o.product_id
+        LEFT JOIN orders o ON p.product_key = o.product_variant_id
         GROUP BY p.id
         ORDER BY p.sort_order ASC, p.name ASC
         LIMIT $itemsPerPage OFFSET $offset
