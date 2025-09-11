@@ -289,6 +289,22 @@
             console.log('No intended action, redirecting to app.html');
             window.location.href = 'app.html';
             return;
+        } else {
+            // User is not logged in, check if there's an intended action
+            console.log('User not logged in, checking for intended action...');
+            const intendedAction = localStorage.getItem('intendedAction');
+            if (intendedAction) {
+                try {
+                    const action = JSON.parse(intendedAction);
+                    console.log('Found intended action for logged-out user:', action);
+                    console.log('Will process after user logs in...');
+                } catch (e) {
+                    console.error('Error parsing intended action:', e);
+                    localStorage.removeItem('intendedAction');
+                }
+            } else {
+                console.log('No intended action found for logged-out user');
+            }
         }
         
         // Also set up auth state listener as backup
@@ -297,8 +313,11 @@
             if (user) {
                 // User is signed in, check for intended action
                 console.log('User is logged in, checking for intended action...');
+                console.log('User object:', user);
                 
                 const intendedAction = localStorage.getItem('intendedAction');
+                console.log('Intended action from localStorage:', intendedAction);
+                
                 if (intendedAction) {
                     try {
                         const action = JSON.parse(intendedAction);
@@ -322,6 +341,8 @@
                 // Default redirect to app.html
                 console.log('No intended action, redirecting to app.html');
                 window.location.href = 'app.html';
+            } else {
+                console.log('User logged out, no action needed');
             }
         });
     });
