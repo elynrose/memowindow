@@ -2,6 +2,7 @@
 import { getCurrentUser } from './app-auth.js';
 
 let currentUser = null;
+let allOrders = []; // Store all orders for filtering
 
 export function initOrders() {
     // Orders page loaded
@@ -57,7 +58,9 @@ async function loadOrders() {
         const data = await response.json();
         
         if (data.success) {
+            allOrders = data.orders; // Store all orders
             displayOrders(data.orders);
+            initializeSearchAndFilter(); // Initialize search functionality
         } else {
             showErrorState(data.error || 'Failed to load orders');
         }
@@ -250,5 +253,96 @@ document.addEventListener('keydown', (e) => {
         closeImageModal();
     }
 });
+
+// Search and Filter functionality
+function initializeSearchAndFilter() {
+    const searchInput = document.getElementById('orderSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    const clearFilters = document.getElementById('clearFilters');
+    
+    if (!searchInput || !statusFilter || !dateFilter || !clearFilters) {
+        console.log('Search elements not found, skipping search initialization');
+        return;
+    }
+    
+    // Add event listeners
+    searchInput.addEventListener('input', filterOrders);
+    statusFilter.addEventListener('change', filterOrders);
+    dateFilter.addEventListener('change', filterOrders);
+    clearFilters.addEventListener('click', clearAllFilters);
+    
+    console.log('Search and filter functionality initialized');
+}
+
+function filterOrders() {
+    const searchTerm = document.getElementById('orderSearch')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
+    const dateFilter = document.getElementById('dateFilter')?.value || '';
+    
+    let filteredOrders = allOrders.filter(order => {
+        // Search filter
+        const matchesSearch = !searchTerm || 
+            order.stripe_session_id?.toLowerCase().includes(searchTerm) ||
+            order.memory_title?.toLowerCase().includes(searchTerm) ||
+            order.product_name?.toLowerCase().includes(searchTerm);
+        
+        // Status filter
+        const matchesStatus = !statusFilter || order.status === statusFilter;
+        
+        // Date filter
+        const matchesDate = !dateFilter || isDateInRange(order.created_at, dateFilter);
+        
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+    
+    displayOrders(filteredOrders);
+    updateResultsCounter(filteredOrders.length, allOrders.length);
+}
+
+function isDateInRange(dateString, range) {
+    const orderDate = new Date(dateString);
+    const now = new Date();
+    
+    switch (range) {
+        case 'today':
+            return orderDate.toDateString() === now.toDateString();
+        case 'week':
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return orderDate >= weekAgo;
+        case 'month':
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            return orderDate >= monthAgo;
+        case 'quarter':
+            const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+            return orderDate >= quarterAgo;
+        case 'year':
+            const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+            return orderDate >= yearAgo;
+        default:
+            return true;
+    }
+}
+
+function clearAllFilters() {
+    document.getElementById('orderSearch').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('dateFilter').value = '';
+    filterOrders();
+}
+
+function updateResultsCounter(filteredCount, totalCount) {
+    const resultsCounter = document.getElementById('resultsCounter');
+    const resultsText = document.getElementById('resultsText');
+    
+    if (resultsCounter && resultsText) {
+        if (filteredCount < totalCount) {
+            resultsText.textContent = `Showing ${filteredCount} of ${totalCount} orders`;
+            resultsCounter.style.display = 'block';
+        } else {
+            resultsCounter.style.display = 'none';
+        }
+    }
+}
 
 // Orders functionality initialized

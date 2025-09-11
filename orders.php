@@ -420,6 +420,57 @@
             <p class="page-subtitle" style="margin-bottom: 50px; color:#FFFFFF;">Track your MemoryWave print orders</p>
         </div>
 
+        <!-- Search and Filter Section -->
+        <div class="search-filter-section" style="margin-bottom: 30px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; backdrop-filter: blur(10px);">
+            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <!-- Search Input -->
+                <div style="flex: 1; min-width: 250px;">
+                    <input type="text" id="orderSearch" placeholder="Search orders by ID, memory title, or product..." 
+                           style="width: 100%; padding: 12px 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 14px; backdrop-filter: blur(5px);">
+                    <style>
+                        #orderSearch::placeholder { color: rgba(255,255,255,0.7); }
+                        #orderSearch:focus { outline: none; border-color: #667eea; background: rgba(255,255,255,0.15); }
+                    </style>
+                </div>
+                
+                <!-- Status Filter -->
+                <div>
+                    <select id="statusFilter" style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 14px; backdrop-filter: blur(5px); min-width: 150px;">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="refunded">Refunded</option>
+                    </select>
+                </div>
+                
+                <!-- Date Filter -->
+                <div>
+                    <select id="dateFilter" style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 14px; backdrop-filter: blur(5px); min-width: 150px;">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="quarter">This Quarter</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+                
+                <!-- Clear Filters -->
+                <button id="clearFilters" style="padding: 12px 20px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; font-size: 14px; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s;">
+                    Clear Filters
+                </button>
+            </div>
+            
+            <!-- Results Counter -->
+            <div id="resultsCounter" style="margin-top: 15px; color: rgba(255,255,255,0.8); font-size: 14px; display: none;">
+                <span id="resultsText">Showing 0 of 0 orders</span>
+            </div>
+        </div>
+
         <!-- Orders Container -->
         <div id="ordersContainer">
             <div class="loading">
