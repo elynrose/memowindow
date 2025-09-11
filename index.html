@@ -990,6 +990,8 @@
         // Subscription functionality
         window.startSubscription = async function(packageSlug, billingCycle) {
             console.log('startSubscription called with:', packageSlug, billingCycle);
+            console.log('window.auth available:', !!window.auth);
+            console.log('window.auth object:', window.auth);
             
             // Check if auth is available
             if (!window.auth) {
@@ -1000,6 +1002,7 @@
                     package: packageSlug,
                     billing: billingCycle
                 }));
+                console.log('Stored intended action:', localStorage.getItem('intendedAction'));
                 window.location.href = 'login.html';
                 return;
             }
