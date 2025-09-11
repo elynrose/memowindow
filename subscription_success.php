@@ -3,47 +3,74 @@ require_once 'config.php';
 require_once 'SubscriptionManager.php';
 
 $sessionId = $_GET['session_id'] ?? '';
+$userId = $_GET['user_id'] ?? '';
+$packageId = $_GET['package_id'] ?? '';
+$packageName = $_GET['package_name'] ?? '';
+$billing = $_GET['billing'] ?? 'monthly';
 
-if (!$sessionId) {
-    die('Session ID required');
+// If we have direct parameters (for testing without Stripe), handle them
+if (!$sessionId && $userId && $packageId) {
+    $success = true;
+    $packageName = $packageName ?: 'Standard';
+} elseif (!$sessionId) {
+    die('Session ID or user parameters required');
 }
 
-try {
-    // Set up Stripe
-    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
-    
-    // Retrieve the checkout session
-    $session = \Stripe\Checkout\Session::retrieve($sessionId);
-    
-    if ($session->payment_status === 'paid') {
-        // Get subscription details
-        $subscription = \Stripe\Subscription::retrieve($session->subscription);
+if ($sessionId) {
+    // Handle Stripe checkout session
+    try {
+        // Set up Stripe
+        \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
         
-        $userId = $session->metadata['user_id'];
-        $packageId = $session->metadata['package_id'];
-        $stripeSubscriptionId = $subscription->id;
-        $stripeCustomerId = $subscription->customer;
+        // Retrieve the checkout session
+        $session = \Stripe\Checkout\Session::retrieve($sessionId);
         
-        // Update user subscription in database
+        if ($session->payment_status === 'paid') {
+            // Get subscription details
+            $subscription = \Stripe\Subscription::retrieve($session->subscription);
+            
+            $userId = $session->metadata['user_id'];
+            $packageId = $session->metadata['package_id'];
+            $stripeSubscriptionId = $subscription->id;
+            $stripeCustomerId = $subscription->customer;
+            
+            // Update user subscription in database
+            $subscriptionManager = new SubscriptionManager();
+            $subscriptionManager->createOrUpdateSubscription(
+                $userId,
+                $packageId,
+                $stripeSubscriptionId,
+                $stripeCustomerId,
+                'active'
+            );
+            
+            $success = true;
+            $packageName = $session->metadata['package_name'];
+        } else {
+            $success = false;
+            $error = 'Payment was not successful';
+        }
+        
+    } catch (Exception $e) {
+        $success = false;
+        $error = $e->getMessage();
+    }
+} else {
+    // Handle direct subscription (for testing without Stripe)
+    try {
         $subscriptionManager = new SubscriptionManager();
         $subscriptionManager->createOrUpdateSubscription(
             $userId,
             $packageId,
-            $stripeSubscriptionId,
-            $stripeCustomerId,
+            'test_subscription_' . time(), // Mock subscription ID
+            'test_customer_' . time(), // Mock customer ID
             'active'
         );
-        
         $success = true;
-        $packageName = $session->metadata['package_name'];
-    } else {
+    } catch (Exception $e) {
         $success = false;
-        $error = 'Payment was not successful';
+        $error = $e->getMessage();
     }
-    
-} catch (Exception $e) {
-    $success = false;
-    $error = $e->getMessage();
 }
 ?>
 

@@ -679,7 +679,7 @@
                         <li>Priority support</li>
                         <li>High quality audio</li>
                     </ul>
-                    <a href="login.html" class="cta-button">Start Standard Plan</a>
+                    <a href="#" class="cta-button" onclick="startSubscription('standard', 'monthly')">Start Standard Plan</a>
                 </div>
                 
                 <div class="pricing-card">
@@ -694,7 +694,7 @@
                         <li>Highest quality audio</li>
                         <li>Advanced features</li>
                     </ul>
-                    <a href="login.html" class="cta-button">Start Premium Plan</a>
+                    <a href="#" class="cta-button" onclick="startSubscription('premium', 'monthly')">Start Premium Plan</a>
                 </div>
             </div>
         </div>
@@ -929,6 +929,21 @@
             // This would open a video modal or redirect to a video
             alert('Video demo coming soon! For now, try our app by clicking "Get Started"');
         });
+
+        // Subscription functionality
+        window.startSubscription = function(packageSlug, billingCycle) {
+            // Check if user is authenticated
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                // User not authenticated, redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // User is authenticated, redirect to subscription checkout
+            const userId = currentUser.uid;
+            window.location.href = `subscription_checkout.php?user_id=${encodeURIComponent(userId)}`;
+        };
     </script>
 </body>
 </html>
