@@ -275,10 +275,9 @@
                         // Clear the intended action
                         localStorage.removeItem('intendedAction');
                         
-                        // Redirect to subscription checkout
-                        const url = `create_direct_checkout.php?package=${encodeURIComponent(action.package)}&billing=${encodeURIComponent(action.billing)}&user_id=${encodeURIComponent(currentUser.uid)}&user_email=${encodeURIComponent(currentUser.email)}&user_name=${encodeURIComponent(currentUser.displayName || currentUser.email)}`;
-                        console.log('Redirecting to subscription checkout:', url);
-                        window.location.href = url;
+                        // Create subscription checkout session
+                        console.log('Creating subscription checkout session...');
+                        createSubscriptionCheckout(action.package, action.billing, currentUser);
                         return;
                     }
                 } catch (e) {
@@ -309,10 +308,9 @@
                             // Clear the intended action
                             localStorage.removeItem('intendedAction');
                             
-                            // Redirect to subscription checkout
-                            const url = `create_direct_checkout.php?package=${encodeURIComponent(action.package)}&billing=${encodeURIComponent(action.billing)}&user_id=${encodeURIComponent(user.uid)}&user_email=${encodeURIComponent(user.email)}&user_name=${encodeURIComponent(user.displayName || user.email)}`;
-                            console.log('Redirecting to subscription checkout:', url);
-                            window.location.href = url;
+                            // Create subscription checkout session
+                            console.log('Creating subscription checkout session...');
+                            createSubscriptionCheckout(action.package, action.billing, user);
                             return;
                         }
                     } catch (e) {
@@ -328,6 +326,43 @@
         });
     });
     
+    // Function to create subscription checkout session
+    async function createSubscriptionCheckout(packageSlug, billingCycle, user) {
+        try {
+            console.log('Creating checkout session for:', packageSlug, billingCycle);
+            
+            const url = `create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(user.uid)}&user_email=${encodeURIComponent(user.email)}&user_name=${encodeURIComponent(user.displayName || user.email)}`;
+            console.log('Making request to:', url);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('Checkout response:', data);
+            
+            if (data.success) {
+                if (data.redirect_url) {
+                    // Free plan - redirect to app
+                    console.log('Free plan activated, redirecting to app');
+                    window.location.href = data.redirect_url;
+                } else if (data.checkout_url) {
+                    // Paid plan - redirect to Stripe checkout
+                    console.log('Redirecting to Stripe checkout:', data.checkout_url);
+                    window.location.href = data.checkout_url;
+                }
+            } else {
+                console.error('Failed to create checkout session:', data.error);
+                alert('Error creating checkout session: ' + data.error);
+                // Fallback to app
+                window.location.href = 'app.html';
+            }
+        } catch (error) {
+            console.error('Error creating checkout session:', error);
+            alert('Error creating checkout session. Please try again.');
+            // Fallback to app
+            window.location.href = 'app.html';
+        }
+    }
+
     // Initialize authentication
     import { initAuth } from './src/auth.js';
     
