@@ -257,6 +257,19 @@
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
+  <!-- Immediate auth check for faster redirect -->
+  <script type="module">
+    import { auth } from './firebase-config.php';
+    
+    // Check auth state immediately when Firebase loads
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        console.log('🚀 Fast redirect: User already logged in, redirecting to app...');
+        window.location.href = 'app.php';
+      }
+    });
+  </script>
+  
   <!-- Auth Script -->
   <script type="module" src="src/auth.js"></script>
   <script type="module" src="includes/navigation.js"></script>
@@ -273,20 +286,18 @@
         // Check current user immediately
         const currentUser = auth.currentUser;
         if (currentUser) {
-            console.log('Current user found, redirecting to subscription page...');
-            window.location.href = 'subscription_checkout.php?user_id=' + encodeURIComponent(currentUser.uid);
+            console.log('Current user found, redirecting to app...');
+            window.location.href = 'app.php';
             return;
         }
         
-        // Also set up auth state listener as backup
+        // Set up auth state listener for immediate redirect
         auth.onAuthStateChanged(function(user) {
             console.log('Auth state changed on login:', user ? 'Logged in' : 'Logged out');
             if (user) {
-                // User is signed in, redirect to subscription page
-                console.log('User is logged in, redirecting to subscription page...');
-                window.location.href = 'subscription_checkout.php?user_id=' + encodeURIComponent(user.uid);
-            } else {
-                console.log('User logged out, no action needed');
+                // User is signed in, redirect to app immediately
+                console.log('User is logged in, redirecting to app...');
+                window.location.href = 'app.php';
             }
         });
     });

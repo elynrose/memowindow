@@ -350,19 +350,43 @@ $statusOptions = [
         </div>
     </div>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script>
         function syncOrders() {
-            if (confirm('Sync all orders with Printful? This will update order statuses based on Printful data.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = '<input type="hidden" name="action" value="sync_orders">';
-                document.body.appendChild(form);
-                form.submit();
-            }
+            Swal.fire({
+                title: 'Sync Orders?',
+                text: 'Sync all orders with Printful? This will update order statuses based on Printful data.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, sync orders',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.innerHTML = '<input type="hidden" name="action" value="sync_orders">';
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
         
         function updateOrderStatus(orderId, newStatus) {
-            if (confirm(`Update order #${orderId} status to ${newStatus}?`)) {
+            Swal.fire({
+                title: 'Update Order Status?',
+                text: `Update order #${orderId} status to ${newStatus}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, update',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.innerHTML = `
@@ -372,7 +396,8 @@ $statusOptions = [
                 `;
                 document.body.appendChild(form);
                 form.submit();
-            }
+                }
+            });
         }
         
         function toggleSelectAll() {
