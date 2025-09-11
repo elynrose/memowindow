@@ -10,9 +10,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- Navigation Styles -->
-    <link rel="stylesheet" href="includes/navigation.css">
-    
     <style>
         /* Reset and Base Styles */
         * {
@@ -390,7 +387,23 @@
     </style>
 </head>
 <body>
-    <?php include 'includes/navigation.php'; ?>
+    <!-- Modern Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="index.php" class="logo">
+                <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
+            </a>
+            <div id="userInfo" class="user-info hidden">
+                <a href="memories.php" class="header-link">My Memories</a>
+                <a id="ordersLink" href="#" class="header-link">My Orders</a>
+                <a id="btnLogout" href="#" class="header-link">Sign Out</a>
+                <div class="user-profile">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
+                    <span id="userName">Loading...</span>
+                </div>
+            </div>
+        </nav>
+    </header>
 
     <!-- Main Content -->
     <div class="wrap">
@@ -422,26 +435,18 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <!-- App Scripts -->
     <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
     <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
-    <script type="module" src="includes/navigation.js"></script>
     
     <!-- Template initialization -->
     <script type="module">
         import { initAppAuth } from './src/app-auth.js';
-        import { initNavigation } from './includes/navigation.js';
         
         // Initialize authentication for all pages
         initAppAuth();
-        
-        // Initialize navigation
-        initNavigation();
         
         // Page-specific initialization will be injected here
         
