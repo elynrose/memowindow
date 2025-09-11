@@ -12,6 +12,7 @@ const getElements = () => ({
   userAvatar: document.getElementById('userAvatar'),
   ordersLink: document.getElementById('ordersLink'),
   mainContent: document.getElementById('mainContent'),
+  subscriptionStatus: document.getElementById('subscriptionStatus'),
 });
 
 // Show user info in app
@@ -43,6 +44,9 @@ async function showUserInfo(user) {
   
   // Check if user is admin and add admin link
   checkAdminStatus(user.uid);
+  
+  // Load and display subscription status
+  loadSubscriptionStatus(user.uid);
   
   currentUser = user;
   
@@ -163,6 +167,54 @@ async function checkAdminStatus(userUID) {
 // Get current user
 export function getCurrentUser() {
   return currentUser;
+}
+
+// Load and display subscription status
+async function loadSubscriptionStatus(userId) {
+  const els = getElements();
+  
+  if (!els.subscriptionStatus) return;
+  
+  try {
+    // Get user's subscription status
+    const response = await fetch(`get_user_subscription.php?user_id=${encodeURIComponent(userId)}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      const subscription = data.subscription;
+      const isFree = subscription.package_slug === 'free' || !data.has_subscription;
+      
+      els.subscriptionStatus.innerHTML = `
+        <div class="subscription-info">
+          <div class="subscription-plan">${subscription.package_name} Plan</div>
+          <div class="subscription-status-text">${isFree ? 'Free Tier' : 'Active'}</div>
+        </div>
+        ${isFree ? 
+          '<a href="index.html#pricing" class="upgrade-button">Upgrade</a>' :
+          '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(userId) + '" class="upgrade-button">Manage</a>'
+        }
+      `;
+    } else {
+      // Fallback if subscription check fails
+      els.subscriptionStatus.innerHTML = `
+        <div class="subscription-info">
+          <div class="subscription-plan">Free Plan</div>
+          <div class="subscription-status-text">Free Tier</div>
+        </div>
+        <a href="index.html#pricing" class="upgrade-button">Upgrade</a>
+      `;
+    }
+  } catch (error) {
+    console.error('Error fetching subscription status:', error);
+    // Fallback to upgrade button
+    els.subscriptionStatus.innerHTML = `
+      <div class="subscription-info">
+        <div class="subscription-plan">Free Plan</div>
+        <div class="subscription-status-text">Free Tier</div>
+      </div>
+      <a href="index.html#pricing" class="upgrade-button">Upgrade</a>
+    `;
+  }
 }
 
 // Make getCurrentUser available globally

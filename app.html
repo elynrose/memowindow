@@ -85,6 +85,46 @@
             color: #333;
         }
         
+        .subscription-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-right: 1rem;
+        }
+        
+        .subscription-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.85rem;
+        }
+        
+        .subscription-plan {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .subscription-status-text {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        .upgrade-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .upgrade-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
+        }
+        
         .user-profile {
             display: flex;
             align-items: center;
@@ -236,6 +276,18 @@
                 padding: 0.4rem 0.6rem;
                 font-size: 0.8rem;
             }
+            
+            .subscription-status {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+                margin-right: 0.5rem;
+            }
+            
+            .subscription-info {
+                align-items: center;
+                text-align: center;
+            }
         }
         
         /* Page-specific styles will be injected here */
@@ -378,6 +430,9 @@
                 <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
             </a>
             <div id="userInfo" class="user-info hidden">
+                <div id="subscriptionStatus" class="subscription-status">
+                    <!-- Subscription status will be populated by JavaScript -->
+                </div>
                 <a href="memories.html" class="header-link">My Memories</a>
                 <a id="ordersLink" href="#" class="header-link">My Orders</a>
                 <a id="btnLogout" href="#" class="header-link">Sign Out</a>
