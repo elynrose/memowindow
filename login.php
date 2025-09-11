@@ -246,7 +246,7 @@
           </button>
     
     <div class="back-link">
-      <a href="index.html">← Back to Home</a>
+      <a href="index.php">← Back to Home</a>
       </div>
     </div>
 

@@ -2,7 +2,7 @@
 const CACHE_NAME = 'memowindow-v1.0.1';
 const STATIC_CACHE = [
   '/',
-  '/index.html',
+  '/index.php',
   '/dist/bundle.js',
   '/manifest.json',
   '/images/logo.png',
@@ -100,7 +100,7 @@ async function networkFirst(request) {
     
     // Return offline page for navigation requests
     if (request.destination === 'document') {
-      return caches.match('/index.html');
+      return caches.match('/index.php');
     }
     
     throw error;

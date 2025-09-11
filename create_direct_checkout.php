@@ -27,7 +27,7 @@ try {
         // For free plan, just redirect to app
         echo json_encode([
             'success' => true,
-            'redirect_url' => 'app.html',
+            'redirect_url' => 'app.php',
             'message' => 'Free plan activated'
         ]);
         exit;
@@ -68,7 +68,7 @@ try {
         ]],
         'mode' => 'subscription',
         'success_url' => BASE_URL . '/subscription_success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => BASE_URL . '/index.html',
+        'cancel_url' => BASE_URL . '/index.php',
         'customer_email' => $userEmail,
         'metadata' => [
             'user_id' => $userId,

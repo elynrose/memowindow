@@ -5,7 +5,7 @@ require_once 'config.php';
 $sessionId = $_GET['session_id'] ?? '';
 
 if (!$sessionId) {
-    header('Location: login.html');
+    header('Location: login.php');
     exit;
 }
 
@@ -144,11 +144,11 @@ try {
         <?php endif; ?>
         
         <div style="margin-top: 32px;">
-            <a href="login.html" class="btn-primary">Create Another Memory</a>
+            <a href="login.php" class="btn-primary">Create Another Memory</a>
             <?php if (isset($session) && isset($session->metadata->user_id)): ?>
-                <a href="orders.html" class="btn-secondary">View Orders</a>
+                <a href="orders.php" class="btn-secondary">View Orders</a>
             <?php else: ?>
-                <a href="login.html" class="btn-secondary">Back to MemoWindow</a>
+                <a href="login.php" class="btn-secondary">Back to MemoWindow</a>
             <?php endif; ?>
         </div>
         

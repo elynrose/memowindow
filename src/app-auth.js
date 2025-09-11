@@ -39,7 +39,7 @@ async function showUserInfo(user) {
   
   // Update orders link with user ID
   if (els.ordersLink) {
-    els.ordersLink.href = `orders.html`;
+    els.ordersLink.href = `orders.php`;
   }
   
   // Check if user is admin and add admin link
@@ -64,7 +64,7 @@ async function showUserInfo(user) {
 // Redirect to login if not authenticated
 function redirectToLogin() {
   // User not authenticated, redirecting to login
-  window.location.href = 'login.html';
+  window.location.href = 'login.php';
 }
 
 // Initialize app authentication
@@ -190,7 +190,7 @@ async function loadSubscriptionStatus(userId) {
           <div class="subscription-status-text">${isFree ? 'Free Tier' : 'Active'}</div>
         </div>
         ${isFree ? 
-          '<a href="index.html#pricing" class="upgrade-button">Upgrade</a>' :
+          '<a href="index.php#pricing" class="upgrade-button">Upgrade</a>' :
           '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(userId) + '" class="upgrade-button">Manage</a>'
         }
       `;
@@ -201,7 +201,7 @@ async function loadSubscriptionStatus(userId) {
           <div class="subscription-plan">Free Plan</div>
           <div class="subscription-status-text">Free Tier</div>
         </div>
-        <a href="index.html#pricing" class="upgrade-button">Upgrade</a>
+        <a href="index.php#pricing" class="upgrade-button">Upgrade</a>
       `;
     }
   } catch (error) {
@@ -212,7 +212,7 @@ async function loadSubscriptionStatus(userId) {
         <div class="subscription-plan">Free Plan</div>
         <div class="subscription-status-text">Free Tier</div>
       </div>
-      <a href="index.html#pricing" class="upgrade-button">Upgrade</a>
+      <a href="index.php#pricing" class="upgrade-button">Upgrade</a>
     `;
   }
 }

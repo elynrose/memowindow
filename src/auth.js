@@ -162,7 +162,7 @@ async function showUserInfo(user) {
   }));
   
   // Redirect to the app page
-  window.location.href = 'app.html';
+  window.location.href = 'app.php';
 }
 
 // Initialize authentication

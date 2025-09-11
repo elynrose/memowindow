@@ -46,7 +46,7 @@ function showLoginPrompt() {
             <div class="empty-state-icon">🔐</div>
             <h3>Please Sign In</h3>
             <p>You need to be signed in to view your memories.</p>
-            <a href="login.html" class="create-memory-btn" style="margin-top: 1rem;">
+            <a href="login.php" class="create-memory-btn" style="margin-top: 1rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
@@ -170,7 +170,7 @@ function showEmptyState() {
             <div class="empty-state-icon">🎵</div>
             <h3>No memories yet</h3>
             <p>Create your first beautiful waveform memory to get started!</p>
-            <a href="app.html" class="create-memory-btn" style="margin-top: 1rem;">
+            <a href="app.php" class="create-memory-btn" style="margin-top: 1rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
                 </svg>

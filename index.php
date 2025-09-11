@@ -618,7 +618,7 @@
             <h1>Transform Voice into Beautiful Waveform Art</h1>
             <p>Turn your precious voice recordings into stunning visual memories. Create unique waveform prints that capture the essence of your most meaningful moments.</p>
             <div class="hero-buttons">
-                <a href="login.html" class="btn-primary">Start Creating</a>
+                <a href="login.php" class="btn-primary">Start Creating</a>
                 <a href="#video" class="btn-secondary">Watch Demo</a>
             </div>
         </div>
@@ -831,7 +831,7 @@
                     <p><a href="#features">Features</a></p>
                     <p><a href="#pricing">Pricing</a></p>
                     <p><a href="#faq">FAQ</a></p>
-                    <p><a href="login.html">Get Started</a></p>
+                    <p><a href="login.php">Get Started</a></p>
                 </div>
                 
                 <div class="footer-section">
@@ -1056,7 +1056,7 @@
         // Function to update navigation for logged-out users
         function updateNavigationForLoggedOutUser() {
             const navSection = document.getElementById('nav-auth-section');
-            navSection.innerHTML = '<a href="login.html" class="cta-button">Get Started</a>';
+            navSection.innerHTML = '<a href="login.php" class="cta-button">Get Started</a>';
         }
 
     </script>
@@ -1150,7 +1150,7 @@
             // Check if auth is available
             if (!window.auth) {
                 console.error('Auth not available after wait, redirecting to login');
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
                 return;
             }
             
@@ -1161,7 +1161,7 @@
             if (!currentUser) {
                 // User not authenticated, redirect to login
                 console.log('User not authenticated, redirecting to login');
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
                 return;
             }
             

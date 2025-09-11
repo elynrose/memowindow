@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders - MemoWindow</title>
+    <title>My Memories - MemoWindow</title>
     
     <!-- Cache busting -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -243,154 +243,148 @@
         
         /* Page-specific styles will be injected here */
         
-        /* Orders-specific styles */
-        .order-card {
-            background: white;
-            border: 1px solid #e6e9f2;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        /* Memories-specific styles */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
         }
         
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        
-        .order-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #0b0d12;
-            margin: 0;
-        }
-        
-        .order-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-        
-        .status-paid {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-processing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .status-shipped {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .order-details {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 16px;
-            align-items: center;
-        }
-        
-        .order-image {
-            width: 80px;
-            height: 50px;
-            border-radius: 8px;
-            border: 1px solid #e6e9f2;
-            object-fit: cover;
-            background: white;
-        }
-        
-        .order-info {
-            flex: 1;
-        }
-        
-        .order-info h4 {
-            margin: 0 0 4px 0;
-            color: #0b0d12;
-            font-size: 14px;
-        }
-        
-        .order-info p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 12px;
-        }
-        
-        .order-price {
-            font-size: 16px;
-            font-weight: 600;
-            color: #0b0d12;
-            text-align: right;
-        }
-        
-        .order-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #f3f4f6;
-            font-size: 12px;
-            color: #6b7280;
-        }
-        
-        .cancel-btn {
-            background: #dc2626;
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
             color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .page-subtitle {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+        }
+        
+        .create-memory-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .create-memory-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        
+        .memories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .memory-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .memory-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .memory-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
             cursor: pointer;
-            margin-left: 10px;
+        }
+        
+        .memory-content {
+            padding: 1.5rem;
+        }
+        
+        .memory-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .memory-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        
+        .memory-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .memory-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #374151;
+            text-decoration: none;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
             transition: background-color 0.2s;
         }
         
-        .cancel-btn:hover {
-            background: #b91c1c;
+        .memory-action:hover {
+            background: #f3f4f6;
+        }
+        
+        .memory-action.order {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .memory-action.order:hover {
+            background: #bfdbfe;
+        }
+        
+        .memory-action.delete {
+            color: #dc2626;
+        }
+        
+        .memory-action.delete:hover {
+            background: #fef2f2;
         }
         
         .empty-state {
             text-align: center;
-            padding: 40px;
+            padding: 4rem 2rem;
             color: #6b7280;
         }
         
-        .empty-state h3 {
-            color: #0b0d12;
-            margin-bottom: 8px;
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
         }
         
-        @media (max-width: 640px) {
-            .order-details {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-            
-            .order-header {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            
-            .order-meta {
-                flex-direction: column;
-                gap: 8px;
-                text-align: center;
-            }
+        .empty-state h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 2rem;
         }
         
     </style>
@@ -403,15 +397,21 @@
         
         <!-- Page Header -->
         <div class="page-header">
-            <h1 class="page-title" style="color:#FFFFFF;">My Orders</h1>
-            <p class="page-subtitle" style="margin-bottom: 50px; color:#FFFFFF;">Track your MemoryWave print orders</p>
+            <h1 class="page-title">My Memories</h1>
+            <p class="page-subtitle">Your beautiful waveform memories, ready to share and print</p>
+            <a href="app.php" class="create-memory-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                </svg>
+                Create New Memory
+            </a>
         </div>
 
-        <!-- Orders Container -->
-        <div id="ordersContainer">
+        <!-- Memories Container -->
+        <div id="memoriesContainer">
             <div class="loading">
                 <div class="loading-spinner"></div>
-                Loading your orders...
+                Loading your memories...
             </div>
         </div>
         
@@ -442,22 +442,31 @@
         
         // Page-specific initialization will be injected here
         
-        // Orders-specific initialization
-        console.log("📦 Orders page loaded");
+        // Memories-specific initialization
+        console.log("💕 Memories page loaded");
         
-        // Import and initialize orders functionality
-        import("./src/orders.js").then(module => {
-            console.log("✅ Orders module loaded successfully");
-            module.initOrders();
+        // Import globals first (for order functionality)
+        import("./src/globals.js").then(() => {
+            console.log("✅ Globals module loaded successfully");
+            
+            // Import and initialize memories functionality
+            return import("./src/memories.js");
+        }).then(module => {
+            console.log("✅ Memories module loaded successfully");
+            module.initMemories();
         }).catch(error => {
-            console.error("❌ Failed to load orders module:", error);
+            console.error("❌ Failed to load memories module:", error);
             // Fallback: show error message
-            const container = document.getElementById("ordersContainer");
+            const container = document.getElementById("memoriesContainer");
             if (container) {
                 container.innerHTML = `
-                    <div class="order-card" style="text-align: center; color: #dc2626;">
-                        <h3>Error Loading Orders</h3>
-                        <p>Failed to load orders functionality. Please refresh the page.</p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Memories</h3>
+                        <p>There was a problem loading the memories module. Please refresh the page.</p>
+                        <button onclick="location.reload()" class="create-memory-btn" style="margin-top: 1rem;">
+                            Refresh Page
+                        </button>
                     </div>
                 `;
             }

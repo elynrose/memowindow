@@ -14,7 +14,7 @@ function requireAuth() {
     
     if (!$userId) {
         // Redirect to login page if no user_id provided
-        header('Location: ' . BASE_URL . '/login.html');
+        header('Location: ' . BASE_URL . '/login.php');
         exit;
     }
     
@@ -45,7 +45,7 @@ function requireAdmin() {
         
         if (!$user || !$user['is_admin']) {
             // Redirect to login page if not admin
-            header('Location: ' . BASE_URL . '/login.html?error=access_denied');
+            header('Location: ' . BASE_URL . '/login.php?error=access_denied');
             exit;
         }
         
@@ -53,14 +53,14 @@ function requireAdmin() {
         
     } catch (PDOException $e) {
         // Redirect to login page on database error
-        header('Location: ' . BASE_URL . '/login.html?error=database_error');
+        header('Location: ' . BASE_URL . '/login.php?error=database_error');
         exit;
     }
 }
 
 // Function to redirect to login if not authenticated
 function redirectToLogin() {
-    header('Location: ' . BASE_URL . '/login.html?error=login_required');
+    header('Location: ' . BASE_URL . '/login.php?error=login_required');
     exit;
 }
 
@@ -125,7 +125,7 @@ function showAuthError($message = 'Authentication required') {
         <div class="auth-container">
             <div class="logo">MemoWindow</div>
             <div class="error-message"><?php echo htmlspecialchars($message); ?></div>
-            <a href="<?php echo BASE_URL; ?>/login.html" class="login-btn">Go to Login</a>
+            <a href="<?php echo BASE_URL; ?>/login.php" class="login-btn">Go to Login</a>
         </div>
     </body>
     </html>

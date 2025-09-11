@@ -1,106 +1,258 @@
-<?php
-// orders.php - User's order tracking page
-require_once 'auth_check.php';
-require_once 'config.php';
-
-// Require authentication
-$userId = requireAuth();
-
-try {
-    // Connect to database
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
-
-    // Get user's orders with memory details
-    $stmt = $pdo->prepare("
-        SELECT 
-            o.id,
-            o.stripe_session_id,
-            o.memory_id,
-            o.printful_order_id,
-            o.memory_title,
-            o.memory_image_url,
-            o.product_name,
-            o.product_variant_id,
-            o.quantity,
-            o.unit_price,
-            o.total_price,
-            o.status,
-            o.shipping_address,
-            o.tracking_number,
-            o.created_at,
-            o.updated_at,
-            o.product_id,
-            o.customer_name,
-            o.customer_email,
-            o.amount_paid
-        FROM orders o
-        WHERE o.user_id = :user_id
-        ORDER BY o.created_at DESC
-    ");
-    
-    $stmt->execute([':user_id' => $userId]);
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    $orders = [];
-    $error = 'Database error: ' . $e->getMessage();
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - MemoWindow</title>
+    
+    <!-- Cache busting -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Navigation Styles -->
+    <link rel="stylesheet" href="includes/navigation.css">
+    
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-            background: #f5f7fb;
-            color: #0b0d12;
-            margin: 0;
-            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
-        }
+        
+        /* Modern Header */
         .header {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            text-align: center;
-            border: 1px solid #e6e9f2;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            padding: 1rem 0;
         }
-        .header h1 {
-            margin: 0 0 8px 0;
-            color: #0b0d12;
-            font-size: 28px;
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .header p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 16px;
-        }
-        .nav-link {
-            display: inline-block;
-            background: #2a4df5;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
+        
+        .logo {
+            display: flex;
+            align-items: center;
             text-decoration: none;
-            font-weight: 500;
-            margin-top: 16px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #667eea;
         }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+        }
+        
+        .header-link {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-link:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        /* Main Content */
+        .wrap {
+            padding: 8rem 1rem!important;
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-top: 50px;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Card System */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card h2 {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        /* Button System */
+        button {
+            min-height: 44px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-full {
+            width: 100%;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 767px) {
+            .header {
+                padding: 0.75rem 0;
+            }
+            
+            .nav {
+                padding: 0 0.75rem;
+            }
+            
+            .wrap {
+                padding: 2rem 0.75rem;
+            }
+            
+            .user-info {
+                gap: 0.5rem;
+            }
+            
+            .header-link {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Page-specific styles will be injected here */
+        
+        /* Orders-specific styles */
         .order-card {
             background: white;
             border: 1px solid #e6e9f2;
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        
         .order-header {
             display: flex;
             justify-content: space-between;
@@ -109,12 +261,14 @@ try {
             flex-wrap: wrap;
             gap: 12px;
         }
+        
         .order-title {
             font-size: 18px;
             font-weight: 600;
             color: #0b0d12;
             margin: 0;
         }
+        
         .order-status {
             padding: 4px 12px;
             border-radius: 20px;
@@ -122,24 +276,34 @@ try {
             font-weight: 500;
             text-transform: uppercase;
         }
+        
         .status-paid {
             background: #d1fae5;
             color: #065f46;
         }
+        
         .status-processing {
             background: #dbeafe;
             color: #1e40af;
         }
+        
         .status-shipped {
             background: #e0e7ff;
             color: #3730a3;
         }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
         .order-details {
             display: grid;
             grid-template-columns: auto 1fr auto;
             gap: 16px;
             align-items: center;
         }
+        
         .order-image {
             width: 80px;
             height: 50px;
@@ -148,25 +312,30 @@ try {
             object-fit: cover;
             background: white;
         }
+        
         .order-info {
             flex: 1;
         }
+        
         .order-info h4 {
             margin: 0 0 4px 0;
             color: #0b0d12;
             font-size: 14px;
         }
+        
         .order-info p {
             margin: 0;
             color: #6b7280;
             font-size: 12px;
         }
+        
         .order-price {
             font-size: 16px;
             font-weight: 600;
             color: #0b0d12;
             text-align: right;
         }
+        
         .order-meta {
             display: flex;
             justify-content: space-between;
@@ -177,129 +346,123 @@ try {
             font-size: 12px;
             color: #6b7280;
         }
+        
+        .cancel-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .cancel-btn:hover {
+            background: #b91c1c;
+        }
+        
         .empty-state {
             text-align: center;
             padding: 40px;
             color: #6b7280;
         }
+        
         .empty-state h3 {
             color: #0b0d12;
             margin-bottom: 8px;
         }
+        
         @media (max-width: 640px) {
             .order-details {
                 grid-template-columns: 1fr;
                 text-align: center;
             }
+            
             .order-header {
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
             }
+            
+            .order-meta {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
         }
+        
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>My Orders</h1>
-            <p>Track your MemoryWave print orders</p>
-            <a href="login.html" class="nav-link">← Back to MemoWindow</a>
+    <?php include 'includes/navigation.php'; ?>
+
+    <!-- Main Content -->
+    <div class="wrap">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title" style="color:#FFFFFF;">My Orders</h1>
+            <p class="page-subtitle" style="margin-bottom: 50px; color:#FFFFFF;">Track your MemoryWave print orders</p>
         </div>
 
-        <?php if (isset($error)): ?>
-            <div class="order-card" style="text-align: center; color: #dc2626;">
-                <h3>Error Loading Orders</h3>
-                <p><?php echo htmlspecialchars($error); ?></p>
+        <!-- Orders Container -->
+        <div id="ordersContainer">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                Loading your orders...
             </div>
-        <?php elseif (empty($orders)): ?>
-            <div class="order-card empty-state">
-                <h3>No Orders Yet</h3>
-                <p>You haven't placed any print orders yet.</p>
-                <p>Create a MemoryWave and order a beautiful print to get started!</p>
-                <a href="login.html" class="nav-link">Create MemoryWave</a>
-            </div>
-        <?php else: ?>
-            <?php foreach ($orders as $order): 
-                $product = getProduct($order['product_id']);
-                $statusClass = 'status-' . strtolower($order['status']);
-            ?>
-            <div class="order-card">
-                <div class="order-header">
-                    <div>
-                        <h2 class="order-title"><?php echo htmlspecialchars($order['memory_title'] ?: 'Untitled Memory'); ?></h2>
-                        <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">
-                            Order #<?php echo substr($order['stripe_session_id'], -8); ?>
-                        </p>
-                    </div>
-                    <span class="order-status <?php echo $statusClass; ?>">
-                        <?php echo ucfirst($order['status']); ?>
-                    </span>
-                </div>
-                
-                <div class="order-details">
-                    <img src="<?php echo htmlspecialchars($order['memory_image_url']); ?>" 
-                         alt="MemoryWave" class="order-image">
-                    
-                    <div class="order-info">
-                        <h4><?php echo htmlspecialchars($order['product_name']); ?></h4>
-                        <p>Quantity: <?php echo htmlspecialchars($order['quantity']); ?></p>
-                        <p>Unit Price: $<?php echo number_format($order['unit_price'], 2); ?></p>
-                        <?php if ($order['printful_order_id']): ?>
-                            <p>Printful Order: <?php echo htmlspecialchars($order['printful_order_id']); ?></p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div class="order-price">
-                        $<?php echo number_format($order['total_price'], 2); ?>
-                    </div>
-                </div>
-                
-                <div class="order-meta">
-                    <span>Ordered: <?php echo date('M j, Y \a\t g:i A', strtotime($order['created_at'])); ?></span>
-                    <span>Product: <?php echo htmlspecialchars($order['product_name']); ?></span>
-                    <?php if (in_array($order['status'], ['pending', 'paid'])): ?>
-                        <button onclick="cancelOrder(<?php echo $order['id']; ?>)" 
-                                class="cancel-btn" 
-                                style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 10px;">
-                            Cancel Order
-                        </button>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+        </div>
+        
     </div>
 
-    <script>
-        function cancelOrder(orderId) {
-            if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
-                return;
+    <!-- Firebase SDK -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- App Scripts -->
+    <script type="module" src="src/app-auth.js"></script>
+    <script type="module" src="src/storage.js"></script>
+    <script type="module" src="src/globals.js"></script>
+    <script type="module" src="src/utils.js"></script>
+    <script type="module" src="includes/navigation.js"></script>
+    
+    <!-- Template initialization -->
+    <script type="module">
+        import { initAppAuth } from './src/app-auth.js';
+        import { initNavigation } from './includes/navigation.js';
+        
+        // Initialize authentication for all pages
+        initAppAuth();
+        
+        // Initialize navigation
+        initNavigation();
+        
+        // Page-specific initialization will be injected here
+        
+        // Orders-specific initialization
+        console.log("📦 Orders page loaded");
+        
+        // Import and initialize orders functionality
+        import("./src/orders.js").then(module => {
+            console.log("✅ Orders module loaded successfully");
+            module.initOrders();
+        }).catch(error => {
+            console.error("❌ Failed to load orders module:", error);
+            // Fallback: show error message
+            const container = document.getElementById("ordersContainer");
+            if (container) {
+                container.innerHTML = `
+                    <div class="order-card" style="text-align: center; color: #dc2626;">
+                        <h3>Error Loading Orders</h3>
+                        <p>Failed to load orders functionality. Please refresh the page.</p>
+                    </div>
+                `;
             }
-            
-            const userId = '<?php echo htmlspecialchars($userId); ?>';
-            
-            fetch('cancel_order.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `order_id=${orderId}&user_id=${userId}&reason=User requested cancellation`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Order cancelled successfully!');
-                    location.reload(); // Refresh the page to show updated order list
-                } else {
-                    alert('Error cancelling order: ' + (data.error || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error cancelling order. Please try again.');
-            });
-        }
+        });
+        
     </script>
 </body>
 </html>

@@ -27,7 +27,7 @@ export function initNavigation() {
             const { auth } = await import('../firebase-config.php');
             await auth.signOut();
             console.log('✅ User signed out successfully');
-            window.location.href = 'index.html';
+            window.location.href = 'index.php';
         } catch (error) {
             console.error('❌ Error signing out:', error);
         }
@@ -39,9 +39,9 @@ export function initNavigation() {
             e.preventDefault();
             // Get current user and redirect to orders
             if (window.auth && window.auth.currentUser) {
-                window.location.href = `orders.html?user_id=${encodeURIComponent(window.auth.currentUser.uid)}`;
+                window.location.href = `orders.php?user_id=${encodeURIComponent(window.auth.currentUser.uid)}`;
             } else {
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
             }
         });
     }
@@ -94,7 +94,7 @@ async function loadSubscriptionStatus(userId) {
                     <div class="subscription-status-text">${isFree ? 'Free Tier' : 'Active'}</div>
                 </div>
                 ${isFree ? 
-                    '<a href="index.html#pricing" class="upgrade-button">Upgrade</a>' :
+                    '<a href="index.php#pricing" class="upgrade-button">Upgrade</a>' :
                     '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(userId) + '" class="upgrade-button">Manage</a>'
                 }
             `;
@@ -105,7 +105,7 @@ async function loadSubscriptionStatus(userId) {
                     <div class="subscription-plan">Free Plan</div>
                     <div class="subscription-status-text">Free Tier</div>
                 </div>
-                <a href="index.html#pricing" class="upgrade-button">Upgrade</a>
+                <a href="index.php#pricing" class="upgrade-button">Upgrade</a>
             `;
         }
     } catch (error) {
@@ -116,7 +116,7 @@ async function loadSubscriptionStatus(userId) {
                 <div class="subscription-plan">Free Plan</div>
                 <div class="subscription-status-text">Free Tier</div>
             </div>
-            <a href="index.html#pricing" class="upgrade-button">Upgrade</a>
+            <a href="index.php#pricing" class="upgrade-button">Upgrade</a>
         `;
     }
 }

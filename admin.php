@@ -280,8 +280,8 @@ try {
             <h1>MemoWindow Admin Dashboard</h1>
             <p>Manage users, orders, and analytics</p>
             <div class="nav-links">
-                <a href="login.html" class="nav-link">← Back to MemoWindow</a>
-                <a href="orders.html" class="nav-link">My Orders</a>
+                <a href="login.php" class="nav-link">← Back to MemoWindow</a>
+                <a href="orders.php" class="nav-link">My Orders</a>
                 <a href="#" onclick="location.reload()" class="nav-link">Refresh Data</a>
             </div>
         </div>

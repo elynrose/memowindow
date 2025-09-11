@@ -446,7 +446,7 @@ async function createMemory() {
         
         // Redirect to memories page
         setTimeout(() => {
-            window.location.href = 'memories.html';
+            window.location.href = 'memories.php';
         }, 1500);
         
     } catch (error) {

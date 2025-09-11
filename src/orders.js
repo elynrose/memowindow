@@ -135,7 +135,7 @@ function showEmptyState() {
             <h3>No Orders Yet</h3>
             <p>You haven't placed any print orders yet.</p>
             <p>Create a MemoryWave and order a beautiful print to get started!</p>
-            <a href="app.html" class="create-memory-btn" style="display: inline-block; background: #2a4df5; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 500; margin-top: 16px;">
+            <a href="app.php" class="create-memory-btn" style="display: inline-block; background: #2a4df5; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 500; margin-top: 16px;">
                 Create MemoryWave
             </a>
         </div>
@@ -161,7 +161,7 @@ function showLoginPrompt() {
         <div class="order-card empty-state">
             <h3>Please Sign In</h3>
             <p>You need to be signed in to view your orders.</p>
-            <a href="login.html" style="display: inline-block; background: #2a4df5; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 500; margin-top: 16px;">
+            <a href="login.php" style="display: inline-block; background: #2a4df5; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 500; margin-top: 16px;">
                 Sign In
             </a>
         </div>

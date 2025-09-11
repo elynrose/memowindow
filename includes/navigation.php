@@ -4,14 +4,14 @@
 <!-- Modern Header -->
 <header class="header">
     <nav class="nav">
-        <a href="index.html" class="logo">
+        <a href="index.php" class="logo">
             <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
         </a>
         <div id="userInfo" class="user-info hidden">
             <div id="subscriptionStatus" class="subscription-status">
                 <!-- Subscription status will be populated by JavaScript -->
             </div>
-            <a href="memories.html" class="header-link">My Memories</a>
+            <a href="memories.php" class="header-link">My Memories</a>
             <a id="ordersLink" href="#" class="header-link">My Orders</a>
             <a id="btnLogout" href="#" class="header-link">Sign Out</a>
             <div class="user-profile">

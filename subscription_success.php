@@ -191,7 +191,7 @@ if ($sessionId) {
                 <p>Your subscription is now active and ready to use.</p>
             </div>
             
-            <a href="app.html" class="btn">Start Creating Memories</a>
+            <a href="app.php" class="btn">Start Creating Memories</a>
         <?php else: ?>
             <div class="error-icon">✗</div>
             <h1>Subscription Failed</h1>

@@ -257,7 +257,7 @@ try {
             <p>Manage MemoWindow users and their activity</p>
             <div class="nav-links">
                 <a href="admin.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="nav-link">← Dashboard</a>
-                <a href="login.html" class="nav-link">MemoWindow</a>
+                <a href="login.php" class="nav-link">MemoWindow</a>
                 <a href="#" onclick="location.reload()" class="nav-link">Refresh</a>
             </div>
         </div>
@@ -343,7 +343,7 @@ try {
                     <div class="user-actions">
                         <a href="user_details.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=<?php echo urlencode($user['user_id']); ?>" 
                            class="btn btn-primary">View Details</a>
-                        <a href="orders.html" 
+                        <a href="orders.php" 
                            class="btn btn-secondary">View Orders</a>
                         <?php if ($orders): ?>
                         <button onclick="exportUserData('<?php echo $user['user_id']; ?>')" 

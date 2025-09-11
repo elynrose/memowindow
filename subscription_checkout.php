@@ -309,7 +309,7 @@ $currentLimits = $subscriptionManager->getUserLimits($userId);
                             </a>
                         <?php endif; ?>
                     <?php else: ?>
-                        <a href="app.html" class="btn btn-free">
+                        <a href="app.php" class="btn btn-free">
                             Continue with Free Plan
                         </a>
                     <?php endif; ?>
