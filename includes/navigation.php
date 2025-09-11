@@ -7,16 +7,27 @@
         <a href="index.php" class="logo">
             <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
         </a>
+        <!-- Mobile hamburger menu -->
+        <button id="mobileMenuToggle" class="mobile-menu-toggle hidden">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
         <div id="userInfo" class="user-info hidden">
+            <a href="memories.php" class="header-link">My Memories</a>
+            <a id="ordersLink" href="#" class="header-link">My Orders</a>
             <div id="subscriptionStatus" class="subscription-status">
                 <!-- Subscription status will be populated by JavaScript -->
             </div>
-            <a href="memories.php" class="header-link">My Memories</a>
-            <a id="ordersLink" href="#" class="header-link">My Orders</a>
-            <a id="btnLogout" href="#" class="header-link">Sign Out</a>
             <div class="user-profile">
                 <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
-                <span id="userName">Loading...</span>
+                <div class="user-details">
+                    <span id="userName">Loading...</span>
+                    <div class="user-submenu">
+                        <a id="btnLogout" href="#" class="header-link submenu-link">Sign Out</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>

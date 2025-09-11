@@ -8,6 +8,7 @@ const getElements = () => ({
     userAvatar: document.getElementById('userAvatar'),
     ordersLink: document.getElementById('ordersLink'),
     subscriptionStatus: document.getElementById('subscriptionStatus'),
+    mobileMenuToggle: document.getElementById('mobileMenuToggle'),
 });
 
 // Initialize navigation
@@ -70,6 +71,22 @@ export function initNavigation() {
             } else {
                 console.log('❌ No user found, redirecting to login');
                 window.location.href = 'login.php';
+            }
+        });
+    }
+    
+    // Set up mobile menu toggle
+    if (els.mobileMenuToggle) {
+        els.mobileMenuToggle.addEventListener('click', () => {
+            els.mobileMenuToggle.classList.toggle('active');
+            els.userInfo.classList.toggle('mobile-open');
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!els.mobileMenuToggle.contains(e.target) && !els.userInfo.contains(e.target)) {
+                els.mobileMenuToggle.classList.remove('active');
+                els.userInfo.classList.remove('mobile-open');
             }
         });
     }
