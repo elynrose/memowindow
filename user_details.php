@@ -3,8 +3,14 @@
 require_once 'secure_auth.php';
 require_once 'config.php';
 
+// Check session timeout
+if (!checkSessionTimeout()) {
+    header('Location: ' . BASE_URL . '/login.php?error=session_expired');
+    exit;
+}
+
 // Require admin authentication
-$adminUID = requireAdmin();
+$adminUID = requireSecureAdmin();
 $targetUserID = $_GET['target_user'] ?? '';
 
 if (!$targetUserID) {
@@ -75,7 +81,6 @@ try {
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 14px;
-        }
         }
         .stats-grid {
             display: grid;

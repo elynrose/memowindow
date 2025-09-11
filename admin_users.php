@@ -261,7 +261,7 @@ try {
                     <div class="user-actions">
                         <a href="user_details.php?target_user=<?php echo urlencode($user['user_id']); ?>" 
                            class="admin-btn admin-btn-sm">View Details</a>
-                        <a href="orders.php" 
+                        <a href="user_details.php?target_user=<?php echo urlencode($user['user_id']); ?>" 
                            class="admin-btn admin-btn-secondary admin-btn-sm">View Orders</a>
                         <?php if ($orders): ?>
                         <button onclick="exportUserData('<?php echo $user['user_id']; ?>')" 
