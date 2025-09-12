@@ -83,8 +83,8 @@ window.deleteMemory = async function(memoryId, title, buttonElement) {
   }
 };
 
-// Load user waveforms wrapper
-window.loadUserWaveforms = authLoadUserWaveforms;
+// Load user waveforms wrapper - function defined in memories.js
+// window.loadUserWaveforms = authLoadUserWaveforms; // Removed - function not available
 
 // Function to show memory modal (defined in main HTML script)
 window.showMemoryModal = function(imageUrl, title, qrUrl) {
