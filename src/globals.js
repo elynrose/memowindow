@@ -268,29 +268,36 @@ window.loadMoreWaveforms = async function(offset) {
 // Order functionality (implemented from HTML)
 window.orderProduct = async function(productId, memoryId, imageUrl) {
   try {
+    console.log('💳 Ordering product:', productId, 'for memory:', memoryId);
+    
     const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
     if (!currentUser) {
+      console.error('❌ User not authenticated');
       alert('Please log in to place an order');
       return;
     }
     
-    // Creating order
+    console.log('✅ User authenticated:', currentUser.email);
+    console.log('💳 Creating order...');
     
     // Create Stripe checkout session
+    const orderData = {
+      product_id: productId,
+      memory_id: memoryId,
+      image_url: imageUrl
+    };
+    console.log('📤 Sending order data:', orderData);
+    
     const response = await fetch('create_checkout.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        product_id: productId,
-        memory_id: memoryId,
-        image_url: imageUrl
-      }),
+      body: JSON.stringify(orderData),
       credentials: 'include' // Include session cookies for authentication
     });
     
-    // Checkout response received
+    console.log('📥 Checkout response received:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -299,12 +306,14 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
     }
     
     const result = await response.json();
-    // Checkout result received
+    console.log('📥 Checkout result received:', result);
     
     if (result.success && result.checkout_url) {
+      console.log('✅ Redirecting to Stripe checkout:', result.checkout_url);
       // Redirect to Stripe checkout
       window.location.href = result.checkout_url;
     } else {
+      console.error('❌ Order creation failed:', result.error);
       alert('Error creating order: ' + (result.error || 'Unknown error'));
     }
     
@@ -316,6 +325,8 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
 
 window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElement) {
   try {
+    console.log('🛒 Opening order modal for memory:', memoryId, 'title:', title);
+    
     // Change button state to show loading
     const originalText = buttonElement.textContent;
     buttonElement.textContent = 'Loading...';
@@ -339,8 +350,10 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
     `;
     
     // Get products
+    console.log('📦 Fetching products...');
     const response = await fetch('get_products.php');
     const products = await response.json();
+    console.log('📦 Products loaded:', products);
     
     const modalContent = `
       <div style="background: white; border-radius: 20px; padding: 32px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
@@ -398,6 +411,8 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
 };
 
 window.selectProduct = async function(productId, memoryId, imageUrl, cardElement) {
+  console.log('🛍️ Product selected:', productId, 'for memory:', memoryId);
+  
   // Visual feedback
   cardElement.style.borderColor = '#2a4df5';
   cardElement.style.background = '#f0f4ff';
@@ -406,6 +421,7 @@ window.selectProduct = async function(productId, memoryId, imageUrl, cardElement
   window.closeOrderModal();
   
   // Start order process
+  console.log('💳 Starting order process...');
   await window.orderProduct(productId, memoryId, imageUrl);
 };
 
