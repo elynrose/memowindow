@@ -389,10 +389,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                         
                         // Save generated audio to database
                         $stmt = $pdo->prepare("
-                            INSERT INTO generated_audio (user_id, memory_id, voice_clone_id, text_content, audio_url, memory_title, created_at)
-                            VALUES (?, ?, ?, ?, ?, ?, NOW())
+                            INSERT INTO generated_audio (user_id, voice_clone_id, text_content, audio_url, memory_title, created_at)
+                            VALUES (?, ?, ?, ?, ?, NOW())
                         ");
-                        $stmt->execute([$userId, $memoryId, $voiceClone['id'], $text, $result['audio_url'], $memoryTitle]);
+                        $stmt->execute([$userId, $voiceClone['id'], $text, $result['audio_url'], $memoryTitle]);
                         $result['generated_audio_id'] = $pdo->lastInsertId();
                     }
                 }
