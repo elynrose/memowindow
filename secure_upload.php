@@ -4,7 +4,7 @@
  * Provides secure file upload validation and processing
  */
 
-require_once 'secure_auth.php';
+require_once 'unified_auth.php';
 
 class SecureUpload {
     private $maxFileSize;

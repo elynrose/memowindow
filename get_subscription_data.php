@@ -1,11 +1,17 @@
 <?php
 require_once 'config.php';
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 
 header('Content-Type: application/json');
 
 // Check if user is authenticated
-$userId = requireAuth();
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
+$userId = $currentUser['uid'];
 if (!$userId) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Authentication required']);

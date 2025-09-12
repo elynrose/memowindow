@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 
 // Load configuration and secure modules
 require_once 'config.php';
-require_once 'secure_auth.php';
+require_once 'unified_auth.php';
 require_once 'secure_upload.php';
 require_once 'secure_db.php';
 

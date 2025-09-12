@@ -1,6 +1,6 @@
 <?php
 // user_details.php - Detailed user information
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 require_once 'config.php';
 
 // Require admin authentication

@@ -2,7 +2,7 @@
 import './styles.css';
 import './pwa.js';
 import './globals.js'; // Global function definitions for HTML compatibility
-import { initAuth, getCurrentUser } from './auth.js';
+import unifiedAuth from './unified-auth.js';
 import { uploadWaveformFiles, deleteMemoryFiles } from './storage.js';
 import { showToast, showLoading, hideLoading, showConfirmDialog, handleError, formatFileSize, validateFileType, validateFileSize } from './utils.js';
 
@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM loaded, initializing app
   
   try {
-    initAuth();
-    // Auth initialization started
+    // Unified auth is auto-initialized, no need to call initAuth
+    console.log('✅ App initialization started');
   } catch (error) {
     console.error('❌ Auth initialization failed:', error);
     
@@ -47,7 +47,7 @@ window.addEventListener('load', () => {
 });
 
 // Make functions available globally for the existing waveform code
-window.getCurrentUser = getCurrentUser;
+window.getCurrentUser = () => unifiedAuth.getCurrentUser();
 window.uploadWaveformFiles = uploadWaveformFiles;
 window.deleteMemoryFiles = deleteMemoryFiles;
 

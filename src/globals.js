@@ -4,7 +4,7 @@
  */
 
 // Import necessary functions from auth module
-import { loadUserWaveforms as authLoadUserWaveforms } from './auth.js';
+import unifiedAuth from './unified-auth.js';
 
 // Re-export functions that need to be globally available
 // These functions are defined in the main HTML file but need to be accessible
@@ -37,7 +37,8 @@ window.deleteMemory = async function(memoryId, title, buttonElement) {
     const response = await fetch('delete_memory.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `memory_id=${memoryId}&user_id=${encodeURIComponent(currentUser.uid)}`
+      body: `memory_id=${memoryId}`,
+      credentials: 'include' // Include session cookies for authentication
     });
     
     if (!response.ok) {
@@ -182,7 +183,9 @@ window.loadMoreWaveforms = async function(offset) {
   try {
     // Loading more waveforms
     const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
-    const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
+    const response = await fetch(`get_waveforms.php?offset=${offset}&limit=5`, {
+      credentials: 'include' // Include session cookies for authentication
+    });
     
     if (!response.ok) throw new Error('Failed to load more waveforms');
     

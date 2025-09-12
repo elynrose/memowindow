@@ -1,6 +1,6 @@
 <?php
 // analytics.php - Analytics dashboard with charts
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 require_once 'config.php';
 
 // Require admin authentication
