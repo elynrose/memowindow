@@ -8,6 +8,12 @@ require_once 'config.php';
 
 // Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {
+    // Use a custom session directory to avoid permission issues
+    $sessionDir = __DIR__ . '/sessions';
+    if (!is_dir($sessionDir)) {
+        mkdir($sessionDir, 0755, true);
+    }
+    session_save_path($sessionDir);
     session_start();
 }
 

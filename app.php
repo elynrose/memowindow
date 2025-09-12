@@ -633,7 +633,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- App Scripts -->
-    <script type="module" src="src/app-auth.js"></script>
+    <script type="module" src="src/unified-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
     <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
@@ -641,14 +641,13 @@
     
     <!-- Template initialization -->
     <script type="module">
-        import { initAppAuth } from './src/app-auth.js';
+        import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
-        
-        // Initialize authentication for all pages
-        initAppAuth();
         
         // Initialize navigation for all pages
         initNavigation();
+        
+        // Unified auth is automatically initialized when imported
         
         // Page-specific initialization will be injected here
         

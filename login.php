@@ -271,61 +271,39 @@
   </script>
   
   <!-- Auth Script -->
-  <script type="module" src="src/auth.js"></script>
   <script type="module" src="includes/navigation.js"></script>
+  <script type="module" src="src/unified-auth.js"></script>
   
   <script type="module">
-    // Import Firebase modules
-    import { auth } from './firebase-config.php';
+    // Import unified authentication
+    import unifiedAuth from './src/unified-auth.js';
     import { initNavigation } from './includes/navigation.js';
-    
-    // Check if user is already logged in and redirect to app
-    window.addEventListener('load', function() {
-        console.log('Login page loaded, checking auth state...');
-        
-        // Check current user immediately
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            console.log('Current user found, redirecting to app...');
-            window.location.href = 'app.php';
-            return;
-        }
-        
-        // Set up auth state listener for immediate redirect
-        auth.onAuthStateChanged(function(user) {
-            console.log('Auth state changed on login:', user ? 'Logged in' : 'Logged out');
-            if (user) {
-                // User is signed in, redirect to app immediately
-                console.log('User is logged in, redirecting to app...');
-                window.location.href = 'app.php';
-            }
-        });
-    });
-    
-
-    // Initialize authentication
-    import { initAuth } from './src/auth.js';
     
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('🔐 MemoWindow Login Initializing...');
+      console.log('🔐 MemoWindow Login Initializing with Unified Auth...');
       
       // Initialize navigation
       initNavigation();
       
+      // Set up authentication listener
+      unifiedAuth.addAuthListener((user, isAdmin) => {
+        if (user) {
+          console.log('User is logged in, redirecting to app...');
+          window.location.href = 'app.php';
+        }
+      });
+      
+      // Check if already authenticated
+      if (unifiedAuth.isAuthenticated()) {
+        console.log('User already authenticated, redirecting to app...');
+        window.location.href = 'app.php';
+      }
+      
       // Debug: Check if button exists
       const btnLogin = document.getElementById('btnLogin');
       console.log('🔍 Login button found:', !!btnLogin);
-      
-      // Debug: Check Firebase config
-      import('./firebase-config.php').then(config => {
-        console.log('🔍 Firebase config loaded:', config);
-      }).catch(error => {
-        console.error('❌ Firebase config error:', error);
-      });
-      
-      initAuth();
-});
+    });
 </script>
 </body>
 </html>
