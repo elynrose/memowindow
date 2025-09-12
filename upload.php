@@ -84,6 +84,7 @@ try {
       `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       `user_id` VARCHAR(255) NOT NULL,
       `unique_id` VARCHAR(255) NULL,
+      `is_public` BOOLEAN DEFAULT TRUE,
       `title` VARCHAR(255) NULL,
       `original_name` VARCHAR(255) NULL,
       `image_url` VARCHAR(1024) NOT NULL,
@@ -92,16 +93,18 @@ try {
       `play_url` VARCHAR(1024) NULL,
       `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       INDEX `idx_user_id` (`user_id`),
-      INDEX `idx_unique_id` (`unique_id`)
+      INDEX `idx_unique_id` (`unique_id`),
+      INDEX `idx_is_public` (`is_public`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ");
 
   // Insert using secure database helper
   $memoryId = $db->insert(
-    "INSERT INTO wave_assets (user_id, unique_id, title, original_name, image_url, qr_url, audio_url, play_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO wave_assets (user_id, unique_id, is_public, title, original_name, image_url, qr_url, audio_url, play_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       $userId,
       isset($_POST['unique_id']) ? sanitizeInput($_POST['unique_id']) : null,
+      isset($_POST['is_public']) ? (bool)$_POST['is_public'] : true, // Default to public
       sanitizeInput(trim($_POST['title'])),
       isset($_POST['original_name']) ? sanitizeInput($_POST['original_name']) : null,
       $imageUrl,
