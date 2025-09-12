@@ -597,19 +597,38 @@ require_once 'config.php';
         import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize unified authentication
-        unifiedAuth.addAuthListener(async (user, isAdmin) => {
-            if (user) {
+        // Wait for unified auth to be initialized before checking authentication
+        const checkAuthAndSetup = async () => {
+            if (unifiedAuth.isInitialized) {
+                // Auth system is ready, check current user
+                const currentUser = unifiedAuth.getCurrentUser();
+                if (!currentUser) {
+                    // User is not authenticated, redirect to login
+                    window.location.href = 'login.php';
+                    return;
+                }
+                
                 // User is authenticated, show the page content
                 document.body.style.display = 'block';
-                
-                // Fetch subscription data
                 await loadSubscriptionData();
+                
+                // Set up listener for future changes
+                unifiedAuth.addAuthListener(async (user, isAdmin) => {
+                    if (user) {
+                        document.body.style.display = 'block';
+                        await loadSubscriptionData();
+                    } else {
+                        window.location.href = 'login.php';
+                    }
+                });
             } else {
-                // User is not authenticated, redirect to login
-                window.location.href = 'login.php';
+                // Auth system not ready yet, check again in 100ms
+                setTimeout(checkAuthAndSetup, 100);
             }
-        });
+        };
+        
+        // Start checking authentication
+        checkAuthAndSetup();
         
         // Initialize navigation for all pages
         initNavigation();

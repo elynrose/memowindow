@@ -618,14 +618,31 @@
         import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize unified authentication
-        unifiedAuth.addAuthListener((user, isAdmin) => {
-            if (user) {
-                // User info will be shown by unified auth system
+        // Wait for unified auth to be initialized before checking authentication
+        const checkAuthAndSetup = () => {
+            if (unifiedAuth.isInitialized) {
+                // Auth system is ready, check current user
+                const currentUser = unifiedAuth.getCurrentUser();
+                if (!currentUser) {
+                    // User is not authenticated, redirect to login
+                    window.location.href = 'login.php';
+                    return;
+                }
+                
+                // User is authenticated, set up listener for future changes
+                unifiedAuth.addAuthListener((user, isAdmin) => {
+                    if (!user) {
+                        window.location.href = 'login.php';
+                    }
+                });
             } else {
-                window.location.href = 'login.php';
+                // Auth system not ready yet, check again in 100ms
+                setTimeout(checkAuthAndSetup, 100);
             }
-        });
+        };
+        
+        // Start checking authentication
+        checkAuthAndSetup();
         
         // Initialize navigation for all pages
         initNavigation();
