@@ -18,6 +18,8 @@ $dbPass = DB_PASS;
 $table  = 'wave_assets';
 
 // Debug: Check session state
+error_log("get_waveforms.php called - Session ID: " . session_id() . " Session data: " . print_r($_SESSION, true));
+
 $debugInfo = [
   'session_id' => session_id(),
   'session_data' => $_SESSION,

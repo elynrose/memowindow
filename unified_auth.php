@@ -122,6 +122,9 @@ function authenticateUser($idToken = null) {
             $_SESSION['auth_timestamp'] = time();
             $_SESSION['auth_method'] = 'firebase_token';
             
+            // Debug: Log session storage
+            error_log("Session data stored - Session ID: " . session_id() . " User: " . $userData['email']);
+            
             // Also store in database for admin checks
             storeUserInDatabase($userData);
             
