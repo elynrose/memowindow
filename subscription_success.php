@@ -2,6 +2,7 @@
 require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'SubscriptionManager.php';
+require_once 'vendor/autoload.php';
 
 // Get current authenticated user
 $currentUser = getCurrentUser();
