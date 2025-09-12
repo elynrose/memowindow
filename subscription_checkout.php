@@ -270,7 +270,7 @@ $currentLimits = $subscriptionManager->getUserLimits($userId);
                             $<?= number_format($package['price_monthly'], 0) ?>
                             <span class="period">/month</span>
                         </div>
-                        <?php if ($package['price_yearly'] > 0): ?>
+                        <?php if ($package['price_yearly'] > 0 && ($package['yearly_enabled'] ?? 1)): ?>
                             <div class="savings">
                                 Save $<?= number_format(($package['price_monthly'] * 12) - $package['price_yearly'], 0) ?> with yearly billing
                             </div>
@@ -306,7 +306,7 @@ $currentLimits = $subscriptionManager->getUserLimits($userId);
                         <a href="create_subscription_checkout.php?package_id=<?= $package['id'] ?>&billing=monthly" class="btn">
                             Start Monthly Plan
                         </a>
-                        <?php if ($package['price_yearly'] > 0): ?>
+                        <?php if ($package['price_yearly'] > 0 && ($package['yearly_enabled'] ?? 1)): ?>
                             <a href="create_subscription_checkout.php?package_id=<?= $package['id'] ?>&billing=yearly" class="btn btn-secondary" style="margin-top: 10px;">
                                 Start Yearly Plan
                             </a>

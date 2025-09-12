@@ -32,18 +32,20 @@ try {
             $stripePriceIdMonthly = $_POST['stripe_price_id_monthly'];
             $stripePriceIdYearly = $_POST['stripe_price_id_yearly'];
             $isActive = isset($_POST['is_active']) ? 1 : 0;
+            $yearlyEnabled = isset($_POST['yearly_enabled']) ? 1 : 0;
             
             $stmt = $pdo->prepare("
                 UPDATE subscription_packages 
                 SET name = ?, description = ?, price_monthly = ?, price_yearly = ?,
                     memory_limit = ?, memory_expiry_days = ?, voice_clone_limit = ?,
-                    max_audio_length_seconds = ?, stripe_price_id_monthly = ?, stripe_price_id_yearly = ?, is_active = ?
+                    max_audio_length_seconds = ?, stripe_price_id_monthly = ?, stripe_price_id_yearly = ?, 
+                    is_active = ?, yearly_enabled = ?
                 WHERE id = ?
             ");
             $stmt->execute([
                 $name, $description, $priceMonthly, $priceYearly,
                 $memoryLimit, $memoryExpiryDays, $voiceCloneLimit, $maxAudioLength,
-                $stripePriceIdMonthly, $stripePriceIdYearly, $isActive, $packageId
+                $stripePriceIdMonthly, $stripePriceIdYearly, $isActive, $yearlyEnabled, $packageId
             ]);
             
             $success = "Package updated successfully!";
@@ -307,6 +309,13 @@ try {
                                 <div class="admin-checkbox-group">
                                     <input type="checkbox" name="is_active" <?= $package['is_active'] ? 'checked' : '' ?>>
                                     <label>Package is active</label>
+                                </div>
+                            </div>
+                            
+                            <div class="admin-form-group">
+                                <div class="admin-checkbox-group">
+                                    <input type="checkbox" name="yearly_enabled" <?= ($package['yearly_enabled'] ?? 1) ? 'checked' : '' ?>>
+                                    <label>Enable yearly billing</label>
                                 </div>
                             </div>
                             
