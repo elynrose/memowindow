@@ -93,12 +93,6 @@ require_once 'config.php';
             color: #333;
         }
         
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
         .user-avatar {
             width: 32px;
             height: 32px;
