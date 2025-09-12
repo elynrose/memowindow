@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Navigation Styles -->
-    <link rel="stylesheet" href="includes/navigation.css">
+    <link rel="stylesheet" href="includes/navigation.css?v=<?php echo time(); ?>">
     
     
     <style>

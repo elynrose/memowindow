@@ -10,6 +10,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
+    <!-- Navigation Styles -->
+    <link rel="stylesheet" href="includes/navigation.css?v=<?php echo time(); ?>">
+    
     <style>
         /* Reset and Base Styles */
         * {
