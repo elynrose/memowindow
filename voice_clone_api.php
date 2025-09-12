@@ -246,6 +246,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     // Get current user from unified auth system
     $currentUser = getCurrentUser();
     if (!$currentUser) {
+        // Log authentication failure for debugging
+        error_log('Voice clone API: Authentication failed for action: ' . $action);
+        error_log('Voice clone API: Session ID: ' . session_id());
+        error_log('Voice clone API: POST data: ' . json_encode($_POST));
         http_response_code(401);
         echo json_encode(['error' => 'Authentication required']);
         exit;
