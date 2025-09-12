@@ -3,14 +3,26 @@ require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'SubscriptionManager.php';
 
-header('Content-Type: application/json');
+// Check if this is an AJAX request or direct link
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+if (!$isAjax) {
+    // Direct link access - handle redirects directly
+} else {
+    // AJAX request - return JSON
+    header('Content-Type: application/json');
+}
 
 try {
     // Get current authenticated user
     $currentUser = getCurrentUser();
     if (!$currentUser) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Authentication required']);
+        if ($isAjax) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Authentication required']);
+        } else {
+            header('Location: login.php?error=login_required');
+        }
         exit;
     }
     
@@ -80,17 +92,27 @@ try {
         ]
     ]);
     
-    echo json_encode([
-        'success' => true,
-        'checkout_url' => $checkoutSession->url,
-        'session_id' => $checkoutSession->id
-    ]);
+    if ($isAjax) {
+        echo json_encode([
+            'success' => true,
+            'checkout_url' => $checkoutSession->url,
+            'session_id' => $checkoutSession->id
+        ]);
+    } else {
+        // Direct redirect to Stripe checkout
+        header('Location: ' . $checkoutSession->url);
+    }
     
 } catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage()
-    ]);
+    if ($isAjax) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    } else {
+        // Redirect back to checkout page with error
+        header('Location: subscription_checkout.php?error=' . urlencode($e->getMessage()));
+    }
 }
 ?>
