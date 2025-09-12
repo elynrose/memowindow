@@ -27,6 +27,17 @@ if (session_status() == PHP_SESSION_NONE) {
         mkdir($sessionDir, 0755, true);
     }
     session_save_path($sessionDir);
+    
+    // Configure session cookie for cross-origin requests
+    session_set_cookie_params([
+        'lifetime' => 0, // Session cookie (expires when browser closes)
+        'path' => '/',
+        'domain' => '', // Empty domain allows subdomain sharing
+        'secure' => false, // Set to true in production with HTTPS
+        'httponly' => false, // Allow JavaScript access for fetch requests
+        'samesite' => 'Lax' // Allow cross-site requests
+    ]);
+    
     session_start();
 }
 
