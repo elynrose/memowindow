@@ -3,7 +3,7 @@
  * Handles all authentication for both frontend and admin
  */
 
-import { signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { auth, googleProvider, emailProvider } from '../firebase-config.php';
 
 class UnifiedAuth {
@@ -163,7 +163,7 @@ class UnifiedAuth {
     async signOut() {
         try {
             // Sign out from Firebase
-            await signOut(auth);
+            await firebaseSignOut(auth);
             
             // Also sign out from server
             await fetch('unified_auth.php', {
