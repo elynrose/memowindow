@@ -350,7 +350,7 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
           ${products.map(product => `
             <div class="product-card" style="border: 2px solid #e6e9f2; border-radius: 12px; padding: 16px; background: #fafbfc; text-align: center; transition: all 0.2s ease; cursor: pointer;" 
-                 onclick="selectProduct('${product.id}', ${memoryId}, '${imageUrl}', this)">
+                 onclick="selectProduct('${product.id}', ${memoryId}, '${imageUrl}', this)"${product.id}', ${memoryId}, '${imageUrl}', this)">
               <div style="width: 100%; height: 120px; margin-bottom: 12px; border-radius: 8px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
                 ${product.image_url ? 
                   `<img src="${product.image_url}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
