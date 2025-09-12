@@ -50,16 +50,16 @@ function verifyFirebaseIdToken($idToken) {
         return false;
     }
     
-    // For testing purposes, if the token is "test_token", return a test user
-    if ($idToken === 'test_token') {
-        return [
-            'uid' => 'test_user_123',
-            'email' => 'test@example.com',
-            'displayName' => 'Test User',
-            'emailVerified' => true,
-            'photoURL' => ''
-        ];
-    }
+        // For testing purposes, if the token is "test_token", return a test user
+        if ($idToken === 'test_token') {
+            return [
+                'uid' => 'FG8w39qVEySCnzotJDYBWQ30g5J2',
+                'email' => 'elyayertey@gmail.com',
+                'displayName' => 'Test User',
+                'emailVerified' => true,
+                'photoURL' => ''
+            ];
+        }
     
     try {
         // Use Google's API to verify the token

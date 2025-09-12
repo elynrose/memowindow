@@ -48,7 +48,7 @@ function showLoginPrompt() {
 // Load user memories
 async function loadMemories() {
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
             console.error('User not authenticated');
             showLoginPrompt();
@@ -57,7 +57,9 @@ async function loadMemories() {
         
         // Loading memories for user
         
-        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
+        const response = await fetch(`get_waveforms.php`, {
+            credentials: 'include' // Include cookies for session management
+        });
         // API Response received
         
         if (!response.ok) {
