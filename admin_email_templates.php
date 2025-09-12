@@ -151,7 +151,10 @@ $templateVariables = [
     'payment_confirmation' => ['user_name', 'amount', 'date', 'transaction_id', 'payment_method', 'site_url'],
     'subscription_confirmation' => ['user_name', 'package_name', 'amount', 'billing_cycle', 'next_billing', 'stripe_subscription_id', 'site_url'],
     'subscription_cancellation' => ['user_name', 'package_name', 'end_date', 'stripe_subscription_id', 'site_url'],
-    'order_confirmation' => ['user_name', 'order_id', 'product_name', 'amount', 'date', 'site_url']
+    'order_confirmation' => ['user_name', 'order_id', 'product_name', 'amount', 'date', 'site_url'],
+    'maintenance_notice' => ['user_name', 'maintenance_date', 'maintenance_time', 'maintenance_duration', 'maintenance_reason', 'affected_services', 'site_url'],
+    'feature_announcement' => ['user_name', 'feature_name', 'feature_description', 'feature_benefits', 'how_to_access', 'launch_date', 'site_url'],
+    'memory_scanned' => ['user_name', 'memory_title', 'memory_id', 'scan_date', 'scan_status', 'memory_url', 'play_url', 'site_url']
 ];
 
 // Function to get default templates for reset functionality
@@ -180,6 +183,24 @@ function getDefaultTemplates() {
             'subject' => 'Order Confirmation - MemoWindow',
             'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order Confirmation</title></head><body><h1>Order Confirmed!</h1><p>Hi {{user_name}},</p><p>Thank you for your order!</p><p>Order ID: {{order_id}}</p><p>Product: {{product_name}}</p><p>Amount: {{amount}}</p><p>Date: {{date}}</p><p><a href="{{site_url}}">Track Order</a></p></body></html>',
             'text_body' => 'Order Confirmed!\n\nHi {{user_name}},\n\nThank you for your order!\n\nOrder ID: {{order_id}}\nProduct: {{product_name}}\nAmount: {{amount}}\nDate: {{date}}\n\nTrack: {{site_url}}'
+        ],
+        'maintenance_notice' => [
+            'template_name' => 'Maintenance Notice',
+            'subject' => 'Scheduled Maintenance - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Maintenance Notice</title></head><body><h1>🔧 Scheduled Maintenance</h1><p>Hi {{user_name}},</p><p>We wanted to let you know about an upcoming scheduled maintenance window for MemoWindow.</p><p><strong>Date:</strong> {{maintenance_date}}</p><p><strong>Time:</strong> {{maintenance_time}}</p><p><strong>Duration:</strong> {{maintenance_duration}}</p><p><strong>Reason:</strong> {{maintenance_reason}}</p><p><strong>Important:</strong> {{affected_services}}</p><p>We apologize for any inconvenience this may cause.</p><p><a href="{{site_url}}">Visit MemoWindow</a></p></body></html>',
+            'text_body' => 'Scheduled Maintenance - MemoWindow\n\nHi {{user_name}},\n\nWe wanted to let you know about an upcoming scheduled maintenance window for MemoWindow.\n\nDate: {{maintenance_date}}\nTime: {{maintenance_time}}\nDuration: {{maintenance_duration}}\nReason: {{maintenance_reason}}\n\nImportant: {{affected_services}}\n\nWe apologize for any inconvenience this may cause.\n\nVisit: {{site_url}}'
+        ],
+        'feature_announcement' => [
+            'template_name' => 'Feature Announcement',
+            'subject' => '🎉 New Feature: {{feature_name}} - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Feature Announcement</title></head><body><h1>🎉 New Feature!</h1><p>Hi {{user_name}},</p><p>We\'re excited to announce that <strong>{{feature_name}}</strong> is now live on MemoWindow!</p><p><strong>What\'s New:</strong> {{feature_description}}</p><p><strong>Benefits:</strong> {{feature_benefits}}</p><p><strong>How to Access:</strong> {{how_to_access}}</p><p><strong>Launch Date:</strong> {{launch_date}}</p><p>We hope you enjoy this new feature!</p><p><a href="{{site_url}}">Try It Now</a></p></body></html>',
+            'text_body' => 'New Feature: {{feature_name}} - MemoWindow\n\nHi {{user_name}},\n\nWe\'re excited to announce that {{feature_name}} is now live on MemoWindow!\n\nWhat\'s New: {{feature_description}}\nBenefits: {{feature_benefits}}\nHow to Access: {{how_to_access}}\nLaunch Date: {{launch_date}}\n\nWe hope you enjoy this new feature!\n\nTry it now: {{site_url}}'
+        ],
+        'memory_scanned' => [
+            'template_name' => 'Memory Scanned',
+            'subject' => '✅ Your Memory "{{memory_title}}" is Ready - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Memory Scanned</title></head><body><h1>✅ Memory Ready!</h1><p>Hi {{user_name}},</p><p>Great news! Your memory <strong>"{{memory_title}}"</strong> has been successfully scanned and processed.</p><p><strong>Memory ID:</strong> {{memory_id}}</p><p><strong>Scan Date:</strong> {{scan_date}}</p><p><strong>Status:</strong> {{scan_status}}</p><p>Your memory is now ready to play, share, and create voice clones!</p><p><a href="{{memory_url}}">View All Memories</a> | <a href="{{play_url}}">Play Memory</a></p></body></html>',
+            'text_body' => 'Your Memory "{{memory_title}}" is Ready - MemoWindow\n\nHi {{user_name}},\n\nGreat news! Your memory "{{memory_title}}" has been successfully scanned and processed.\n\nMemory ID: {{memory_id}}\nScan Date: {{scan_date}}\nStatus: {{scan_status}}\n\nYour memory is now ready to play, share, and create voice clones!\n\nView all memories: {{memory_url}}\nPlay this memory: {{play_url}}'
         ]
     ];
 }

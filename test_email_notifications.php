@@ -62,6 +62,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['template_id']) && iss
                     ]);
                     break;
                     
+                case 'maintenance_notice':
+                    $result = $emailNotification->sendMaintenanceNotice($test_email, $test_name, [
+                        'date' => date('F j, Y', strtotime('+1 day')),
+                        'time' => '2:00 AM - 4:00 AM EST',
+                        'duration' => '2 hours',
+                        'reason' => 'System updates and performance improvements',
+                        'services' => 'All MemoWindow services will be temporarily unavailable'
+                    ]);
+                    break;
+                    
+                case 'feature_announcement':
+                    $result = $emailNotification->sendFeatureAnnouncement($test_email, $test_name, [
+                        'feature_name' => 'Voice Clone Enhancement',
+                        'description' => 'Create more realistic voice clones with improved AI technology',
+                        'benefits' => 'Better voice quality, faster processing, and more natural speech patterns',
+                        'how_to_access' => 'Available in the Voice Clone section of your memories',
+                        'launch_date' => date('F j, Y')
+                    ]);
+                    break;
+                    
+                case 'memory_scanned':
+                    $result = $emailNotification->sendMemoryScanned($test_email, $test_name, [
+                        'title' => 'Family Vacation 2024',
+                        'id' => 'MEM-' . time(),
+                        'scan_date' => date('F j, Y \a\t g:i A'),
+                        'status' => 'Successfully processed and ready to use',
+                        'unique_id' => 'unique_' . time()
+                    ]);
+                    break;
+                    
                 default:
                     $result = ['success' => false, 'message' => 'Unknown template type'];
             }
@@ -137,6 +167,45 @@ try {
     
     $result = $emailNotification->sendOrderConfirmation($test_email, $test_name, $order_data);
     echo "<p>Order Confirmation: " . ($result['success'] ? '✅ Success' : '❌ Failed - ' . $result['message']) . "</p>";
+    
+    // Test maintenance notice
+    echo "<h3>5. Testing Maintenance Notice Email</h3>";
+    $maintenance_data = [
+        'date' => date('F j, Y', strtotime('+1 day')),
+        'time' => '2:00 AM - 4:00 AM EST',
+        'duration' => '2 hours',
+        'reason' => 'System updates and performance improvements',
+        'services' => 'All MemoWindow services will be temporarily unavailable'
+    ];
+    
+    $result = $emailNotification->sendMaintenanceNotice($test_email, $test_name, $maintenance_data);
+    echo "<p>Maintenance Notice: " . ($result['success'] ? '✅ Success' : '❌ Failed - ' . $result['message']) . "</p>";
+    
+    // Test feature announcement
+    echo "<h3>6. Testing Feature Announcement Email</h3>";
+    $feature_data = [
+        'feature_name' => 'Voice Clone Enhancement',
+        'description' => 'Create more realistic voice clones with improved AI technology',
+        'benefits' => 'Better voice quality, faster processing, and more natural speech patterns',
+        'how_to_access' => 'Available in the Voice Clone section of your memories',
+        'launch_date' => date('F j, Y')
+    ];
+    
+    $result = $emailNotification->sendFeatureAnnouncement($test_email, $test_name, $feature_data);
+    echo "<p>Feature Announcement: " . ($result['success'] ? '✅ Success' : '❌ Failed - ' . $result['message']) . "</p>";
+    
+    // Test memory scanned
+    echo "<h3>7. Testing Memory Scanned Email</h3>";
+    $memory_data = [
+        'title' => 'Family Vacation 2024',
+        'id' => 'MEM-123456',
+        'scan_date' => date('F j, Y \a\t g:i A'),
+        'status' => 'Successfully processed and ready to use',
+        'unique_id' => 'unique_123456'
+    ];
+    
+    $result = $emailNotification->sendMemoryScanned($test_email, $test_name, $memory_data);
+    echo "<p>Memory Scanned: " . ($result['success'] ? '✅ Success' : '❌ Failed - ' . $result['message']) . "</p>";
     
     echo "<h2>✅ Email Notification System Test Complete!</h2>";
     echo "<p><strong>Note:</strong> If emails are not being sent, check your server's mail configuration and ensure SMTP settings are properly configured in your environment variables.</p>";

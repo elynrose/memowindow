@@ -170,6 +170,85 @@ class EmailNotification {
     }
     
     /**
+     * Send maintenance notice email
+     */
+    public function sendMaintenanceNotice($user_email, $user_name, $maintenance_data) {
+        $template = $this->getTemplate('maintenance_notice');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Maintenance notice template not found'];
+        }
+        
+        $variables = [
+            'user_name' => $user_name,
+            'maintenance_date' => $maintenance_data['date'] ?? 'TBD',
+            'maintenance_time' => $maintenance_data['time'] ?? 'TBD',
+            'maintenance_duration' => $maintenance_data['duration'] ?? '2-4 hours',
+            'maintenance_reason' => $maintenance_data['reason'] ?? 'System maintenance and updates',
+            'affected_services' => $maintenance_data['services'] ?? 'All services may be temporarily unavailable',
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
+        
+        return $this->sendEmail($user_email, $subject, $html_body, $text_body);
+    }
+    
+    /**
+     * Send feature announcement email
+     */
+    public function sendFeatureAnnouncement($user_email, $user_name, $feature_data) {
+        $template = $this->getTemplate('feature_announcement');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Feature announcement template not found'];
+        }
+        
+        $variables = [
+            'user_name' => $user_name,
+            'feature_name' => $feature_data['feature_name'] ?? 'New Feature',
+            'feature_description' => $feature_data['description'] ?? 'Check out this exciting new feature!',
+            'feature_benefits' => $feature_data['benefits'] ?? 'Enhanced user experience',
+            'how_to_access' => $feature_data['how_to_access'] ?? 'Available in your dashboard',
+            'launch_date' => $feature_data['launch_date'] ?? date('F j, Y'),
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
+        
+        return $this->sendEmail($user_email, $subject, $html_body, $text_body);
+    }
+    
+    /**
+     * Send memory scanned notification email
+     */
+    public function sendMemoryScanned($user_email, $user_name, $memory_data) {
+        $template = $this->getTemplate('memory_scanned');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Memory scanned template not found'];
+        }
+        
+        $variables = [
+            'user_name' => $user_name,
+            'memory_title' => $memory_data['title'] ?? 'Your Memory',
+            'memory_id' => $memory_data['id'] ?? 'N/A',
+            'scan_date' => $memory_data['scan_date'] ?? date('F j, Y \a\t g:i A'),
+            'scan_status' => $memory_data['status'] ?? 'Successfully processed',
+            'memory_url' => $this->site_url . '/memories.php',
+            'play_url' => $this->site_url . '/play.php?uid=' . ($memory_data['unique_id'] ?? ''),
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
+        
+        return $this->sendEmail($user_email, $subject, $html_body, $text_body);
+    }
+    
+    /**
      * Get email template from database
      */
     private function getTemplate($template_key) {
