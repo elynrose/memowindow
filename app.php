@@ -641,11 +641,19 @@
     
     <!-- Template initialization -->
     <script type="module">
-        import { initAppAuth } from './src/app-auth.js';
+        import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize authentication for all pages
-        initAppAuth();
+        // Initialize unified authentication
+        unifiedAuth.addAuthListener((user, isAdmin) => {
+            if (user) {
+                console.log('✅ User authenticated in app:', user.email);
+                // User info will be shown by unified auth system
+            } else {
+                console.log('❌ User not authenticated, redirecting to login...');
+                window.location.href = 'login.php';
+            }
+        });
         
         // Initialize navigation for all pages
         initNavigation();

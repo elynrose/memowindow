@@ -303,8 +303,8 @@
     });
     
 
-    // Initialize authentication
-    import { initAuth } from './src/auth.js';
+    // Initialize unified authentication
+    import unifiedAuth from './src/unified-auth.js';
     
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
@@ -317,14 +317,28 @@
       const btnLogin = document.getElementById('btnLogin');
       console.log('🔍 Login button found:', !!btnLogin);
       
-      // Debug: Check Firebase config
-      import('./firebase-config.php').then(config => {
-        console.log('🔍 Firebase config loaded:', config);
-      }).catch(error => {
-        console.error('❌ Firebase config error:', error);
-      });
+      // Set up Google Sign-In button
+      if (btnLogin) {
+        btnLogin.addEventListener('click', async () => {
+          try {
+            console.log('🔐 Starting Google Sign-In...');
+            await unifiedAuth.signInWithGoogle();
+            console.log('✅ Google Sign-In successful');
+            // Redirect will be handled by auth state listener
+          } catch (error) {
+            console.error('❌ Google Sign-In failed:', error);
+            alert('Sign-in failed: ' + error.message);
+          }
+        });
+      }
       
-      initAuth();
+      // Set up authentication state listener
+      unifiedAuth.addAuthListener((user, isAdmin) => {
+        if (user) {
+          console.log('✅ User authenticated, redirecting to app...');
+          window.location.href = 'app.php';
+        }
+      });
 });
 </script>
 </body>

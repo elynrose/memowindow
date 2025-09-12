@@ -1,5 +1,5 @@
 // Orders page functionality
-import { getCurrentUser } from './app-auth.js';
+import unifiedAuth from './unified-auth.js';
 
 let currentUser = null;
 
@@ -11,29 +11,21 @@ export function initOrders() {
 }
 
 async function waitForAuthAndLoadOrders() {
-    const maxAttempts = 100; // 10 seconds max wait
-    let attempts = 0;
-    
     console.log("🔍 Waiting for authentication...");
     
-    while (attempts < maxAttempts) {
-        currentUser = getCurrentUser();
-        console.log(`🔍 Attempt ${attempts + 1}: currentUser =`, currentUser ? 'authenticated' : 'null');
-        
-        if (currentUser) {
-            console.log("✅ User authenticated, loading orders");
-            await loadOrders();
-            return;
-        }
-        
-        // Wait 100ms before trying again
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-    }
+    // Wait for unified auth to be ready
+    await unifiedAuth.waitForAuth();
     
-    // If we get here, authentication timed out
-    console.log("❌ Authentication timeout, showing login prompt");
-    showLoginPrompt();
+    currentUser = unifiedAuth.getCurrentUser();
+    console.log("🔍 Current user:", currentUser ? 'authenticated' : 'null');
+    
+    if (currentUser) {
+        console.log("✅ User authenticated, loading orders");
+        await loadOrders();
+    } else {
+        console.log("❌ User not authenticated, showing login prompt");
+        showLoginPrompt();
+    }
 }
 
 async function loadOrders() {

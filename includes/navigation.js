@@ -24,9 +24,9 @@ export function initNavigation() {
     els.btnLogout.addEventListener('click', async (e) => {
         e.preventDefault();
         try {
-            // Import auth dynamically to avoid circular dependencies
-            const { auth } = await import('../firebase-config.php');
-            await auth.signOut();
+            // Use unified auth for logout
+            const { signOut } = await import('../src/unified-auth.js');
+            await signOut();
             console.log('✅ User signed out successfully');
             window.location.href = 'index.php';
         } catch (error) {
