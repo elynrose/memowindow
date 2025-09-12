@@ -6,10 +6,99 @@ import { uploadToFirebaseStorage } from './storage.js';
 export function initMemories() {
     // Initializing memories functionality
     
+    // Set up event delegation for order buttons
+    setupOrderButtonHandlers();
+    
     // Wait for authentication to be ready, then load memories
     waitForAuthAndLoadMemories();
     
     // Memories functionality initialized
+}
+
+// Set up event delegation for memory action buttons
+function setupOrderButtonHandlers() {
+    document.addEventListener('click', function(event) {
+        // Handle order buttons
+        if (event.target.closest('.memory-action.order')) {
+            event.preventDefault();
+            
+            const orderButton = event.target.closest('.memory-action.order');
+            const memoryId = orderButton.getAttribute('data-memory-id');
+            const imageUrl = orderButton.getAttribute('data-image-url');
+            const title = orderButton.getAttribute('data-title');
+            
+            console.log('🛒 Order button clicked:', { memoryId, imageUrl, title });
+            
+            // Call showOrderOptions if it's available
+            if (window.showOrderOptions) {
+                window.showOrderOptions(memoryId, imageUrl, title, orderButton);
+            } else {
+                console.error('❌ showOrderOptions function not available');
+                alert('Order functionality is not ready yet. Please refresh the page.');
+            }
+        }
+        
+        // Handle memory image clicks
+        else if (event.target.closest('.memory-image-clickable')) {
+            event.preventDefault();
+            
+            const imageElement = event.target.closest('.memory-image-clickable');
+            const imageUrl = imageElement.getAttribute('data-image-url');
+            const title = imageElement.getAttribute('data-title');
+            const qrUrl = imageElement.getAttribute('data-qr-url');
+            
+            console.log('🖼️ Memory image clicked:', { imageUrl, title, qrUrl });
+            
+            if (window.viewMemory) {
+                window.viewMemory(imageUrl, title, qrUrl);
+            }
+        }
+        
+        // Handle delete buttons
+        else if (event.target.closest('.memory-action.delete')) {
+            event.preventDefault();
+            
+            const deleteButton = event.target.closest('.memory-action.delete');
+            const memoryId = deleteButton.getAttribute('data-memory-id');
+            
+            console.log('🗑️ Delete button clicked:', { memoryId });
+            
+            if (window.deleteMemory) {
+                window.deleteMemory(memoryId);
+            }
+        }
+        
+        // Handle voice clone buttons
+        else if (event.target.closest('.memory-action.voice-clone')) {
+            event.preventDefault();
+            
+            const voiceButton = event.target.closest('.memory-action.voice-clone');
+            const memoryId = voiceButton.getAttribute('data-memory-id');
+            const audioUrl = voiceButton.getAttribute('data-audio-url');
+            const title = voiceButton.getAttribute('data-title');
+            
+            console.log('🎤 Voice clone button clicked:', { memoryId, audioUrl, title });
+            
+            if (window.checkVoiceCloneStatus) {
+                window.checkVoiceCloneStatus(memoryId, audioUrl, title);
+            }
+        }
+        
+        // Handle generate audio buttons
+        else if (event.target.closest('.memory-action.generate-audio')) {
+            event.preventDefault();
+            
+            const generateButton = event.target.closest('.memory-action.generate-audio');
+            const memoryId = generateButton.getAttribute('data-memory-id');
+            const title = generateButton.getAttribute('data-title');
+            
+            console.log('🎵 Generate audio button clicked:', { memoryId, title });
+            
+            if (window.showGenerateAudioModal) {
+                window.showGenerateAudioModal(memoryId, title);
+            }
+        }
+    });
 }
 
 // Wait for authentication and then load memories
@@ -99,8 +188,10 @@ function displayMemories(memories) {
              data-memory-title="${memory.title || 'Untitled'}">
             <img src="${memory.image_url}" 
                  alt="${memory.title || 'Memory'}" 
-                 class="memory-image"
-                 onclick="viewMemory('${memory.image_url}', '${memory.title || 'Untitled'}', '${memory.qr_url || ''}')">
+                 class="memory-image memory-image-clickable" 
+                 data-image-url="${memory.image_url}" 
+                 data-title="${memory.title || 'Untitled'}" 
+                 data-qr-url="${memory.qr_url || ''}">
             <div class="memory-content">
                 <h3 class="memory-title">${memory.title || 'Untitled'}</h3>
                 <p class="memory-date">${new Date(memory.created_at).toLocaleDateString()}</p>
@@ -117,21 +208,21 @@ function displayMemories(memories) {
                         </svg>
                         QR
                     </a>
-                    <a href="#" onclick="showOrderOptions(${memory.id}, '${memory.image_url}', '${memory.title || 'Untitled'}', this)" class="memory-action order">
+                    <a href="#" class="memory-action order" data-memory-id="${memory.id}" data-image-url="${memory.image_url}" data-title="${memory.title || 'Untitled'}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12.5h-8v-4h8v4z"/>
                         </svg>
                         Order
                     </a>
                     ${memory.audio_url ? `
-                    <button onclick="checkVoiceCloneStatus(${memory.id}, '${memory.audio_url}', '${memory.title || 'Untitled'}')" class="memory-action voice-clone" style="background: #8b5cf6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
+                    <button class="memory-action voice-clone" data-memory-id="${memory.id}" data-audio-url="${memory.audio_url}" data-title="${memory.title || 'Untitled'}" style="background: #8b5cf6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
                         🎤 Clone Voice
                     </button>
-                    <button onclick="showGenerateAudioModal(${memory.id}, '${memory.title || 'Untitled'}')" class="memory-action generate-audio" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
+                    <button class="memory-action generate-audio" data-memory-id="${memory.id}" data-title="${memory.title || 'Untitled'}" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
                         🎵 Generate Audio
                     </button>
                     ` : ''}
-                    <a href="#" onclick="deleteMemory(${memory.id})" class="memory-action delete">
+                    <a href="#" class="memory-action delete" data-memory-id="${memory.id}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                         </svg>

@@ -432,4 +432,15 @@ window.closeOrderModal = function() {
   }
 };
 
-// Global functions loaded and available
+// Ensure functions are available globally for inline onclick handlers
+window.showOrderOptions = window.showOrderOptions;
+window.selectProduct = window.selectProduct;
+window.orderProduct = window.orderProduct;
+window.closeOrderModal = window.closeOrderModal;
+
+console.log('✅ Global order functions available:', {
+  showOrderOptions: typeof window.showOrderOptions,
+  selectProduct: typeof window.selectProduct,
+  orderProduct: typeof window.orderProduct,
+  closeOrderModal: typeof window.closeOrderModal
+});
