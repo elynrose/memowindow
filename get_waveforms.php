@@ -18,27 +18,30 @@ $dbPass = DB_PASS;
 $table  = 'wave_assets';
 
 // Debug: Check session state
-error_log("Session ID: " . session_id());
-error_log("Session data: " . print_r($_SESSION, true));
+$debugInfo = [
+  'session_id' => session_id(),
+  'session_data' => $_SESSION,
+  'is_authenticated' => isAuthenticated()
+];
 
 // Check authentication - get current user
 try {
   $currentUser = getCurrentUser();
   if (!$currentUser) {
     http_response_code(401);
-    echo json_encode(['error' => 'Authentication required', 'debug' => 'getCurrentUser returned null']);
+    echo json_encode(['error' => 'Authentication required', 'debug' => $debugInfo]);
     exit;
   }
   
   // Debug: Check if user has required fields
   if (!isset($currentUser['uid'])) {
     http_response_code(500);
-    echo json_encode(['error' => 'Invalid user data', 'detail' => 'User object missing uid field', 'debug' => print_r($currentUser, true)]);
+    echo json_encode(['error' => 'Invalid user data', 'detail' => 'User object missing uid field', 'debug' => $debugInfo]);
     exit;
   }
 } catch (Exception $e) {
   http_response_code(500);
-  echo json_encode(['error' => 'Authentication error', 'detail' => $e->getMessage()]);
+  echo json_encode(['error' => 'Authentication error', 'detail' => $e->getMessage(), 'debug' => $debugInfo]);
   exit;
 }
 

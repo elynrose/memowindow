@@ -317,6 +317,8 @@ function handleAuthAPI() {
 }
 
 // If this file is called directly as an API endpoint
+// Temporarily commented out to debug redirect issues
+/*
 if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
     try {
         handleAuthAPI();
@@ -329,4 +331,5 @@ if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
         ]);
     }
 }
+*/
 ?>
