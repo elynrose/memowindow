@@ -127,6 +127,26 @@ class UnifiedAuth {
             return result.user;
         } catch (error) {
             console.error('❌ Google sign-in failed:', error);
+            
+            // Re-throw with more specific error information
+            if (error.code === 'auth/popup-closed-by-user') {
+                const popupError = new Error('User closed the sign-in popup');
+                popupError.code = 'auth/popup-closed-by-user';
+                throw popupError;
+            } else if (error.code === 'auth/popup-blocked') {
+                const popupError = new Error('Popup was blocked by browser');
+                popupError.code = 'auth/popup-blocked';
+                throw popupError;
+            } else if (error.code === 'auth/network-request-failed') {
+                const networkError = new Error('Network request failed');
+                networkError.code = 'auth/network-request-failed';
+                throw networkError;
+            } else if (error.code === 'auth/too-many-requests') {
+                const rateLimitError = new Error('Too many requests');
+                rateLimitError.code = 'auth/too-many-requests';
+                throw rateLimitError;
+            }
+            
             throw error;
         }
     }

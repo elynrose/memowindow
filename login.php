@@ -206,6 +206,11 @@
       display: none !important;
     }
     
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
     /* Responsive */
     @media (max-width: 480px) {
       .login-container {
@@ -296,12 +301,36 @@
         btnLogin.addEventListener('click', async () => {
           try {
             console.log('🔐 Starting Google Sign-In...');
+            
+            // Show loading state
+            const originalText = btnLogin.innerHTML;
+            btnLogin.innerHTML = '<div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #ffffff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px;"></div>Signing in...';
+            btnLogin.disabled = true;
+            
             await unifiedAuth.signInWithGoogle();
             console.log('✅ Google Sign-In successful');
             // Redirect will be handled by auth state listener
           } catch (error) {
             console.error('❌ Google Sign-In failed:', error);
-            alert('Sign-in failed: ' + error.message);
+            
+            // Restore button state
+            btnLogin.innerHTML = originalText;
+            btnLogin.disabled = false;
+            
+            // Handle specific Firebase errors with user-friendly messages
+            if (error.code === 'auth/popup-closed-by-user') {
+              // User closed the popup - don't show an error, this is normal behavior
+              console.log('ℹ️ User closed Google Sign-In popup');
+              return;
+            } else if (error.code === 'auth/popup-blocked') {
+              alert('Please allow popups for this site and try again.');
+            } else if (error.code === 'auth/network-request-failed') {
+              alert('Network error. Please check your internet connection and try again.');
+            } else if (error.code === 'auth/too-many-requests') {
+              alert('Too many failed attempts. Please try again later.');
+            } else {
+              alert('Sign-in failed. Please try again.');
+            }
           }
         });
       }
