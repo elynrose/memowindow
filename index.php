@@ -16,8 +16,8 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Navigation Styles -->
-    <link rel="stylesheet" href="includes/navigation.css?v=<?php echo time(); ?>">
+    <!-- Unified Styles -->
+    <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
     
     
     <style>

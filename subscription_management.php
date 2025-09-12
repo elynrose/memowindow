@@ -15,7 +15,7 @@ require_once 'config.php';
     <meta http-equiv="Expires" content="0">
     
     <!-- Navigation Styles -->
-    <link rel="stylesheet" href="includes/navigation.css">
+    <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
     
     <style>
         /* Reset and Base Styles */
