@@ -203,13 +203,13 @@ require_once 'config.php';
         .wrap {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem 1rem;
+            padding: 3rem 1rem;
             margin-top: 80px;
         }
         
         .page-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
             color: white;
         }
         
@@ -228,17 +228,19 @@ require_once 'config.php';
         .subscription-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+            gap: 3rem;
+            margin-bottom: 4rem;
+            padding: 0 1rem;
         }
         
         .subscription-card {
             background: white;
             border-radius: 16px;
-            padding: 2rem;
+            padding: 2.5rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1rem;
         }
         
         .subscription-card:hover {
@@ -276,11 +278,11 @@ require_once 'config.php';
         
         .card-features {
             list-style: none;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
         
         .card-features li {
-            padding: 0.5rem 0;
+            padding: 0.75rem 0;
             display: flex;
             align-items: center;
         }
@@ -298,7 +300,8 @@ require_once 'config.php';
         
         .card-actions {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
+            margin-top: 1rem;
         }
         
         .btn {
@@ -355,8 +358,8 @@ require_once 'config.php';
         .usage-section {
             background: white;
             border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
@@ -370,7 +373,7 @@ require_once 'config.php';
         .usage-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
+            gap: 2rem;
         }
         
         .usage-item {
