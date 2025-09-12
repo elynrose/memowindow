@@ -127,6 +127,78 @@ try {
         echo json_encode(['status' => 'subscription_cancelled']);
     }
     
+    // Handle successful subscription payments
+    if ($event['type'] == 'invoice.payment_succeeded') {
+        $invoice = $event['data']['object'];
+        
+        if ($invoice['billing_reason'] == 'subscription_cycle') {
+            $subscriptionId = $invoice['subscription'];
+            $customerId = $invoice['customer'];
+            
+            // Get customer details to find user_id
+            $customer = \Stripe\Customer::retrieve($customerId);
+            $userId = $customer->metadata['user_id'] ?? null;
+            
+            if ($userId) {
+                // Get subscription details
+                $subscription = \Stripe\Subscription::retrieve($subscriptionId);
+                
+                require_once 'SubscriptionManager.php';
+                $subscriptionManager = new SubscriptionManager();
+                
+                // Update subscription with new period and amount
+                $amountPaid = $invoice['amount_paid'] / 100; // Convert from cents
+                $billingCycle = $subscription->items->data[0]->price->recurring->interval;
+                
+                $subscriptionManager->createOrUpdateSubscription(
+                    $userId,
+                    $subscription->metadata['package_id'] ?? 1,
+                    $subscriptionId,
+                    $customerId,
+                    'active',
+                    $amountPaid,
+                    $billingCycle,
+                    date('Y-m-d H:i:s', $subscription->current_period_start),
+                    date('Y-m-d H:i:s', $subscription->current_period_end)
+                );
+            }
+        }
+        
+        http_response_code(200);
+        echo json_encode(['status' => 'payment_succeeded']);
+    }
+    
+    // Handle failed subscription payments
+    if ($event['type'] == 'invoice.payment_failed') {
+        $invoice = $event['data']['object'];
+        
+        if ($invoice['billing_reason'] == 'subscription_cycle') {
+            $subscriptionId = $invoice['subscription'];
+            $customerId = $invoice['customer'];
+            
+            // Get customer details to find user_id
+            $customer = \Stripe\Customer::retrieve($customerId);
+            $userId = $customer->metadata['user_id'] ?? null;
+            
+            if ($userId) {
+                require_once 'SubscriptionManager.php';
+                $subscriptionManager = new SubscriptionManager();
+                
+                // Update subscription status to past_due
+                $subscriptionManager->createOrUpdateSubscription(
+                    $userId,
+                    1, // Default package ID
+                    $subscriptionId,
+                    $customerId,
+                    'past_due'
+                );
+            }
+        }
+        
+        http_response_code(200);
+        echo json_encode(['status' => 'payment_failed']);
+    }
+    
 } catch (\Stripe\Exception\SignatureVerificationException $e) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid signature']);
