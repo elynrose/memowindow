@@ -115,24 +115,42 @@ async function waitForGlobalsAndLoadMemories() {
 
 // Wait for globals module to be available
 async function waitForGlobalsModule() {
+    // Wait for globals module to be ready with retries
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds total (50 * 100ms)
     
-    // Since we're importing globals.js directly, it should be available immediately
-    // But let's add a small delay to ensure it's fully initialized
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Check if globals module is loaded
-    if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
-        return;
+    while (attempts < maxAttempts) {
+        // Check if globals module is loaded
+        if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
+            console.log("✅ Globals module loaded successfully");
+            return;
+        }
+        
+        // Log the current state for debugging every 10 attempts
+        if (attempts % 10 === 0) {
+            console.log(`⏳ Waiting for globals module... (attempt ${attempts + 1}/${maxAttempts})`);
+            console.log("Window state:", {
+                globalsModuleReady: window.globalsModuleReady,
+                showOrderOptions: typeof window.showOrderOptions,
+                orderProduct: typeof window.orderProduct,
+                selectProduct: typeof window.selectProduct
+            });
+        }
+        
+        // Wait 100ms before next attempt
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
     }
     
-    // Log the current state for debugging
-    console.log("Window state:", {
+    // If we get here, globals module didn't load in time
+    console.error("❌ Globals module failed to load after", maxAttempts, "attempts");
+    console.log("Final window state:", {
         globalsModuleReady: window.globalsModuleReady,
         showOrderOptions: typeof window.showOrderOptions,
         orderProduct: typeof window.orderProduct,
         selectProduct: typeof window.selectProduct
     });
-    throw new Error("Order functionality not available");
+    throw new Error("Order functionality not available - globals module failed to load");
 }
 
 // Show login prompt if user is not authenticated

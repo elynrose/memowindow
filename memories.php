@@ -650,10 +650,13 @@
         
         // Memories-specific initialization
         
-        // Import and initialize memories functionality
-        import("./src/memories.js").then(module => {
-            if (module.initMemories) {
-                module.initMemories();
+        // Import globals module first, then memories
+        Promise.all([
+            import("./src/globals.js"),
+            import("./src/memories.js")
+        ]).then(([globalsModule, memoriesModule]) => {
+            if (memoriesModule.initMemories) {
+                memoriesModule.initMemories();
             } else {
                 throw new Error("initMemories function not found");
             }
