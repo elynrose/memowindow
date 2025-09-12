@@ -28,14 +28,11 @@ function setupOrderButtonHandlers() {
             const imageUrl = orderButton.getAttribute('data-image-url');
             const title = orderButton.getAttribute('data-title');
             
-            console.log('🛒 Order button clicked:', { memoryId, imageUrl, title });
             
             // Call showOrderOptions if it's available
             if (window.showOrderOptions) {
                 window.showOrderOptions(memoryId, imageUrl, title, orderButton);
             } else {
-                console.error('❌ showOrderOptions function not available');
-                console.log('🔍 Available window functions:', Object.keys(window).filter(key => key.includes('Order') || key.includes('order')));
                 alert('Order functionality is loading. Please wait a moment and try again.');
             }
         }
@@ -49,7 +46,6 @@ function setupOrderButtonHandlers() {
             const title = imageElement.getAttribute('data-title');
             const qrUrl = imageElement.getAttribute('data-qr-url');
             
-            console.log('🖼️ Memory image clicked:', { imageUrl, title, qrUrl });
             
             if (window.viewMemory) {
                 window.viewMemory(imageUrl, title, qrUrl);
@@ -63,7 +59,6 @@ function setupOrderButtonHandlers() {
             const deleteButton = event.target.closest('.memory-action.delete');
             const memoryId = deleteButton.getAttribute('data-memory-id');
             
-            console.log('🗑️ Delete button clicked:', { memoryId });
             
             if (window.deleteMemory) {
                 window.deleteMemory(memoryId);
@@ -79,7 +74,6 @@ function setupOrderButtonHandlers() {
             const audioUrl = voiceButton.getAttribute('data-audio-url');
             const title = voiceButton.getAttribute('data-title');
             
-            console.log('🎤 Voice clone button clicked:', { memoryId, audioUrl, title });
             
             if (window.checkVoiceCloneStatus) {
                 window.checkVoiceCloneStatus(memoryId, audioUrl, title);
@@ -94,7 +88,6 @@ function setupOrderButtonHandlers() {
             const memoryId = generateButton.getAttribute('data-memory-id');
             const title = generateButton.getAttribute('data-title');
             
-            console.log('🎵 Generate audio button clicked:', { memoryId, title });
             
             if (window.showGenerateAudioModal) {
                 window.showGenerateAudioModal(memoryId, title);
@@ -105,7 +98,6 @@ function setupOrderButtonHandlers() {
 
 // Wait for globals module and authentication, then load memories
 async function waitForGlobalsAndLoadMemories() {
-    console.log("🔍 Waiting for globals module and authentication...");
     
     // Wait for globals module to load
     await waitForGlobalsModule();
@@ -115,17 +107,14 @@ async function waitForGlobalsAndLoadMemories() {
     const currentUser = unifiedAuth.getCurrentUser();
     
     if (currentUser) {
-        console.log("✅ User authenticated, loading memories");
         loadMemories();
     } else {
-        console.log("❌ User not authenticated, showing login prompt");
         showLoginPrompt();
     }
 }
 
 // Wait for globals module to be available
 async function waitForGlobalsModule() {
-    console.log("🔍 Checking globals module...");
     
     // Since we're importing globals.js directly, it should be available immediately
     // But let's add a small delay to ensure it's fully initialized
@@ -133,12 +122,9 @@ async function waitForGlobalsModule() {
     
     // Check if globals module is loaded
     if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
-        console.log("✅ Globals module available");
         return;
     }
     
-    console.error("❌ Globals module not available after import");
-    console.error("❌ Window state:", {
         globalsModuleReady: window.globalsModuleReady,
         showOrderOptions: typeof window.showOrderOptions,
         orderProduct: typeof window.orderProduct,
@@ -170,7 +156,6 @@ async function loadMemories() {
     try {
         const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
-            console.error('User not authenticated');
             showLoginPrompt();
             return;
         }
@@ -198,7 +183,6 @@ async function loadMemories() {
         }
         
     } catch (error) {
-        console.error('Error loading memories:', error);
         showErrorState(error.message);
     }
 }
@@ -404,7 +388,6 @@ window.orderPrint = async function(memoryId, imageUrl) {
         }
         
     } catch (error) {
-        console.error('Error creating order:', error);
         alert('Failed to create order: ' + error.message);
     }
 };
@@ -442,7 +425,6 @@ window.deleteMemory = async function(memoryId) {
         }
         
     } catch (error) {
-        console.error('Error deleting memory:', error);
         showToast('Failed to delete memory: ' + error.message, 'error');
     }
 };
@@ -681,7 +663,6 @@ window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
             alert('Error checking voice clone status');
         }
     } catch (error) {
-        console.error('Error checking voice clone status:', error);
         alert('Error checking voice clone status');
     }
 };
@@ -715,7 +696,6 @@ async function checkVoiceCloneFeatureStatus() {
             });
         }
     } catch (error) {
-        console.error('Error checking voice clone feature status:', error);
         // Hide buttons on error to be safe
         document.querySelectorAll('.voice-clone, .generate-audio').forEach(button => {
             button.style.display = 'none';
@@ -742,13 +722,11 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
         
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Voice clone API error:', response.status, errorText);
             alert('Error loading voice clones: ' + response.status);
             return;
         }
         
         const result = await response.json();
-        console.log('🎤 Voice clone API response:', result);
         
         if (!result.success || !result.voices || result.voices.length === 0) {
             alert('No cloned voices found. Please clone a voice first.');
@@ -819,7 +797,6 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
         document.body.appendChild(dialog);
         
     } catch (error) {
-        console.error('Error showing generate audio modal:', error);
         alert('Error loading voice options');
     }
 };
@@ -905,14 +882,11 @@ window.generateAudio = async function(memoryId) {
                         throw new Error('Failed to update database with Firebase URL: ' + updateResult.error);
                     }
                     
-                    console.log('✅ Generated audio uploaded to Firebase and database updated');
                     
                 } catch (firebaseError) {
-                    console.error('❌ Firebase upload failed:', firebaseError);
                     
                     // If Firebase fails, fall back to local backup
                     if (result.local_backup_success && result.local_backup_url) {
-                        console.log('🔄 Falling back to local backup');
                         
                         // Update database with local backup URL
                         const fallbackResponse = await fetch('voice_clone_api.php', {
@@ -955,7 +929,6 @@ window.generateAudio = async function(memoryId) {
         }
         
     } catch (error) {
-        console.error('Error generating audio:', error);
         alert('Error generating audio');
         
         // Close modal on error

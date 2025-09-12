@@ -21,7 +21,6 @@ try {
     
     if ($result) {
         // Log the cancellation
-        error_log("Subscription cancelled for user: $userId");
         
         echo json_encode([
             'success' => true, 
@@ -35,14 +34,12 @@ try {
     }
     
 } catch (PDOException $e) {
-    error_log("Error cancelling subscription: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false, 
         'error' => 'Database error occurred'
     ]);
 } catch (Exception $e) {
-    error_log("Error cancelling subscription: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false, 

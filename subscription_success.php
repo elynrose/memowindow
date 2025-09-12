@@ -58,7 +58,6 @@ if ($sessionId) {
             }
             
             // Debug: Log the data we're about to save
-            error_log("Subscription Success Debug - User ID: $userId, Package ID: $packageId, Amount: $amountPaid, Billing: $billingCycle");
             
             // Update user subscription in database
             $subscriptionManager->createOrUpdateSubscription(
@@ -73,7 +72,6 @@ if ($sessionId) {
                 date('Y-m-d H:i:s', $subscription->current_period_end)
             );
             
-            error_log("Subscription Success Debug - Database save completed");
             
             $success = true;
             $packageName = $session->metadata['package_name'];

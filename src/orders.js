@@ -11,19 +11,15 @@ export function initOrders() {
 }
 
 async function waitForAuthAndLoadOrders() {
-    console.log("🔍 Waiting for authentication...");
     
     // Wait for unified auth to be ready
     await unifiedAuth.waitForAuth();
     
     currentUser = unifiedAuth.getCurrentUser();
-    console.log("🔍 Current user:", currentUser ? 'authenticated' : 'null');
     
     if (currentUser) {
-        console.log("✅ User authenticated, loading orders");
         await loadOrders();
     } else {
-        console.log("❌ User not authenticated, showing login prompt");
         showLoginPrompt();
     }
 }
@@ -32,7 +28,6 @@ async function loadOrders() {
     try {
         const container = document.getElementById('ordersContainer');
         if (!container) {
-            console.error('Orders container not found');
             return;
         }
         
@@ -55,7 +50,6 @@ async function loadOrders() {
         }
         
     } catch (error) {
-        console.error('Error loading orders:', error);
         showErrorState('Failed to load orders. Please try again.');
     }
 }
@@ -212,7 +206,6 @@ window.cancelOrder = async function(orderId) {
         }
         
     } catch (error) {
-        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Network Error',

@@ -287,20 +287,17 @@
     
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('🔐 MemoWindow Login Initializing...');
       
       // Initialize navigation
       initNavigation();
       
       // Debug: Check if button exists
       const btnLogin = document.getElementById('btnLogin');
-      console.log('🔍 Login button found:', !!btnLogin);
       
       // Set up Google Sign-In button
       if (btnLogin) {
         btnLogin.addEventListener('click', async () => {
           try {
-            console.log('🔐 Starting Google Sign-In...');
             
             // Show loading state
             const originalText = btnLogin.innerHTML;
@@ -308,10 +305,8 @@
             btnLogin.disabled = true;
             
             await unifiedAuth.signInWithGoogle();
-            console.log('✅ Google Sign-In successful');
             // Redirect will be handled by auth state listener
           } catch (error) {
-            console.error('❌ Google Sign-In failed:', error);
             
             // Restore button state
             btnLogin.innerHTML = originalText;
@@ -320,7 +315,6 @@
             // Handle specific Firebase errors with user-friendly messages
             if (error.code === 'auth/popup-closed-by-user') {
               // User closed the popup - don't show an error, this is normal behavior
-              console.log('ℹ️ User closed Google Sign-In popup');
               return;
             } else if (error.code === 'auth/popup-blocked') {
               alert('Please allow popups for this site and try again.');
@@ -352,12 +346,9 @@
           }
           
           try {
-            console.log('🔐 Starting email sign-in...');
             await unifiedAuth.signInWithEmail(email, password);
-            console.log('✅ Email sign-in successful');
             // Redirect will be handled by auth state listener
           } catch (error) {
-            console.error('❌ Email sign-in failed:', error);
             alert('Sign-in failed: ' + error.message);
           }
         });
@@ -379,12 +370,9 @@
           }
           
           try {
-            console.log('🔐 Starting account creation...');
             await unifiedAuth.createAccount(email, password);
-            console.log('✅ Account created successfully');
             // Redirect will be handled by auth state listener
           } catch (error) {
-            console.error('❌ Account creation failed:', error);
             alert('Account creation failed: ' + error.message);
           }
         });
@@ -393,7 +381,6 @@
       // Set up authentication state listener
       unifiedAuth.addAuthListener((user, isAdmin) => {
         if (user) {
-          console.log('✅ User authenticated, redirecting to app...');
           window.location.href = 'app.php';
         }
       });

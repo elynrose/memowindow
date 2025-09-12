@@ -12,9 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   try {
     // Unified auth is auto-initialized, no need to call initAuth
-    console.log('✅ App initialization started');
   } catch (error) {
-    console.error('❌ Auth initialization failed:', error);
     
     // Show error to user
     setTimeout(() => {
@@ -35,7 +33,6 @@ window.addEventListener('load', () => {
   // Window loaded, checking if auth is initialized
   
   // Unified auth is auto-initialized, no need for retry logic
-  console.log('✅ App fully loaded');
 });
 
 // Make functions available globally for the existing waveform code

@@ -43,7 +43,6 @@ export function initApp() {
     maxLength = document.getElementById('maxLength');
     
     if (!fileInput || !fileUploadArea || !btnRecord || !btnCreate) {
-        console.error('❌ Required DOM elements not found');
         return;
     }
     
@@ -58,16 +57,13 @@ export function initApp() {
 
 // Wait for authentication and then load waveforms
 async function waitForAuthAndLoadWaveforms() {
-    console.log("🔍 Waiting for authentication...");
     await unifiedAuth.waitForAuth();
     const currentUser = unifiedAuth.getCurrentUser();
     
     if (currentUser) {
-        console.log("✅ User authenticated, loading waveforms and audio limit");
         loadUserWaveforms();
         loadUserAudioLimit();
     } else {
-        console.log("❌ User not authenticated");
     }
 }
 
@@ -196,7 +192,6 @@ async function processFileForPreview(file) {
         drawPreview();
         
     } catch (error) {
-        console.error('Error processing file for preview:', error);
     }
 }
 
@@ -405,7 +400,6 @@ async function startRecording() {
         startCountdownTimer();
         
     } catch (error) {
-        console.error('Error starting recording:', error);
         Swal.fire({
             icon: 'error',
             title: 'Microphone Access Required',
@@ -469,12 +463,10 @@ async function createMemory() {
             const subscriptionData = await subscriptionResponse.json();
             
             if (!subscriptionResponse.ok) {
-                console.warn('Subscription check failed, proceeding with upload');
             } else if (subscriptionData.success && !subscriptionData.limits.can_create_memory.allowed) {
                 throw new Error(subscriptionData.limits.can_create_memory.reason);
             }
         } catch (subError) {
-            console.warn('Subscription check error, proceeding:', subError.message);
             // Continue with upload even if subscription check fails
         }
         
@@ -488,7 +480,6 @@ async function createMemory() {
             const baseUrlData = await baseUrlResponse.json();
             baseUrl = baseUrlData.base_url;
         } catch (urlError) {
-            console.warn('Failed to get base URL, using fallback:', urlError.message);
             baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
         }
         
@@ -502,13 +493,11 @@ async function createMemory() {
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
             
             // Create waveform from audio with correct QR URL
-            console.log('🎨 Creating waveform for file:', file.name);
             const waveformBlob = await createWaveformFromAudio(file, qrApiUrl);
             
             if (!waveformBlob || waveformBlob.size === 0) {
                 throw new Error('Failed to generate waveform image');
             }
-            console.log('✅ Waveform created:', waveformBlob.size, 'bytes');
             
             // Upload waveform image with QR code
             const waveformResult = await uploadWaveformFiles(
@@ -581,7 +570,6 @@ async function createMemory() {
         }, 1500);
         
     } catch (error) {
-        console.error('Error creating memory:', error);
         showToast('Failed to create memory: ' + error.message, 'error');
     } finally {
         btnCreate.disabled = false;
@@ -740,7 +728,6 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
             
             await drawQRCode(ctx, qrX, qrY, qrSize, qrCodeUrl);
         } catch (error) {
-            console.error('Failed to draw QR code:', error);
             drawEnhancedQRPlaceholder(ctx, qrX, qrY, qrSize);
         }
     } else {
@@ -819,7 +806,6 @@ async function drawQRCode(ctx, x, y, size, qrUrl) {
 // Save memory to database (simplified version for testing)
 async function saveMemoryToDatabase(memoryData) {
     try {
-        console.log('💾 Saving memory to database:', memoryData.title);
         
         const formData = new FormData();
         formData.append('title', memoryData.title);
@@ -844,11 +830,9 @@ async function saveMemoryToDatabase(memoryData) {
         }
         
         const result = await response.json();
-        console.log('✅ Database save result:', result);
         return result;
         
     } catch (error) {
-        console.error('❌ Error saving to database:', error);
         return { success: false, error: error.message };
     }
 }
@@ -870,7 +854,6 @@ async function loadUserWaveforms() {
         }
         
     } catch (error) {
-        console.error('Error loading waveforms:', error);
         waveformList.innerHTML = '<p style="text-align: center; color: #dc2626; padding: 2rem;">Error loading memories. Please refresh the page.</p>';
     }
 }
@@ -938,7 +921,6 @@ window.deleteWaveform = async function(waveformId) {
         }
         
     } catch (error) {
-        console.error('Error deleting waveform:', error);
         showToast('Failed to delete memory: ' + error.message, 'error');
     }
 };
@@ -977,7 +959,6 @@ async function loadUserAudioLimit() {
     try {
         const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
-            console.log('No user logged in, using default audio limit');
             // Show default limit info even when not logged in
             if (packageName && maxLength) {
                 packageName.textContent = 'Basic';
@@ -987,13 +968,11 @@ async function loadUserAudioLimit() {
             return;
         }
         
-        console.log('Loading audio limit for user:', currentUser.uid);
         const response = await fetch(`get_user_audio_limit.php`, {
             credentials: 'include' // Include cookies for session management
         });
         const data = await response.json();
         
-        console.log('Audio limit response:', data);
         
         if (data.success) {
             maxAudioLength = data.max_audio_length_seconds;
@@ -1003,17 +982,12 @@ async function loadUserAudioLimit() {
                 packageName.textContent = data.package_name;
                 maxLength.textContent = maxAudioLength;
                 audioLimitInfo.style.display = 'block';
-                console.log(`Updated UI: ${data.package_name} - ${maxAudioLength} seconds`);
             } else {
-                console.error('DOM elements not found:', { packageName, maxLength, audioLimitInfo });
             }
             
-            console.log(`Audio limit loaded: ${maxAudioLength} seconds (${data.package_name})`);
         } else {
-            console.error('Failed to load audio limit:', data.error);
         }
     } catch (error) {
-        console.error('Error loading audio limit:', error);
     }
 }
 
@@ -1101,7 +1075,6 @@ async function validateAudioFile(file) {
         const duration = await getAudioDuration(file);
         const durationSeconds = Math.ceil(duration);
         
-        console.log(`Audio file duration: ${durationSeconds} seconds, limit: ${maxAudioLength} seconds`);
         
         if (durationSeconds > maxAudioLength) {
             const minutes = Math.floor(durationSeconds / 60);
@@ -1137,7 +1110,6 @@ async function validateAudioFile(file) {
         
         return true;
     } catch (error) {
-        console.error('Error validating audio file:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',

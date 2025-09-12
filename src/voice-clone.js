@@ -5,14 +5,11 @@ let currentUser = null;
 
 // Initialize voice cloning functionality
 export function initVoiceClone() {
-    console.log('🎤 Initializing voice clone functionality...');
     currentUser = unifiedAuth.getCurrentUser();
     if (!currentUser) {
-        console.error('User not authenticated for voice cloning');
         return;
     }
     
-    console.log('✅ User authenticated, adding voice clone buttons...');
     // Add voice clone buttons to existing memories
     addVoiceCloneButtons();
 }
@@ -23,17 +20,14 @@ window.initVoiceClone = initVoiceClone;
 // Add voice clone buttons to memory items
 function addVoiceCloneButtons() {
     const memoryItems = document.querySelectorAll('.memory-item');
-    console.log(`🎤 Found ${memoryItems.length} memory items`);
     
     memoryItems.forEach(item => {
         const memoryId = item.dataset.memoryId;
         const audioUrl = item.dataset.audioUrl;
         const memoryTitle = item.dataset.memoryTitle;
         
-        console.log(`🎤 Memory item: ID=${memoryId}, Audio=${audioUrl ? 'Yes' : 'No'}, Title=${memoryTitle}`);
         
         if (memoryId && audioUrl && !item.querySelector('.voice-clone-btn')) {
-            console.log(`🎤 Adding voice clone button to memory ${memoryId}`);
             const cloneBtn = createVoiceCloneButton(memoryId, audioUrl, memoryTitle);
             
             // Find the actions container or create one
@@ -46,7 +40,6 @@ function addVoiceCloneButtons() {
             
             actionsContainer.appendChild(cloneBtn);
         } else if (!audioUrl) {
-            console.log(`🎤 Skipping memory ${memoryId} - no audio URL`);
         }
     });
 }
@@ -403,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkForMemories = () => {
         const memoryItems = document.querySelectorAll('.memory-item');
         if (memoryItems.length > 0) {
-            console.log('🎤 Memories loaded, initializing voice clone...');
             initVoiceClone();
         } else {
             // Keep checking every 500ms until memories are loaded

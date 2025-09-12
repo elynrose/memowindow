@@ -16,7 +16,6 @@ export function initNavigation() {
     const els = getElements();
     
     if (!els.userInfo || !els.btnLogout) {
-        console.error('❌ Navigation elements not found');
         return;
     }
     
@@ -27,10 +26,8 @@ export function initNavigation() {
             // Use unified auth for logout
             const { signOut } = await import('../src/unified-auth.js');
             await signOut();
-            console.log('✅ User signed out successfully');
             window.location.href = 'index.php';
         } catch (error) {
-            console.error('❌ Error signing out:', error);
         }
     });
     
@@ -47,7 +44,6 @@ export function initNavigation() {
             mobileMenuToggle.classList.toggle('active');
             mobileMenu.classList.toggle('mobile-open');
             document.body.classList.toggle('menu-open');
-            console.log('✅ Mobile menu toggled');
         });
         
         // Close mobile menu when clicking outside
@@ -68,7 +64,6 @@ export function initNavigation() {
             }
         });
         
-        console.log('✅ Custom mobile menu initialized successfully');
     }
     
     // Set up logout button for mobile menu
@@ -77,18 +72,14 @@ export function initNavigation() {
         mobileLogoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                console.log('🚪 Logging out from mobile menu...');
                 const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
                 const result = await response.json();
-                console.log('🔍 Server logout response:', result);
                 const { auth } = await import('../firebase-config.php');
                 await auth.signOut();
-                console.log('✅ Firebase sign out successful');
                 sessionStorage.removeItem('currentUser');
                 localStorage.removeItem('currentUser');
                 window.location.href = 'login.php';
             } catch (error) {
-                console.error('❌ Logout failed:', error);
                 window.location.href = 'login.php';
             }
         });
@@ -173,7 +164,6 @@ async function loadSubscriptionStatus(userId) {
             `;
         }
     } catch (error) {
-        console.error('Error loading subscription status:', error);
         // Fallback on error
         els.subscriptionStatus.innerHTML = `
             <div class="subscription-info">

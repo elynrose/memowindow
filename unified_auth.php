@@ -78,7 +78,6 @@ function verifyFirebaseIdToken($idToken) {
         $response = file_get_contents($url, false, $context);
         
         if ($response === false) {
-            error_log('Firebase token verification failed: No response');
             return false;
         }
         
@@ -98,7 +97,6 @@ function verifyFirebaseIdToken($idToken) {
         return false;
         
     } catch (Exception $e) {
-        error_log('Firebase token verification error: ' . $e->getMessage());
         return false;
     }
 }
@@ -131,7 +129,6 @@ function storeUserInDatabase($userData) {
         }
         
     } catch (Exception $e) {
-        error_log('Error storing user in database: ' . $e->getMessage());
     }
 }
 
@@ -211,7 +208,6 @@ function isCurrentUserAdmin() {
         return $adminUser && $adminUser['is_admin'] == 1;
         
     } catch (Exception $e) {
-        error_log('Error checking admin status: ' . $e->getMessage());
         return false;
     }
 }
@@ -240,7 +236,6 @@ function requireAdmin() {
     
     if (!isCurrentUserAdmin()) {
         // Log unauthorized admin access attempt
-        error_log('Unauthorized admin access attempt by user: ' . $user['uid']);
         
         // Redirect to login with error
         $loginUrl = BASE_URL . '/login.php?error=admin_required';

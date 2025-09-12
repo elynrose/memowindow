@@ -89,7 +89,6 @@ class VoiceCloneAPI {
                 }
                 
                 // Log the response for debugging
-                error_log('ElevenLabs API Response (HTTP ' . $httpCode . '): ' . $response);
                 
                 if ($httpCode !== 200 && $httpCode !== 201) {
                     throw new Exception('ElevenLabs API error (HTTP ' . $httpCode . '): ' . $response);
@@ -247,9 +246,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $currentUser = getCurrentUser();
     if (!$currentUser) {
         // Log authentication failure for debugging
-        error_log('Voice clone API: Authentication failed for action: ' . $action);
-        error_log('Voice clone API: Session ID: ' . session_id());
-        error_log('Voice clone API: POST data: ' . json_encode($_POST));
         http_response_code(401);
         echo json_encode(['error' => 'Authentication required']);
         exit;

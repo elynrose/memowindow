@@ -597,10 +597,8 @@
         // Initialize unified authentication
         unifiedAuth.addAuthListener((user, isAdmin) => {
             if (user) {
-                console.log('✅ User authenticated in app:', user.email);
                 // User info will be shown by unified auth system
             } else {
-                console.log('❌ User not authenticated, redirecting to login...');
                 window.location.href = 'login.php';
             }
         });
@@ -611,13 +609,11 @@
         // Page-specific initialization will be injected here
         
         // App-specific initialization
-        console.log("🎵 App page loaded");
         
         // Import and initialize app functionality
         import("./src/app.js").then(module => {
             module.initApp();
         }).catch(error => {
-            console.error("Failed to load app module:", error);
         });
         
     </script>

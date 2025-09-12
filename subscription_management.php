@@ -600,14 +600,12 @@ require_once 'config.php';
         // Initialize unified authentication
         unifiedAuth.addAuthListener(async (user, isAdmin) => {
             if (user) {
-                console.log('✅ User authenticated, showing subscription management page');
                 // User is authenticated, show the page content
                 document.body.style.display = 'block';
                 
                 // Fetch subscription data
                 await loadSubscriptionData();
             } else {
-                console.log('❌ User not authenticated, redirecting to login');
                 // User is not authenticated, redirect to login
                 window.location.href = 'login.php';
             }
@@ -619,7 +617,6 @@ require_once 'config.php';
         // Load subscription data from API
         async function loadSubscriptionData() {
             try {
-                console.log('📊 Loading subscription data...');
                 const response = await fetch('get_subscription_data.php', {
                     method: 'GET',
                     headers: {
@@ -634,14 +631,11 @@ require_once 'config.php';
                 const result = await response.json();
                 
                 if (result.success) {
-                    console.log('✅ Subscription data loaded successfully');
                     populateSubscriptionData(result.data);
                 } else {
-                    console.error('❌ Failed to load subscription data:', result.error);
                     showError('Failed to load subscription data: ' + result.error);
                 }
             } catch (error) {
-                console.error('❌ Error loading subscription data:', error);
                 showError('Error loading subscription data. Please try again.');
             }
         }
@@ -815,7 +809,6 @@ require_once 'config.php';
                         alert('Error cancelling subscription: ' + result.error);
                     }
                 } catch (error) {
-                    console.error('Error:', error);
                     alert('Error cancelling subscription. Please try again.');
                 }
             }

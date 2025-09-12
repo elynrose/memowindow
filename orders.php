@@ -621,10 +621,8 @@
         // Initialize unified authentication
         unifiedAuth.addAuthListener((user, isAdmin) => {
             if (user) {
-                console.log('✅ User authenticated in orders:', user.email);
                 // User info will be shown by unified auth system
             } else {
-                console.log('❌ User not authenticated, redirecting to login...');
                 window.location.href = 'login.php';
             }
         });
@@ -635,14 +633,11 @@
         // Page-specific initialization will be injected here
         
         // Orders-specific initialization
-        console.log("📦 Orders page loaded");
         
         // Import and initialize orders functionality
         import("./src/orders.js").then(module => {
-            console.log("✅ Orders module loaded successfully");
             module.initOrders();
         }).catch(error => {
-            console.error("❌ Failed to load orders module:", error);
             // Fallback: show error message
             const container = document.getElementById("ordersContainer");
             if (container) {

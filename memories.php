@@ -620,9 +620,7 @@
         // Initialize unified authentication
         unifiedAuth.addAuthListener((user, isAdmin) => {
             if (user) {
-                console.log('✅ User authenticated in memories:', user.email);
             } else {
-                console.log('❌ User not authenticated, redirecting to login...');
                 window.location.href = 'login.php';
             }
         });
@@ -633,21 +631,15 @@
         // Page-specific initialization will be injected here
         
         // Memories-specific initialization
-        console.log("💕 Memories page loaded");
         
         // Import and initialize memories functionality
-        console.log("🔍 Attempting to import memories module...");
         import("./src/memories.js").then(module => {
-            console.log("✅ Memories module loaded successfully", module);
             if (module.initMemories) {
                 module.initMemories();
             } else {
-                console.error("❌ initMemories function not found in module");
                 throw new Error("initMemories function not found");
             }
         }).catch(error => {
-            console.error("❌ Failed to load memories module:", error);
-            console.error("❌ Error details:", error.stack);
             // Fallback: show error message
             const container = document.getElementById("memoriesContainer");
             if (container) {

@@ -63,7 +63,6 @@ window.deleteMemory = async function(memoryId, title, buttonElement) {
         try {
           await window.deleteMemoryFiles(result.files);
         } catch (storageError) {
-          console.warn('Storage cleanup failed:', storageError);
         }
       }
     } else {
@@ -71,7 +70,6 @@ window.deleteMemory = async function(memoryId, title, buttonElement) {
     }
     
   } catch (error) {
-    console.error('Delete error:', error);
     if (window.handleError) {
       window.handleError(error, 'Delete Memory');
     } else {
@@ -256,7 +254,6 @@ window.loadMoreWaveforms = async function(offset) {
     }
     
   } catch (error) {
-    console.error('🔍 Error loading more waveforms:', error);
     if (window.handleError) {
       window.handleError(error, 'Load More Memories');
     } else {
@@ -268,17 +265,13 @@ window.loadMoreWaveforms = async function(offset) {
 // Order functionality (implemented from HTML)
 window.orderProduct = async function(productId, memoryId, imageUrl) {
   try {
-    console.log('💳 Ordering product:', productId, 'for memory:', memoryId);
     
     const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
     if (!currentUser) {
-      console.error('❌ User not authenticated');
       alert('Please log in to place an order');
       return;
     }
     
-    console.log('✅ User authenticated:', currentUser.email);
-    console.log('💳 Creating order...');
     
     // Create Stripe checkout session
     const orderData = {
@@ -286,7 +279,6 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
       memory_id: memoryId,
       image_url: imageUrl
     };
-    console.log('📤 Sending order data:', orderData);
     
     const response = await fetch('create_checkout.php', {
       method: 'POST',
@@ -297,35 +289,28 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
       credentials: 'include' // Include session cookies for authentication
     });
     
-    console.log('📥 Checkout response received:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Checkout response error:', errorText);
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
     const result = await response.json();
-    console.log('📥 Checkout result received:', result);
     
     if (result.success && result.checkout_url) {
-      console.log('✅ Redirecting to Stripe checkout:', result.checkout_url);
       // Redirect to Stripe checkout
       window.location.href = result.checkout_url;
     } else {
-      console.error('❌ Order creation failed:', result.error);
       alert('Error creating order: ' + (result.error || 'Unknown error'));
     }
     
   } catch (error) {
-    console.error('Order error:', error);
     alert('Error placing order: ' + error.message);
   }
 };
 
 window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElement) {
   try {
-    console.log('🛒 Opening order modal for memory:', memoryId, 'title:', title);
     
     // Change button state to show loading
     const originalText = buttonElement.textContent;
@@ -350,10 +335,8 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
     `;
     
     // Get products
-    console.log('📦 Fetching products...');
     const response = await fetch('get_products.php');
     const products = await response.json();
-    console.log('📦 Products loaded:', products);
     
     const modalContent = `
       <div style="background: white; border-radius: 20px; padding: 32px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
@@ -401,7 +384,6 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
     buttonElement.disabled = false;
     
   } catch (error) {
-    console.error('Error showing order options:', error);
     alert('Error loading order options: ' + error.message);
     
     // Reset button state
@@ -411,7 +393,6 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
 };
 
 window.selectProduct = async function(productId, memoryId, imageUrl, cardElement) {
-  console.log('🛍️ Product selected:', productId, 'for memory:', memoryId);
   
   // Visual feedback
   cardElement.style.borderColor = '#2a4df5';
@@ -421,7 +402,6 @@ window.selectProduct = async function(productId, memoryId, imageUrl, cardElement
   window.closeOrderModal();
   
   // Start order process
-  console.log('💳 Starting order process...');
   await window.orderProduct(productId, memoryId, imageUrl);
 };
 
@@ -441,7 +421,6 @@ window.closeOrderModal = window.closeOrderModal;
 // Mark globals module as ready
 window.globalsModuleReady = true;
 
-console.log('✅ Global order functions available:', {
   showOrderOptions: typeof window.showOrderOptions,
   selectProduct: typeof window.selectProduct,
   orderProduct: typeof window.orderProduct,

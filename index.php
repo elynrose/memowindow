@@ -465,13 +465,11 @@
             // Start animation
             animate();
             
-            console.log('🎵 Realistic 3D Sound Wave animation initialized');
         }
         
         // Make auth globally available after a short delay to ensure initialization
         setTimeout(() => {
             window.auth = auth;
-            console.log('Auth object made globally available:', window.auth);
             
             // Initialize navigation
             initNavigation();
@@ -483,32 +481,23 @@
         // Load packages dynamically
         async function loadPackages() {
             try {
-                console.log('Loading packages from get_packages.php...');
                 const response = await fetch(`get_packages.php?t=${Date.now()}`);
-                console.log('Response status:', response.status);
-                console.log('Response ok:', response.ok);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Response data:', data);
                 
                 if (data.success && data.packages) {
-                    console.log('Rendering packages:', data.packages.length);
                     renderPackages(data.packages);
                 } else {
-                    console.error('Failed to load packages:', data.error || 'No packages in response');
                     showPackageError();
                 }
             } catch (error) {
-                console.error('Error loading packages:', error);
-                console.error('Error details:', error.message);
                 
                 // If it's a JSON parse error, log the response text
                 if (error.message.includes('Unexpected token')) {
-                    console.error('This might be an HTML response instead of JSON');
                 }
                 
                 showPackageError();
@@ -517,26 +506,21 @@
         
         function renderPackages(packages) {
             try {
-                console.log('renderPackages called with:', packages);
                 const pricingGrid = document.getElementById('pricingGrid');
                 
                 if (!pricingGrid) {
-                    console.error('pricingGrid element not found');
                     return;
                 }
                 
                 if (!packages || packages.length === 0) {
-                    console.error('No packages to render');
                     showPackageError();
                     return;
                 }
                 
                 // Filter out disabled packages
                 const activePackages = packages.filter(pkg => pkg.is_active !== false);
-                console.log('Rendering', activePackages.length, 'active packages (filtered from', packages.length, 'total)');
                 
                 if (activePackages.length === 0) {
-                    console.error('No active packages to render');
                     showPackageError();
                     return;
                 }
@@ -566,10 +550,8 @@
                 }).join('');
                 
                 pricingGrid.innerHTML = packagesHTML;
-                console.log('Packages rendered successfully');
                 
             } catch (error) {
-                console.error('Error in renderPackages:', error);
                 showPackageError();
             }
         }
@@ -588,29 +570,22 @@
         }
 
         // Load packages immediately (don't wait for window load)
-        console.log('Loading packages immediately...');
         loadPackages();
         
         // Check if user is already logged in and redirect to app
         window.addEventListener('load', function() {
-            console.log('Index page loaded, checking auth state...');
-            console.log('Auth object:', auth);
-            console.log('Auth currentUser:', auth.currentUser);
             
             // Check current user immediately
             const currentUser = auth.currentUser;
             if (currentUser) {
-                console.log('Current user found, staying on homepage for subscription access');
                 // Don't redirect - let logged-in users access subscription buttons
                 updateNavigationForLoggedInUser(currentUser);
             }
             
             // Also set up auth state listener as backup
             auth.onAuthStateChanged(function(user) {
-                console.log('Auth state changed on index:', user ? 'Logged in' : 'Logged out');
                 if (user) {
                     // User is signed in, but don't redirect - let them access subscription buttons
-                    console.log('User is logged in, staying on homepage for subscription access');
                     updateNavigationForLoggedInUser(user);
                 } else {
                     // User logged out, show login button
@@ -626,9 +601,7 @@
                 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
                 if (mobileMenuToggle) {
                     mobileMenuToggle.classList.remove('hidden');
-                    console.log('✅ Hamburger menu button shown for logged-in user');
                 } else {
-                    console.error('❌ Hamburger menu button not found');
                 }
                 
                 // Get user's subscription status
@@ -696,23 +669,18 @@
                     logoutBtn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         try {
-                            console.log('🚪 Logging out...');
                             const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
                             const result = await response.json();
-                            console.log('🔍 Server logout response:', result);
                             await auth.signOut();
-                            console.log('✅ Firebase sign out successful');
                             sessionStorage.removeItem('currentUser');
                             localStorage.removeItem('currentUser');
                             window.location.href = 'login.php';
                         } catch (error) {
-                            console.error('❌ Logout failed:', error);
                             window.location.href = 'login.php';
                         }
                     });
                 }
             } catch (error) {
-                console.error('Error fetching subscription status:', error);
                 // Fallback to upgrade button
                 const navSection = document.getElementById('userInfo');
                 navSection.innerHTML = `
@@ -743,17 +711,13 @@
                     logoutBtn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         try {
-                            console.log('🚪 Logging out...');
                             const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
                             const result = await response.json();
-                            console.log('🔍 Server logout response:', result);
                             await auth.signOut();
-                            console.log('✅ Firebase sign out successful');
                             sessionStorage.removeItem('currentUser');
                             localStorage.removeItem('currentUser');
                             window.location.href = 'login.php';
                         } catch (error) {
-                            console.error('❌ Logout failed:', error);
                             window.location.href = 'login.php';
                         }
                     });
@@ -767,7 +731,6 @@
             const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
             if (mobileMenuToggle) {
                 mobileMenuToggle.classList.add('hidden');
-                console.log('✅ Hamburger menu button hidden for logged-out user');
             }
             
             const navSection = document.getElementById('userInfo');
@@ -857,31 +820,23 @@
 
         // Subscription functionality
         window.startSubscription = async function(packageSlug, billingCycle, buttonElement) {
-            console.log('startSubscription called with:', packageSlug, billingCycle);
-            console.log('window.auth available:', !!window.auth);
-            console.log('window.auth object:', window.auth);
             
             // Wait a moment for auth to be available if it's not yet
             if (!window.auth) {
-                console.log('Auth not immediately available, waiting 200ms...');
                 await new Promise(resolve => setTimeout(resolve, 200));
-                console.log('After wait - window.auth available:', !!window.auth);
             }
             
             // Check if auth is available
             if (!window.auth) {
-                console.error('Auth not available after wait, redirecting to login');
                 window.location.href = 'login.php';
                 return;
             }
             
             // Check if user is authenticated
             const currentUser = window.auth.currentUser;
-            console.log('Current user:', currentUser);
             
             if (!currentUser) {
                 // User not authenticated, redirect to login
-                console.log('User not authenticated, redirecting to login');
                 window.location.href = 'login.php';
                 return;
             }
@@ -891,8 +846,6 @@
             const userEmail = currentUser.email;
             const userName = currentUser.displayName || currentUser.email;
             
-            console.log('User authenticated, creating Stripe checkout session...');
-            console.log('User details:', { userId, userEmail, userName });
             
             try {
                 // Show loading state
@@ -903,25 +856,20 @@
                 
                 // Create checkout session
                 const url = `create_direct_checkout.php?package=${encodeURIComponent(packageSlug)}&billing=${encodeURIComponent(billingCycle)}&user_id=${encodeURIComponent(userId)}&user_email=${encodeURIComponent(userEmail)}&user_name=${encodeURIComponent(userName)}`;
-                console.log('Making request to:', url);
                 
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                console.log('Response:', data);
                 
                 if (data.success) {
                     if (data.redirect_url) {
                         // Free plan - redirect to app
-                        console.log('Free plan activated, redirecting to app');
                         window.location.href = data.redirect_url;
                     } else if (data.checkout_url) {
                         // Paid plan - redirect to Stripe checkout
-                        console.log('Redirecting to Stripe checkout:', data.checkout_url);
                         window.location.href = data.checkout_url;
                     }
                 } else {
-                    console.error('Failed to create checkout session:', data.error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Checkout Error',
@@ -934,7 +882,6 @@
                     button.disabled = false;
                 }
             } catch (error) {
-                console.error('Error creating checkout session:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Network Error',
