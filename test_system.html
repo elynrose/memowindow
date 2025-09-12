@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoWindow System Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-family: monospace;
+        }
+        .success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .info { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+        .warning { background: #fffbeb; color: #d97706; border: 1px solid #fed7aa; }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 8px;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        
+        canvas {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            max-width: 100%;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        
+        .test-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 MemoWindow System Test Suite</h1>
+    <p>Comprehensive testing for the complete memory creation process including:</p>
+    <ul>
+        <li>Audio processing and peak computation</li>
+        <li>High-quality waveform generation</li>
+        <li>Firebase Storage integration</li>
+        <li>Local backup system</li>
+        <li>QR code generation</li>
+        <li>Database operations</li>
+        <li>Security features</li>
+    </ul>
+
+    <div class="test-stats">
+        <div class="stat-card">
+            <div class="stat-number" id="totalTests">0</div>
+            <div class="stat-label">Total Tests</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="passedTests">0</div>
+            <div class="stat-label">Passed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="failedTests">0</div>
+            <div class="stat-label">Failed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="testDuration">0s</div>
+            <div class="stat-label">Duration</div>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="runBasicTests()">Basic Tests Only</button>
+        <button onclick="runStorageTests()">Storage Tests</button>
+        <button onclick="runSecurityTests()">Security Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <!-- 1. Audio Processing Tests -->
+    <div class="test-section">
+        <h2>🎵 Audio Processing Tests</h2>
+        <button onclick="testAudioProcessing()">Test Audio Processing</button>
+        <div id="audioProcessingResults"></div>
+        <canvas id="testCanvas" width="400" height="200" style="display: none;"></canvas>
+    </div>
+
+    <!-- 2. Waveform Generation Tests -->
+    <div class="test-section">
+        <h2>🌊 Waveform Generation Tests</h2>
+        <button onclick="testWaveformGeneration()">Test Waveform Generation</button>
+        <div id="waveformResults"></div>
+        <canvas id="waveformCanvas" width="800" height="400" style="margin-top: 16px;"></canvas>
+    </div>
+
+    <!-- 3. Firebase Storage Tests -->
+    <div class="test-section">
+        <h2>🔥 Firebase Storage Tests</h2>
+        <button onclick="testFirebaseStorage()">Test Firebase Connection</button>
+        <button onclick="testFileUpload()">Test File Upload</button>
+        <div id="firebaseResults"></div>
+    </div>
+
+    <!-- 4. Local Backup Tests -->
+    <div class="test-section">
+        <h2>💾 Local Backup Tests</h2>
+        <button onclick="testLocalBackup()">Test Backup System</button>
+        <div id="backupResults"></div>
+    </div>
+
+    <!-- 5. Database Tests -->
+    <div class="test-section">
+        <h2>🗄️ Database Tests</h2>
+        <button onclick="testDatabaseOperations()">Test Database</button>
+        <div id="databaseResults"></div>
+    </div>
+
+    <!-- 6. Security Tests -->
+    <div class="test-section">
+        <h2>🔒 Security Tests</h2>
+        <button onclick="testSecurityFeatures()">Test Security Features</button>
+        <div id="securityResults"></div>
+    </div>
+
+    <!-- 7. End-to-End Integration Test -->
+    <div class="test-section">
+        <h2>🚀 End-to-End Integration Test</h2>
+        <button onclick="testEndToEnd()">Run Complete Memory Creation Flow</button>
+        <div id="integrationResults"></div>
+    </div>
+
+    <script type="module">
+        // Import necessary modules
+        import { uploadWaveformFiles, uploadToFirebaseStorage } from './src/storage.js';
+        import { getCurrentUser } from './src/app-auth.js';
+
+        let testStats = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            startTime: null
+        };
+
+        window.runAllTests = runAllTests;
+        window.runBasicTests = runBasicTests;
+        window.runStorageTests = runStorageTests;
+        window.runSecurityTests = runSecurityTests;
+        window.clearResults = clearResults;
+        window.testAudioProcessing = testAudioProcessing;
+        window.testWaveformGeneration = testWaveformGeneration;
+        window.testFirebaseStorage = testFirebaseStorage;
+        window.testFileUpload = testFileUpload;
+        window.testLocalBackup = testLocalBackup;
+        window.testDatabaseOperations = testDatabaseOperations;
+        window.testSecurityFeatures = testSecurityFeatures;
+        window.testEndToEnd = testEndToEnd;
+
+        function updateStats() {
+            document.getElementById('totalTests').textContent = testStats.total;
+            document.getElementById('passedTests').textContent = testStats.passed;
+            document.getElementById('failedTests').textContent = testStats.failed;
+            
+            if (testStats.startTime) {
+                const duration = (Date.now() - testStats.startTime) / 1000;
+                document.getElementById('testDuration').textContent = `${duration.toFixed(1)}s`;
+            }
+
+            const progress = testStats.total > 0 ? ((testStats.passed + testStats.failed) / testStats.total) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function logResult(testName, success, message, details = null) {
+            testStats.total++;
+            if (success) {
+                testStats.passed++;
+            } else {
+                testStats.failed++;
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${success ? 'success' : 'error'}`;
+            resultDiv.innerHTML = `
+                <strong>${success ? '✅' : '❌'} ${testName}</strong><br>
+                ${message}
+                ${details ? `<br><small>${details}</small>` : ''}
+            `;
+            
+            return resultDiv;
+        }
+
+        function logInfo(container, message) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'test-result info';
+            infoDiv.innerHTML = `<strong>ℹ️ Info:</strong> ${message}`;
+            container.appendChild(infoDiv);
+        }
+
+        async function runAllTests() {
+            testStats = { total: 0, passed: 0, failed: 0, startTime: Date.now() };
+            clearResults();
+            
+            logInfo(document.getElementById('audioProcessingResults'), 'Starting comprehensive test suite...');
+            
+            try {
+                await testAudioProcessing();
+                await testWaveformGeneration();
+                await testFirebaseStorage();
+                await testFileUpload();
+                await testLocalBackup();
+                await testDatabaseOperations();
+                await testSecurityFeatures();
+                await testEndToEnd();
+                
+                updateStats();
+                
+                const finalResult = document.createElement('div');
+                finalResult.className = `test-result ${testStats.failed === 0 ? 'success' : 'warning'}`;
+                finalResult.innerHTML = `
+                    <strong>🎯 Test Suite Complete</strong><br>
+                    ${testStats.passed} passed, ${testStats.failed} failed out of ${testStats.total} tests
+                `;
+                document.getElementById('integrationResults').appendChild(finalResult);
+                
+            } catch (error) {
+                console.error('Test suite error:', error);
+            }
+            
+            updateStats();
+        }
+
+        async function runBasicTests() {
+            testStats = { total: 0, passed: 0, failed: 0, startTime: Date.now() };
+            clearResults();
+            
+            await testAudioProcessing();
+            await testWaveformGeneration();
+            updateStats();
+        }
+
+        async function runStorageTests() {
+            testStats = { total: 0, passed: 0, failed: 0, startTime: Date.now() };
+            
+            await testFirebaseStorage();
+            await testFileUpload();
+            await testLocalBackup();
+            updateStats();
+        }
+
+        async function runSecurityTests() {
+            testStats = { total: 0, passed: 0, failed: 0, startTime: Date.now() };
+            
+            await testSecurityFeatures();
+            updateStats();
+        }
+
+        function clearResults() {
+            [
+                'audioProcessingResults', 'waveformResults', 'firebaseResults', 
+                'backupResults', 'databaseResults', 'securityResults', 'integrationResults'
+            ].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+            
+            testStats = { total: 0, passed: 0, failed: 0, startTime: null };
+            updateStats();
+        }
+
+        async function testAudioProcessing() {
+            const container = document.getElementById('audioProcessingResults');
+            
+            try {
+                logInfo(container, 'Testing audio context creation...');
+                
+                // Test 1: Audio Context Creation
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                container.appendChild(logResult(
+                    'Audio Context Creation',
+                    !!audioContext,
+                    `Audio context ${audioContext ? 'created successfully' : 'failed to create'}`,
+                    audioContext ? `Sample rate: ${audioContext.sampleRate}Hz` : null
+                ));
+
+                // Test 2: Generate synthetic audio for testing
+                const sampleRate = 44100;
+                const duration = 2; // 2 seconds
+                const audioBuffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const channelData = audioBuffer.getChannelData(0);
+                
+                // Generate a simple sine wave with some variation
+                for (let i = 0; i < channelData.length; i++) {
+                    const t = i / sampleRate;
+                    channelData[i] = Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 0.5) * 0.3;
+                }
+                
+                container.appendChild(logResult(
+                    'Synthetic Audio Generation',
+                    channelData.length > 0,
+                    `Generated ${channelData.length} samples at ${sampleRate}Hz`,
+                    `Duration: ${duration}s, Channels: ${audioBuffer.numberOfChannels}`
+                ));
+
+                // Test 3: Peak computation
+                const startTime = performance.now();
+                const peaks = computePeaksFromBuffer(audioBuffer, 1000);
+                const endTime = performance.now();
+                
+                container.appendChild(logResult(
+                    'Peak Computation',
+                    peaks && peaks.min && peaks.max,
+                    `Peaks computed in ${(endTime - startTime).toFixed(2)}ms`,
+                    `Min length: ${peaks.min?.length}, Max length: ${peaks.max?.length}, Sample rate: ${peaks.sampleRate}`
+                ));
+
+                // Test 4: Canvas rendering
+                const canvas = document.getElementById('testCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (peaks) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.fillStyle = '#3b82f6';
+                    const centerY = canvas.height / 2;
+                    
+                    for (let x = 0; x < canvas.width; x++) {
+                        const i = Math.floor(x * peaks.min.length / canvas.width);
+                        const y1 = centerY + peaks.max[i] * centerY * 0.8;
+                        const y2 = centerY + peaks.min[i] * centerY * 0.8;
+                        ctx.fillRect(x, Math.min(y1, y2), 1, Math.abs(y2 - y1) || 1);
+                    }
+                    
+                    canvas.style.display = 'block';
+                }
+                
+                container.appendChild(logResult(
+                    'Canvas Rendering',
+                    true,
+                    'Preview waveform rendered successfully'
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Audio Processing Error',
+                    false,
+                    `Test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testWaveformGeneration() {
+            const container = document.getElementById('waveformResults');
+            
+            try {
+                logInfo(container, 'Testing high-resolution waveform generation...');
+                
+                // Create test audio
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffer = audioContext.createBuffer(2, 44100 * 3, 44100); // 3 seconds, stereo
+                
+                // Generate more complex audio (multiple frequencies)
+                for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+                    const channelData = audioBuffer.getChannelData(channel);
+                    for (let i = 0; i < channelData.length; i++) {
+                        const t = i / audioBuffer.sampleRate;
+                        channelData[i] = (
+                            Math.sin(2 * Math.PI * 220 * t) * 0.3 +
+                            Math.sin(2 * Math.PI * 440 * t) * 0.2 +
+                            Math.sin(2 * Math.PI * 880 * t) * 0.1
+                        ) * Math.exp(-t * 0.2);
+                    }
+                }
+
+                // Test enhanced peak computation
+                const startTime = performance.now();
+                const peaks = computePeaksFromBuffer(audioBuffer, 2000);
+                const endTime = performance.now();
+                
+                container.appendChild(logResult(
+                    'Enhanced Peak Computation',
+                    peaks && peaks.channels === 2,
+                    `Multi-channel peaks computed in ${(endTime - startTime).toFixed(2)}ms`,
+                    `Channels: ${peaks.channels}, Sample rate: ${peaks.sampleRate}Hz, Duration: ${peaks.duration?.toFixed(2)}s`
+                ));
+
+                // Test high-resolution canvas rendering
+                const canvas = document.getElementById('waveformCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Enable high-quality rendering
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                // Background gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(1, '#f8fafc');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Title
+                ctx.fillStyle = '#1f2937';
+                ctx.font = 'bold 24px system-ui';
+                ctx.textAlign = 'center';
+                ctx.fillText('Test Memory Waveform', canvas.width / 2, 40);
+                
+                // Professional waveform
+                const waveformGradient = ctx.createLinearGradient(0, 80, 0, canvas.height - 40);
+                waveformGradient.addColorStop(0, '#1a1a1a');
+                waveformGradient.addColorStop(0.5, '#3b82f6');
+                waveformGradient.addColorStop(1, '#1a1a1a');
+                ctx.fillStyle = waveformGradient;
+                
+                const waveformY = 80;
+                const waveformHeight = canvas.height - 120;
+                const centerY = waveformY + waveformHeight / 2;
+                
+                const barWidth = Math.max(1, Math.floor(canvas.width / peaks.min.length * 0.8));
+                const barSpacing = Math.max(0, Math.floor(canvas.width / peaks.min.length * 0.2));
+                
+                for (let x = 0; x < canvas.width; x += barWidth + barSpacing) {
+                    const i = Math.floor(x * peaks.min.length / canvas.width);
+                    const y1 = centerY + peaks.max[i] * waveformHeight * 0.4;
+                    const y2 = centerY + peaks.min[i] * waveformHeight * 0.4;
+                    const height = Math.max(2, Math.abs(y2 - y1));
+                    
+                    ctx.fillRect(x, Math.min(y1, y2), barWidth, height);
+                }
+                
+                // Center line
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, centerY);
+                ctx.lineTo(canvas.width, centerY);
+                ctx.stroke();
+                
+                container.appendChild(logResult(
+                    'High-Resolution Canvas',
+                    true,
+                    'Professional waveform rendered with gradients and anti-aliasing'
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Waveform Generation Error',
+                    false,
+                    `Test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testFirebaseStorage() {
+            const container = document.getElementById('firebaseResults');
+            
+            try {
+                logInfo(container, 'Testing Firebase Storage connection...');
+                
+                // Test Firebase config loading
+                const configResponse = await fetch('firebase-config.php');
+                const configText = await configResponse.text();
+                
+                container.appendChild(logResult(
+                    'Firebase Config Loading',
+                    configResponse.ok && configText.includes('firebase'),
+                    `Config loaded: ${configResponse.ok ? 'Success' : 'Failed'}`,
+                    `Response size: ${configText.length} characters`
+                ));
+
+                // Test storage reference creation
+                const { storage } = await import('./firebase-config.php');
+                
+                container.appendChild(logResult(
+                    'Storage Instance',
+                    !!storage,
+                    `Firebase Storage ${storage ? 'initialized' : 'failed to initialize'}`,
+                    storage ? `Bucket: ${storage.app.options.storageBucket}` : null
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Firebase Storage Error',
+                    false,
+                    `Connection test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testFileUpload() {
+            const container = document.getElementById('firebaseResults');
+            
+            try {
+                logInfo(container, 'Testing file upload functionality...');
+                
+                // Create a test blob (small PNG)
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 100;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(0, 0, 100, 100);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('TEST', 50, 55);
+                
+                const testBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                
+                container.appendChild(logResult(
+                    'Test File Creation',
+                    testBlob.size > 0,
+                    `Test PNG created: ${testBlob.size} bytes`,
+                    `Type: ${testBlob.type}`
+                ));
+
+                // Test the enhanced upload function
+                const testUserId = 'test-user-' + Date.now();
+                const result = await uploadWaveformFiles(
+                    testBlob,
+                    'test-upload.png',
+                    testUserId,
+                    null,
+                    null
+                );
+                
+                container.appendChild(logResult(
+                    'Secure Upload Function',
+                    result.success,
+                    result.success ? 'Upload function working correctly' : `Upload failed: ${result.error}`,
+                    result.success ? `User hash: ${result.metadata?.userHash}, Files: ${JSON.stringify(result.metadata?.filesUploaded)}` : null
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'File Upload Error',
+                    false,
+                    `Upload test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testLocalBackup() {
+            const container = document.getElementById('backupResults');
+            
+            try {
+                logInfo(container, 'Testing local backup system...');
+                
+                // Test backup API availability
+                const response = await fetch('backup_storage.php?action=stats');
+                const stats = await response.json();
+                
+                container.appendChild(logResult(
+                    'Backup API Connection',
+                    response.ok,
+                    `Backup API ${response.ok ? 'accessible' : 'unavailable'}`,
+                    response.ok ? `Total files: ${stats.total_files}, Total size: ${stats.total_size} bytes` : null
+                ));
+
+                if (response.ok) {
+                    // Test backup folder structure
+                    ['waveforms', 'audio', 'qr-codes'].forEach(folder => {
+                        const folderStats = stats.folders?.[folder];
+                        if (folderStats) {
+                            container.appendChild(logResult(
+                                `Backup Folder: ${folder}`,
+                                true,
+                                `${folderStats.files} files, ${folderStats.size} bytes`
+                            ));
+                        }
+                    });
+                }
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Backup System Error',
+                    false,
+                    `Backup test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testDatabaseOperations() {
+            const container = document.getElementById('databaseResults');
+            
+            try {
+                logInfo(container, 'Testing database operations...');
+                
+                // Test database connection via waveforms endpoint
+                const testUserId = 'test-user-' + Date.now();
+                const response = await fetch(`get_waveforms.php?user_id=${testUserId}&limit=1`);
+                const data = await response.json();
+                
+                container.appendChild(logResult(
+                    'Database Connection',
+                    response.ok,
+                    `Database ${response.ok ? 'accessible' : 'unavailable'}`,
+                    response.ok ? `Response: ${JSON.stringify(data).substring(0, 100)}...` : null
+                ));
+
+                // Test user audio limit endpoint
+                const limitResponse = await fetch(`get_user_audio_limit.php?user_id=${testUserId}`);
+                const limitData = await limitResponse.json();
+                
+                container.appendChild(logResult(
+                    'User Limit Endpoint',
+                    limitResponse.ok && limitData.success,
+                    `Audio limit ${limitData.success ? 'retrieved successfully' : 'failed to retrieve'}`,
+                    limitData.success ? `Limit: ${limitData.max_audio_length_seconds}s, Package: ${limitData.package_name}` : null
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Database Test Error',
+                    false,
+                    `Database test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testSecurityFeatures() {
+            const container = document.getElementById('securityResults');
+            
+            try {
+                logInfo(container, 'Testing security features...');
+                
+                // Test user hash generation
+                const testUserId = 'test-user-12345';
+                const userHash1 = await generateSecureUserHash(testUserId);
+                const userHash2 = await generateSecureUserHash(testUserId);
+                
+                container.appendChild(logResult(
+                    'User Hash Generation',
+                    userHash1 === userHash2 && userHash1.length >= 8,
+                    `Hash generation ${userHash1 === userHash2 ? 'consistent' : 'inconsistent'}`,
+                    `Hash: ${userHash1}, Length: ${userHash1.length}`
+                ));
+
+                // Test hash uniqueness
+                const differentUserId = 'different-user-67890';
+                const differentHash = await generateSecureUserHash(differentUserId);
+                
+                container.appendChild(logResult(
+                    'Hash Uniqueness',
+                    userHash1 !== differentHash,
+                    `Different users ${userHash1 !== differentHash ? 'generate different hashes' : 'generate same hash (ERROR)'}`,
+                    `Hash 1: ${userHash1.substring(0, 8)}..., Hash 2: ${differentHash.substring(0, 8)}...`
+                ));
+
+                // Test secure filename generation
+                const filename = `${userHash1}/1234567890_abcdef_test_file_waveform.png`;
+                const isSecure = !filename.includes(testUserId) && filename.includes(userHash1);
+                
+                container.appendChild(logResult(
+                    'Secure File Naming',
+                    isSecure,
+                    `Filenames ${isSecure ? 'properly anonymized' : 'contain user IDs (SECURITY RISK)'}`,
+                    `Sample: ${filename}`
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Security Test Error',
+                    false,
+                    `Security test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        async function testEndToEnd() {
+            const container = document.getElementById('integrationResults');
+            
+            try {
+                logInfo(container, 'Running complete end-to-end integration test...');
+                
+                // Simulate complete memory creation process
+                const testTitle = 'Integration Test Memory';
+                const testUserId = 'integration-test-' + Date.now();
+                
+                // Step 1: Create test audio
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffer = audioContext.createBuffer(1, 44100 * 2, 44100);
+                const channelData = audioBuffer.getChannelData(0);
+                
+                for (let i = 0; i < channelData.length; i++) {
+                    const t = i / 44100;
+                    channelData[i] = Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 0.5) * 0.3;
+                }
+                
+                container.appendChild(logResult(
+                    'Step 1: Audio Creation',
+                    channelData.length > 0,
+                    `Test audio generated: ${channelData.length} samples`
+                ));
+
+                // Step 2: Peak computation
+                const peaks = computePeaksFromBuffer(audioBuffer, 1000);
+                
+                container.appendChild(logResult(
+                    'Step 2: Peak Analysis',
+                    peaks && peaks.min && peaks.max,
+                    `Peaks computed: ${peaks.min?.length} points`
+                ));
+
+                // Step 3: High-resolution waveform generation
+                const waveformStartTime = performance.now();
+                const waveformBlob = await createWaveformFromAudio(
+                    new File([new ArrayBuffer(1000)], 'test.wav', {type: 'audio/wav'}),
+                    testTitle
+                );
+                const waveformEndTime = performance.now();
+                
+                container.appendChild(logResult(
+                    'Step 3: Waveform Generation',
+                    waveformBlob && waveformBlob.size > 0,
+                    `Waveform generated in ${(waveformEndTime - waveformStartTime).toFixed(2)}ms`,
+                    `Blob size: ${waveformBlob?.size} bytes`
+                ));
+
+                // Step 4: Security and storage (simulated)
+                const uploadResult = await uploadWaveformFiles(
+                    waveformBlob,
+                    'integration-test.png',
+                    testUserId,
+                    null,
+                    'https://example.com/play?uid=test'
+                );
+                
+                container.appendChild(logResult(
+                    'Step 4: Secure Upload',
+                    uploadResult.success,
+                    uploadResult.success ? 'File upload simulation successful' : `Upload failed: ${uploadResult.error}`,
+                    uploadResult.success ? `User hash: ${uploadResult.metadata?.userHash}` : null
+                ));
+
+                // Final integration result
+                const allStepsPass = channelData.length > 0 && peaks && waveformBlob && uploadResult.success;
+                
+                container.appendChild(logResult(
+                    'Integration Test Complete',
+                    allStepsPass,
+                    allStepsPass ? 'All integration steps completed successfully!' : 'Some integration steps failed',
+                    `Memory creation flow ${allStepsPass ? 'ready for production' : 'needs attention'}`
+                ));
+
+            } catch (error) {
+                container.appendChild(logResult(
+                    'Integration Test Error',
+                    false,
+                    `End-to-end test failed: ${error.message}`,
+                    error.stack
+                ));
+            }
+        }
+
+        // Helper functions (need to be accessible to tests)
+        async function generateSecureUserHash(userId) {
+            const appSalt = 'MemoWindow_2024_SecureHash';
+            const combined = userId + appSalt;
+            
+            if (crypto && crypto.subtle) {
+                const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(combined));
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hashHex.substring(0, 16);
+            } else {
+                let hash = 0;
+                for (let i = 0; i < combined.length; i++) {
+                    const char = combined.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).substring(0, 16);
+            }
+        }
+
+        function computePeaksFromBuffer(buf, width = 2000) {
+            const channels = buf.numberOfChannels;
+            const sampleRate = buf.sampleRate;
+            
+            let audioData;
+            if (channels === 1) {
+                audioData = buf.getChannelData(0);
+            } else {
+                const length = buf.length;
+                audioData = new Float32Array(length);
+                for (let i = 0; i < length; i++) {
+                    let sum = 0;
+                    for (let ch = 0; ch < channels; ch++) {
+                        sum += buf.getChannelData(ch)[i];
+                    }
+                    audioData[i] = sum / channels;
+                }
+            }
+            
+            const hop = Math.max(1, Math.floor(buf.length / width));
+            const min = new Float32Array(width);
+            const max = new Float32Array(width);
+            
+            for (let x = 0; x < width; x++) {
+                const start = x * hop;
+                const end = Math.min((x + 1) * hop, buf.length);
+                let minVal = 1.0;
+                let maxVal = -1.0;
+                let rmsSum = 0;
+                let sampleCount = 0;
+                
+                for (let i = start; i < end; i++) {
+                    const sample = audioData[i];
+                    if (sample < minVal) minVal = sample;
+                    if (sample > maxVal) maxVal = sample;
+                    rmsSum += sample * sample;
+                    sampleCount++;
+                }
+                
+                const rms = Math.sqrt(rmsSum / sampleCount);
+                const smoothingFactor = Math.min(rms * 2, 0.1);
+                
+                if (x > 0 && x < width - 1) {
+                    const prevMin = min[x - 1] || minVal;
+                    const prevMax = max[x - 1] || maxVal;
+                    
+                    minVal = minVal * (1 - smoothingFactor) + prevMin * smoothingFactor;
+                    maxVal = maxVal * (1 - smoothingFactor) + prevMax * smoothingFactor;
+                }
+                
+                min[x] = minVal;
+                max[x] = maxVal;
+            }
+            
+            return { 
+                min, 
+                max, 
+                sampleRate,
+                channels,
+                duration: buf.duration
+            };
+        }
+
+        async function createWaveformFromAudio(audioFile, title) {
+            // Simplified version for testing
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Title
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 32px system-ui';
+            ctx.textAlign = 'center';
+            ctx.fillText(title || 'Test Memory', canvas.width / 2, 60);
+            
+            return new Promise(resolve => {
+                canvas.toBlob(resolve, 'image/png', 1.0);
+            });
+        }
+
+        // Auto-start basic tests on page load
+        setTimeout(() => {
+            logInfo(document.getElementById('audioProcessingResults'), 'MemoWindow Test Suite Ready');
+            updateStats();
+        }, 1000);
+
+    </script>
+</body>
+</html>

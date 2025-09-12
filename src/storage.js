@@ -92,14 +92,44 @@ async function saveToLocalBackup(blob, fileName, folder) {
   }
 }
 
-// Upload waveform, audio file, and generate QR code
+// Generate secure hash for user paths (privacy protection)
+function generateSecureUserHash(userId) {
+  // Create a secure hash using the user ID and a app-specific salt
+  const appSalt = 'MemoWindow_2024_SecureHash'; // This should be in environment variables
+  const combined = userId + appSalt;
+  
+  // Simple SHA-256 equivalent using built-in crypto if available
+  if (crypto && crypto.subtle) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(combined))
+      .then(hashBuffer => {
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex.substring(0, 16); // Use first 16 characters
+      });
+  } else {
+    // Fallback simple hash for environments without crypto.subtle
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+      const char = combined.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Promise.resolve(Math.abs(hash).toString(16).substring(0, 16));
+  }
+}
+
+// Upload waveform, audio file, and generate QR code with enhanced security
 export async function uploadWaveformFiles(waveformBlob, originalFileName, userId, audioFile = null, playPageUrl = null) {
   try {
-    // Generate unique filenames
+    // Generate secure user hash for privacy-protected file paths
+    const userHash = await generateSecureUserHash(userId);
     const timestamp = Date.now();
-    const baseName = originalFileName ? originalFileName.replace(/\.[^.]+$/, '') : 'waveform';
-    const waveformFileName = `${userId}_${timestamp}_${baseName}_waveform.png`;
-    const qrFileName = `${userId}_${timestamp}_${baseName}_qr.png`;
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const baseName = originalFileName ? originalFileName.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_') : 'memory';
+    
+    // Create secure, privacy-protected file names
+    const waveformFileName = `${userHash}/${timestamp}_${randomSuffix}_${baseName}_waveform.png`;
+    const qrFileName = `${userHash}/${timestamp}_${randomSuffix}_${baseName}_qr.png`;
     
     let waveformUrl = null;
     
@@ -109,11 +139,11 @@ export async function uploadWaveformFiles(waveformBlob, originalFileName, userId
     }
     
     let audioUrl = null;
-    let playPageUrl = null;
     
     // Upload original audio file if provided
     if (audioFile) {
-      const audioFileName = `${userId}_${timestamp}_${baseName}_audio.${audioFile.name.split('.').pop()}`;
+      const audioExtension = audioFile.name.split('.').pop().toLowerCase();
+      const audioFileName = `${userHash}/${timestamp}_${randomSuffix}_${baseName}_audio.${audioExtension}`;
       audioUrl = await uploadToFirebaseStorage(audioFile, audioFileName, 'audio');
     }
     
@@ -124,15 +154,28 @@ export async function uploadWaveformFiles(waveformBlob, originalFileName, userId
       qrUrl = await uploadToFirebaseStorage(qrBlob, qrFileName, 'qr-codes');
     }
     
+    // Log successful upload with hashed user ID for privacy
+    const userHashShort = userHash.substring(0, 8);
+    console.log(`🔒 Upload successful for user ${userHashShort}...`);
+    
     return {
       waveformUrl,
       qrUrl,
       audioUrl,
       playPageUrl,
-      success: true
+      success: true,
+      metadata: {
+        userHash: userHashShort,
+        timestamp,
+        filesUploaded: {
+          waveform: !!waveformBlob,
+          audio: !!audioFile,
+          qr: !!playPageUrl
+        }
+      }
     };
   } catch (error) {
-    console.error('Upload process failed:', error);
+    console.error('🚨 Upload process failed:', error);
     return {
       error: error.message,
       success: false
