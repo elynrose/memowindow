@@ -421,6 +421,8 @@ window.closeOrderModal = window.closeOrderModal;
 // Mark globals module as ready
 window.globalsModuleReady = true;
 
+// Log globals module status for debugging
+console.log("Globals module loaded:", {
   showOrderOptions: typeof window.showOrderOptions,
   selectProduct: typeof window.selectProduct,
   orderProduct: typeof window.orderProduct,
