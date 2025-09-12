@@ -635,7 +635,6 @@ require_once 'config.php';
     <script type="module" src="firebase-config.php"></script>
     
     <!-- App Scripts -->
-    <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
     <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
@@ -643,13 +642,11 @@ require_once 'config.php';
     
     <!-- Template initialization -->
     <script type="module">
-        import { initAppAuth } from './src/app-auth.js';
+        import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
-        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { auth } from './firebase-config.php';
         
-        // Check authentication state
-        onAuthStateChanged(auth, async (user) => {
+        // Initialize unified authentication
+        unifiedAuth.addAuthListener(async (user, isAdmin) => {
             if (user) {
                 console.log('✅ User authenticated, showing subscription management page');
                 // User is authenticated, show the page content
@@ -663,9 +660,6 @@ require_once 'config.php';
                 window.location.href = 'login.php';
             }
         });
-        
-        // Initialize authentication for all pages
-        initAppAuth();
         
         // Initialize navigation for all pages
         initNavigation();
