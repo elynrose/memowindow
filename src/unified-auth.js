@@ -300,20 +300,25 @@ class UnifiedAuth {
      */
     async checkAdminStatus() {
         if (!this.isAuthenticated()) {
+            console.log('🔍 User not authenticated, cannot check admin status');
             return false;
         }
 
         try {
+            console.log('🔍 Checking admin status...');
             const response = await fetch('check_admin.php', {
                 credentials: 'include'
             });
 
+            console.log('🔍 Admin status response:', response.status);
             if (response.ok) {
                 const data = await response.json();
+                console.log('🔍 Admin status data:', data);
                 this.isAdmin = data.is_admin;
                 return data.is_admin;
             }
             
+            console.log('🔍 Admin status response not ok:', response.status);
             return false;
             
         } catch (error) {
@@ -363,9 +368,15 @@ class UnifiedAuth {
 
         // Check admin status
         this.checkAdminStatus().then(isAdmin => {
+            console.log('🔍 Admin status check result:', isAdmin);
+            console.log('🔍 Admin button element found:', els.adminButton);
             if (isAdmin && els.adminButton) {
                 els.adminButton.style.display = 'block';
                 console.log('✅ Admin button shown');
+            } else if (isAdmin && !els.adminButton) {
+                console.error('❌ Admin button element not found in DOM');
+            } else if (!isAdmin) {
+                console.log('ℹ️ User is not admin, admin button hidden');
             }
         });
     }
