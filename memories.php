@@ -637,11 +637,18 @@
         console.log("💕 Memories page loaded");
         
         // Import and initialize memories functionality
+        console.log("🔍 Attempting to import memories module...");
         import("./src/memories.js").then(module => {
-            console.log("✅ Memories module loaded successfully");
-            module.initMemories();
+            console.log("✅ Memories module loaded successfully", module);
+            if (module.initMemories) {
+                module.initMemories();
+            } else {
+                console.error("❌ initMemories function not found in module");
+                throw new Error("initMemories function not found");
+            }
         }).catch(error => {
             console.error("❌ Failed to load memories module:", error);
+            console.error("❌ Error details:", error.stack);
             // Fallback: show error message
             const container = document.getElementById("memoriesContainer");
             if (container) {
@@ -649,6 +656,7 @@
                     "<div class=\"empty-state-icon\">⚠️</div>" +
                     "<h3>Error Loading Memories</h3>" +
                     "<p>There was a problem loading the memories module. Please refresh the page.</p>" +
+                    "<p style=\"color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem;\">Error: " + error.message + "</p>" +
                     "<button onclick=\"location.reload()\" class=\"create-memory-btn\" style=\"margin-top: 1rem;\">" +
                         "Refresh Page" +
                     "</button>" +
