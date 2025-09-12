@@ -86,13 +86,6 @@
             color: #333;
         }
         
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
         
         /* Main Content */
         .wrap {

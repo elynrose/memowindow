@@ -287,12 +287,6 @@
                 text-align: center;
             }
             
-            .user-profile {
-                flex-direction: column;
-                align-items: center;
-                gap: 0.75rem;
-                padding: 0.75rem 0;
-            }
             
         }
         
