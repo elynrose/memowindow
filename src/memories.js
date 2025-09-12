@@ -68,7 +68,9 @@ async function loadMemories() {
         
         // Loading memories for user
         
-        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
+        const response = await fetch('get_waveforms.php', {
+            credentials: 'include' // Ensure session cookies are sent
+        });
         // API Response received
         
         if (!response.ok) {

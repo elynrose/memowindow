@@ -7,8 +7,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Load configuration
-require_once 'config.php';
+// Load unified authentication
+require_once 'unified_auth.php';
 
 // --- CONFIG --- //
 $dbHost = DB_HOST;
@@ -17,14 +17,15 @@ $dbUser = DB_USER;
 $dbPass = DB_PASS;
 $table  = 'wave_assets';
 
-// Validate user_id parameter
-if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
-  http_response_code(400);
-  echo json_encode(['error' => 'user_id parameter required']);
+try {
+  // Require authentication - get current user
+  $currentUser = requireAuth();
+  $userId = $currentUser['uid']; // Get UID from the authenticated user object
+} catch (Exception $e) {
+  http_response_code(401);
+  echo json_encode(['error' => 'Authentication required', 'detail' => $e->getMessage()]);
   exit;
 }
-
-$userId = $_GET['user_id'];
 $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 5;
 
