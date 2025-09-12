@@ -93,12 +93,6 @@ require_once 'config.php';
             color: #333;
         }
         
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
         
         /* Mobile hamburger menu */
         .mobile-menu-toggle {

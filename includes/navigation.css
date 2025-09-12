@@ -107,6 +107,13 @@
     position: relative;
 }
 
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .user-details {
     display: flex;
     flex-direction: column;
