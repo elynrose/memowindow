@@ -19,6 +19,7 @@
             <a href="memories.php" class="header-link">My Memories</a>
             <a id="ordersLink" href="#" class="header-link">My Orders</a>
             <a href="subscription_management.php" class="header-link">Manage Subscription</a>
+            <a id="adminButton" href="admin.php" class="header-link admin-button" style="display: none;">Admin</a>
             <div id="subscriptionStatus" class="subscription-status">
                 <!-- Subscription status will be populated by JavaScript -->
             </div>
