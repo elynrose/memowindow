@@ -272,6 +272,13 @@ require_once 'config.php';
             color: #667eea;
         }
         
+        .card-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
         .subscription-card.current .card-price {
             color: white;
         }
@@ -691,7 +698,7 @@ require_once 'config.php';
                             <li>Standard support</li>
                         </ul>
                         <div class="card-actions">
-                            <a href="index.php#pricing" class="btn btn-primary">Upgrade Plan</a>
+                            <a href="subscription_checkout.php" class="btn btn-primary">Upgrade Plan</a>
                         </div>
                     </div>
                 `;
@@ -702,39 +709,17 @@ require_once 'config.php';
         function populateAvailablePlans(availablePackages, hasActiveSubscription, currentSubscription) {
             const container = document.getElementById('available-plans-container');
             
-            if (!availablePackages || availablePackages.length === 0) {
-                container.innerHTML = '<p>No packages available at the moment.</p>';
-                return;
-            }
-            
-            const plansHtml = availablePackages.map(pkg => {
-                const isCurrentPlan = hasActiveSubscription && currentSubscription && 
-                                    pkg.package_slug === currentSubscription.package_slug;
-                
-                if (isCurrentPlan) return ''; // Skip current plan
-                
-                const features = JSON.parse(pkg.features || '[]');
-                const featuresHtml = features.map(feature => `<li>${escapeHtml(feature)}</li>`).join('');
-                
-                return `
-                    <div class="subscription-card">
-                        <h3 class="card-title">${escapeHtml(pkg.package_name)}</h3>
-                        <div class="card-price">$${parseFloat(pkg.price_monthly).toFixed(2)}/month</div>
-                        <ul class="card-features">
-                            ${featuresHtml}
-                        </ul>
-                        <div class="card-actions">
-                            <a href="subscription_checkout.php?package=${encodeURIComponent(pkg.package_slug)}" class="btn btn-primary">
-                                ${hasActiveSubscription ? 'Switch to This Plan' : 'Choose Plan'}
-                            </a>
-                        </div>
-                    </div>
-                `;
-            }).filter(html => html !== '').join('');
-            
             container.innerHTML = `
-                <div class="subscription-grid">
-                    ${plansHtml}
+                <div class="subscription-card">
+                    <h3 class="card-title">View Available Plans</h3>
+                    <div class="card-description">
+                        Browse and compare all available subscription packages
+                    </div>
+                    <div class="card-actions">
+                        <a href="subscription_checkout.php" class="btn btn-primary">
+                            View All Packages
+                        </a>
+                    </div>
                 </div>
             `;
         }
