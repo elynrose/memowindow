@@ -740,7 +740,15 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
             })
         });
         
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Voice clone API error:', response.status, errorText);
+            alert('Error loading voice clones: ' + response.status);
+            return;
+        }
+        
         const result = await response.json();
+        console.log('🎤 Voice clone API response:', result);
         
         if (!result.success || !result.voices || result.voices.length === 0) {
             alert('No cloned voices found. Please clone a voice first.');
