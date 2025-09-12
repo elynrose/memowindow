@@ -13,8 +13,6 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Navigation Styles -->
-  <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
   
   <style>
     /* Modern Clean Design System */
@@ -170,6 +168,24 @@
       box-shadow: none;
     }
     
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #4b5563;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+    }
+    
+    .btn-secondary:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
     .back-link {
       text-align: center;
       margin-top: 2rem;
@@ -204,7 +220,6 @@
   </style>
 </head>
 <body>
-  <?php include 'includes/navigation.php'; ?>
   
   <div class="login-container">
     <div class="logo">
@@ -241,9 +256,9 @@
       Sign In
     </button>
     
-    <button id="btnEmailRegister" class="auth-button btn-email" style="background: #6b7280;">
+    <button id="btnEmailRegister" class="auth-button btn-secondary">
       Create Account
-          </button>
+    </button>
     
     <div class="back-link">
       <a href="index.php">← Back to Home</a>
