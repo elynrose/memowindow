@@ -194,11 +194,6 @@ function getDefaultTemplates() {
     <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="includes/admin_styles.css?v=<?php echo time(); ?>">
     <style>
-        .admin-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
         
         .template-card {
             background: white;
@@ -481,10 +476,15 @@ function getDefaultTemplates() {
     </style>
 </head>
 <body>
-    <?php include 'includes/admin_navigation.php'; ?>
-    
     <div class="admin-container">
-        <h1>📧 Email Templates Management</h1>
+        <div class="admin-header">
+            <h1>📧 Email Templates</h1>
+            <p>Manage email templates for notifications and confirmations</p>
+        </div>
+        
+        <?php include 'includes/admin_navigation.php'; ?>
+
+        <div class="admin-content">
         
         <?php if (isset($success_message)): ?>
             <div class="alert alert-success">
@@ -624,6 +624,7 @@ function getDefaultTemplates() {
                 <a href="setup_email_templates_table.php" class="btn btn-primary">Setup Email Templates</a>
             </div>
         <?php endif; ?>
+        </div>
     </div>
     
     <script>
