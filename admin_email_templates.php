@@ -5,11 +5,35 @@
  */
 
 require_once 'config.php';
-require_once 'check_admin.php';
+require_once 'unified_auth.php';
 
 // Check if user is admin
-if (!isAdmin()) {
+$currentUser = getCurrentUser();
+if (!$currentUser) {
     header('Location: login.php');
+    exit;
+}
+
+// Check admin status
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    ]);
+    
+    $stmt = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = ?");
+    $stmt->execute([$currentUser['uid']]);
+    $user = $stmt->fetch();
+    
+    $isAdmin = $user && $user['is_admin'] == 1;
+    
+    if (!$isAdmin) {
+        header('Location: app.php');
+        exit;
+    }
+    
+} catch (Exception $e) {
+    error_log("Admin check error: " . $e->getMessage());
+    header('Location: app.php');
     exit;
 }
 
