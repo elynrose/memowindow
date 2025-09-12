@@ -1,6 +1,7 @@
 <?php
 // stripe_webhook.php - Handle Stripe payment completion and send order to Printful
 require_once 'config.php';
+require_once 'EmailNotification.php';
 
 // Set webhook endpoint secret from config
 $endpoint_secret = STRIPE_WEBHOOK_SECRET;
@@ -49,7 +50,7 @@ try {
         $memory = getMemoryDetails($memoryId);
         
         // Save order to database
-        saveOrderToDatabase([
+        $orderId = saveOrderToDatabase([
             'stripe_session_id' => $session['id'],
             'user_id' => $userId,
             'memory_id' => $memoryId,
@@ -67,6 +68,15 @@ try {
             'unit_price' => $session['amount_total'] / 100, // Convert from cents to dollars
             'total_price' => $session['amount_total'] / 100, // Convert from cents to dollars
             'shipping_address' => json_encode($shippingAddress)
+        ]);
+        
+        // Send order confirmation email
+        $emailNotification = new EmailNotification();
+        $emailNotification->sendOrderConfirmation($customerEmail, $customerName, [
+            'order_id' => $orderId,
+            'product_name' => $product['name'] ?? 'Custom Print',
+            'amount' => $session['amount_total'] / 100,
+            'created_at' => date('Y-m-d H:i:s')
         ]);
         
         http_response_code(200);
@@ -101,6 +111,16 @@ try {
                     $customerId,
                     $subscription['status']
                 );
+                
+                // Send subscription confirmation email
+                $emailNotification = new EmailNotification();
+                $emailNotification->sendSubscriptionConfirmation($customer->email, $customer->name, [
+                    'package_name' => $package['name'],
+                    'amount' => $package['monthly_price'],
+                    'billing_cycle' => 'monthly',
+                    'stripe_subscription_id' => $subscription['id'],
+                    'current_period_end' => date('Y-m-d H:i:s', $subscription['current_period_end'])
+                ]);
             }
         }
         
@@ -120,7 +140,21 @@ try {
         if ($userId) {
             require_once 'SubscriptionManager.php';
             $subscriptionManager = new SubscriptionManager();
+            
+            // Get subscription details before cancelling
+            $subscriptionData = $subscriptionManager->getUserSubscriptionWithPackage($userId);
+            
             $subscriptionManager->cancelSubscription($userId);
+            
+            // Send subscription cancellation email
+            if ($subscriptionData) {
+                $emailNotification = new EmailNotification();
+                $emailNotification->sendSubscriptionCancellation($customer->email, $customer->name, [
+                    'package_name' => $subscriptionData['package_name'] ?? 'Premium Plan',
+                    'stripe_subscription_id' => $subscription['id'],
+                    'current_period_end' => date('Y-m-d H:i:s', $subscription['current_period_end'])
+                ]);
+            }
         }
         
         http_response_code(200);
@@ -161,6 +195,15 @@ try {
                     date('Y-m-d H:i:s', $subscription->current_period_start),
                     date('Y-m-d H:i:s', $subscription->current_period_end)
                 );
+                
+                // Send payment confirmation email for subscription renewal
+                $emailNotification = new EmailNotification();
+                $emailNotification->sendPaymentConfirmation($customer->email, $customer->name, [
+                    'amount' => $amountPaid,
+                    'transaction_id' => $invoice['id'],
+                    'payment_method' => 'Subscription Renewal',
+                    'created_at' => date('Y-m-d H:i:s', $invoice['created'])
+                ]);
             }
         }
         

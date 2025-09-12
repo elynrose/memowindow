@@ -224,5 +224,30 @@ class SubscriptionManager {
         // Custom expiry period
         return date('Y-m-d H:i:s', strtotime('+' . $subscription['memory_expiry_days'] . ' days'));
     }
+    
+    /**
+     * Get user subscription with package details for email notifications
+     */
+    public function getUserSubscriptionWithPackage($userId) {
+        try {
+            $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            ]);
+            
+            $stmt = $pdo->prepare("
+                SELECT us.*, sp.name as package_name, sp.monthly_price, sp.yearly_price
+                FROM user_subscriptions us
+                LEFT JOIN subscription_packages sp ON us.package_id = sp.id
+                WHERE us.user_id = ? AND us.status = 'active'
+                ORDER BY us.created_at DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$userId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+            
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
 }
 ?>
