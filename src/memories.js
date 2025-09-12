@@ -9,8 +9,8 @@ export function initMemories() {
     // Set up event delegation for order buttons
     setupOrderButtonHandlers();
     
-    // Wait for authentication to be ready, then load memories
-    waitForAuthAndLoadMemories();
+    // Wait for globals module to load, then load memories
+    waitForGlobalsAndLoadMemories();
     
     // Memories functionality initialized
 }
@@ -34,7 +34,8 @@ function setupOrderButtonHandlers() {
                 window.showOrderOptions(memoryId, imageUrl, title, orderButton);
             } else {
                 console.error('❌ showOrderOptions function not available');
-                alert('Order functionality is not ready yet. Please refresh the page.');
+                console.log('🔍 Available window functions:', Object.keys(window).filter(key => key.includes('Order') || key.includes('order')));
+                alert('Order functionality is loading. Please wait a moment and try again.');
             }
         }
         
@@ -101,9 +102,14 @@ function setupOrderButtonHandlers() {
     });
 }
 
-// Wait for authentication and then load memories
-async function waitForAuthAndLoadMemories() {
-    console.log("🔍 Waiting for authentication...");
+// Wait for globals module and authentication, then load memories
+async function waitForGlobalsAndLoadMemories() {
+    console.log("🔍 Waiting for globals module and authentication...");
+    
+    // Wait for globals module to load
+    await waitForGlobalsModule();
+    
+    // Wait for authentication
     await unifiedAuth.waitForAuth();
     const currentUser = unifiedAuth.getCurrentUser();
     
@@ -114,6 +120,41 @@ async function waitForAuthAndLoadMemories() {
         console.log("❌ User not authenticated, showing login prompt");
         showLoginPrompt();
     }
+}
+
+// Wait for globals module to be available
+async function waitForGlobalsModule() {
+    console.log("🔍 Waiting for globals module...");
+    
+    // Check if globals module is already loaded
+    if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
+        console.log("✅ Globals module already available");
+        return;
+    }
+    
+    // Wait for globals module to load
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    while (attempts < maxAttempts) {
+        if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
+            console.log("✅ Globals module loaded successfully");
+            return;
+        }
+        
+        console.log(`⏳ Waiting for globals module... attempt ${attempts + 1}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    
+    console.error("❌ Globals module failed to load within timeout");
+    console.error("❌ Window state:", {
+        globalsModuleReady: window.globalsModuleReady,
+        showOrderOptions: typeof window.showOrderOptions,
+        orderProduct: typeof window.orderProduct,
+        selectProduct: typeof window.selectProduct
+    });
+    throw new Error("Order functionality not available");
 }
 
 // Show login prompt if user is not authenticated

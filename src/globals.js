@@ -438,9 +438,13 @@ window.selectProduct = window.selectProduct;
 window.orderProduct = window.orderProduct;
 window.closeOrderModal = window.closeOrderModal;
 
+// Mark globals module as ready
+window.globalsModuleReady = true;
+
 console.log('✅ Global order functions available:', {
   showOrderOptions: typeof window.showOrderOptions,
   selectProduct: typeof window.selectProduct,
   orderProduct: typeof window.orderProduct,
-  closeOrderModal: typeof window.closeOrderModal
+  closeOrderModal: typeof window.closeOrderModal,
+  globalsModuleReady: window.globalsModuleReady
 });
