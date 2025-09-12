@@ -105,6 +105,141 @@
         .hidden {
             display: none !important;
         }
+
+        /* Mobile hamburger menu */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            gap: 4px;
+        }
+
+        .mobile-menu-toggle.hidden {
+            display: none !important;
+        }
+
+        .mobile-menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 767px) {
+            .header {
+                padding: 0.75rem 0;
+            }
+            
+            .nav {
+                padding: 0 0.75rem;
+                position: relative;
+            }
+            
+            /* Show hamburger menu on mobile */
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            /* Hide user info on mobile by default */
+            .user-info {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem;
+                gap: 1rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                transform: translateY(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            .user-info.mobile-open {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .header-link {
+                padding: 0.75rem 0;
+                font-size: 0.9rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+            
+            .header-link:last-child {
+                border-bottom: none;
+            }
+            
+            .subscription-status {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: center;
+                margin-right: 0;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            }
+            
+            .subscription-info {
+                align-items: center;
+                text-align: center;
+            }
+            
+            .upgrade-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .user-profile {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem 0;
+            }
+            
+            .user-details {
+                align-items: center;
+            }
+            
+            .user-submenu {
+                position: static;
+                display: block;
+                background: none;
+                box-shadow: none;
+                padding: 0;
+                min-width: auto;
+            }
+            
+            .submenu-link {
+                padding: 0.5rem 0;
+                text-align: center;
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+            }
+        }
         
         .loading {
             text-align: center;
@@ -399,6 +534,14 @@
             <a href="index.php" class="logo">
                 <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
             </a>
+            
+            <!-- Mobile hamburger menu toggle -->
+            <button id="mobileMenuToggle" class="mobile-menu-toggle hidden">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
             <div id="userInfo" class="user-info hidden">
                 <a href="memories.php" class="header-link">My Memories</a>
                 <a id="ordersLink" href="#" class="header-link">My Orders</a>

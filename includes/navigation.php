@@ -5,7 +5,7 @@
 <header class="header">
     <nav class="nav">
         <!-- Mobile hamburger menu -->
-        <button id="mobileMenuToggle" class="mobile-menu-toggle">
+        <button id="mobileMenuToggle" class="mobile-menu-toggle hidden">
             <span></span>
             <span></span>
             <span></span>
