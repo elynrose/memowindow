@@ -344,8 +344,8 @@
                 scene.add(wave);
             }
             
-            // Add particle system for granular effect
-            const particleCount = 1000;
+            // Add particle system for subtle granular effect
+            const particleCount = 500; // Reduced for smoother appearance
             const particles = new THREE.BufferGeometry();
             const particlePositions = new Float32Array(particleCount * 3);
             const particleColors = new Float32Array(particleCount * 3);
@@ -353,8 +353,8 @@
             for (let i = 0; i < particleCount; i++) {
                 const i3 = i * 3;
                 particlePositions[i3] = (Math.random() - 0.5) * 40; // x
-                particlePositions[i3 + 1] = (Math.random() - 0.5) * 10; // y
-                particlePositions[i3 + 2] = (Math.random() - 0.5) * 10; // z
+                particlePositions[i3 + 1] = (Math.random() - 0.5) * 8; // y - reduced height
+                particlePositions[i3 + 2] = (Math.random() - 0.5) * 8; // z - reduced depth
                 
                 // White particles
                 particleColors[i3] = 1; // r
@@ -366,9 +366,9 @@
             particles.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
             
             const particleMaterial = new THREE.PointsMaterial({
-                size: 0.5,
+                size: 0.3, // Smaller particles
                 transparent: true,
-                opacity: 0.3,
+                opacity: 0.2, // More subtle
                 vertexColors: true
             });
             
@@ -382,7 +382,13 @@
             
             // Animation variables
             let time = 0;
-            const waveSpeed = 0.03;
+            const waveSpeed = 0.015; // Slower for smoother motion
+            
+            // Smooth interpolation function
+            function smoothStep(edge0, edge1, x) {
+                const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+                return t * t * (3 - 2 * t);
+            }
             
             // Animation loop
             function animate() {
@@ -390,7 +396,7 @@
                 
                 time += waveSpeed;
                 
-                // Animate each wave with realistic sound wave patterns
+                // Animate each wave with smooth patterns
                 waves.forEach((wave, index) => {
                     const positions = wave.geometry.attributes.position.array;
                     const originalPositions = wave.userData.originalPositions;
@@ -400,20 +406,21 @@
                         const i = j * 3;
                         const x = originalPositions[i];
                         
-                        // Create realistic sound wave pattern
-                        const waveOffset = index * 0.3;
-                        const frequency1 = 0.1 + (index * 0.05);
-                        const frequency2 = 0.3 + (index * 0.1);
-                        const frequency3 = 0.7 + (index * 0.2);
+                        // Create smooth wave pattern with lower frequencies
+                        const waveOffset = index * 0.4;
+                        const frequency1 = 0.05 + (index * 0.02); // Much lower frequencies
+                        const frequency2 = 0.15 + (index * 0.05);
+                        const frequency3 = 0.25 + (index * 0.08);
                         
-                        // Multiple sine waves for complex pattern
-                        const wave1 = Math.sin((time + x * frequency1) + waveOffset) * 2;
-                        const wave2 = Math.sin((time * 1.5 + x * frequency2) + waveOffset) * 1;
-                        const wave3 = Math.sin((time * 2 + x * frequency3) + waveOffset) * 0.5;
+                        // Smooth sine waves with gentle amplitudes
+                        const wave1 = Math.sin((time + x * frequency1) + waveOffset) * 1.5;
+                        const wave2 = Math.sin((time * 0.8 + x * frequency2) + waveOffset) * 0.8;
+                        const wave3 = Math.sin((time * 1.2 + x * frequency3) + waveOffset) * 0.4;
                         
-                        // Add some noise for granular effect
-                        const noise = (Math.random() - 0.5) * 0.3;
+                        // Very subtle noise for texture without harshness
+                        const noise = (Math.random() - 0.5) * 0.1;
                         
+                        // Smooth interpolation between wave components
                         const y = wave1 + wave2 + wave3 + noise;
                         positions[i + 1] = y;
                     }
@@ -421,23 +428,26 @@
                     wave.geometry.attributes.position.needsUpdate = true;
                 });
                 
-                // Animate particles
+                // Animate particles with smoother motion
                 const particlePositions = particleSystem.geometry.attributes.position.array;
                 for (let i = 0; i < particleCount; i++) {
                     const i3 = i * 3;
                     
-                    // Move particles in wave-like motion
+                    // Smoother particle movement
                     const x = particlePositions[i3];
-                    const waveOffset = i * 0.01;
-                    const waveHeight = Math.sin(time + x * 0.1 + waveOffset) * 2;
+                    const waveOffset = i * 0.005; // Reduced offset for smoother motion
+                    const waveHeight = Math.sin(time * 0.5 + x * 0.05 + waveOffset) * 1.5;
                     
-                    particlePositions[i3 + 1] = waveHeight + (Math.random() - 0.5) * 0.5;
+                    // Very gentle random movement
+                    const gentleNoise = (Math.random() - 0.5) * 0.2;
+                    
+                    particlePositions[i3 + 1] = waveHeight + gentleNoise;
                 }
                 particleSystem.geometry.attributes.position.needsUpdate = true;
                 
-                // Subtle camera movement
-                camera.position.x = Math.sin(time * 0.05) * 1;
-                camera.position.y = Math.cos(time * 0.08) * 0.5;
+                // Very subtle camera movement
+                camera.position.x = Math.sin(time * 0.02) * 0.5;
+                camera.position.y = Math.cos(time * 0.03) * 0.3;
                 camera.lookAt(0, 0, -5);
                 
                 renderer.render(scene, camera);
