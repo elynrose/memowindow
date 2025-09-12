@@ -293,7 +293,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     
                     if ($memoryExists) {
                         $stmt = $pdo->prepare("
-                            INSERT INTO voice_clones (user_id, source_memory_id, voice_id, voice_name, created_at) 
+                            INSERT INTO voice_clones (user_id, source_memory_id, voice_id, name, created_at) 
                             VALUES (?, ?, ?, ?, NOW())
                         ");
                         $stmt->execute([$userId, $memoryId, $result['voice_id'], $voiceName]);
@@ -301,7 +301,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     } else {
                         // Memory doesn't exist, save without the foreign key reference
                         $stmt = $pdo->prepare("
-                            INSERT INTO voice_clones (user_id, source_memory_id, voice_id, voice_name, created_at) 
+                            INSERT INTO voice_clones (user_id, source_memory_id, voice_id, name, created_at) 
                             VALUES (?, NULL, ?, ?, NOW())
                         ");
                         $stmt->execute([$userId, $result['voice_id'], $voiceName]);
@@ -343,7 +343,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 ]);
                 
                 $stmt = $pdo->prepare("
-                    SELECT vc.id, vc.voice_name, vc.voice_id, vc.created_at, 
+                    SELECT vc.id, vc.name as voice_name, vc.voice_id, vc.created_at, 
                            wa.title as memory_title, wa.id as memory_id
                     FROM voice_clones vc
                     LEFT JOIN wave_assets wa ON vc.source_memory_id = wa.id
