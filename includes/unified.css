@@ -225,6 +225,79 @@ body {
     border-radius: 2px;
 }
 
+/* Mobile menu styles */
+#mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100vh;
+    background: white;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+}
+
+#mobile-menu.mobile-open {
+    left: 0;
+}
+
+#mobile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#mobile-menu > ul {
+    padding-top: 4rem;
+}
+
+#mobile-menu li {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#mobile-menu li:last-child {
+    border-bottom: none;
+}
+
+#mobile-menu a,
+#mobile-menu span {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+#mobile-menu a:hover,
+#mobile-menu span:hover {
+    background-color: #f7fafc;
+}
+
+#mobile-menu ul ul {
+    background-color: #f8fafc;
+}
+
+#mobile-menu ul ul a {
+    padding-left: 3rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Mobile menu overlay */
+body.menu-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
 /* Main Content */
 .wrap {
     padding: 8rem 1rem 2rem;
