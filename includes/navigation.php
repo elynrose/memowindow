@@ -26,9 +26,9 @@
             <div class="user-profile">
                 <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
                 <div class="user-details">
-                    <span id="userName">Loading...</span>
-                    <div class="user-submenu">
-                        <a id="btnLogout" href="#" class="header-link submenu-link">Sign Out</a>
+                    <span id="userName" class="user-name">Loading...</span>
+                    <div class="user-dropdown">
+                        <a id="btnLogout" href="#" class="dropdown-link">Sign Out</a>
                     </div>
                 </div>
             </div>
