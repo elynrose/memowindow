@@ -306,6 +306,12 @@
       
       // Set up Google sign-in button
       if (btnLogin) {
+        console.log('✅ Setting up Google sign-in button click handler');
+        
+        // Test if button is clickable
+        btnLogin.style.cursor = 'pointer';
+        console.log('✅ Button cursor set to pointer');
+        
         btnLogin.addEventListener('click', async (e) => {
           e.preventDefault();
           console.log('🔐 Google sign-in button clicked');
@@ -338,6 +344,8 @@
             }
           }
         });
+      } else {
+        console.error('❌ Google sign-in button not found!');
       }
     });
 </script>
