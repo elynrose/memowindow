@@ -534,53 +534,7 @@ require_once 'config.php';
     </style>
 </head>
 <body>
-    <!-- Modern Header -->
-    <header class="header">
-        <nav class="nav">
-            <!-- Mobile hamburger menu -->
-            <a href="#mobile-menu" class="mobile-menu-toggle hidden">
-                <span></span>
-                <span></span>
-                <span></span>
-            </a>
-            
-            <a href="index.php" class="logo">
-                <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
-            </a>
-            
-            <div id="userInfo" class="user-info hidden">
-                <a href="memories.php" class="header-link">My Memories</a>
-                <a href="orders.php" class="header-link">My Orders</a>
-                <a href="subscription_management.php" class="header-link">Manage Subscription</a>
-                <a id="btnLogout" href="#" class="header-link">Sign Out</a>
-                <div class="user-profile">
-                    <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
-                    <span id="userName">Loading...</span>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Mobile menu -->
-    <nav id="mobile-menu">
-        <ul>
-            <li><a href="memories.php">My Memories</a></li>
-            <li><a href="orders.php">My Orders</a></li>
-            <li>
-                <span>Subscription</span>
-                <ul id="subscription-menu">
-                    <li><a href="index.php#pricing">Upgrade Plan</a></li>
-                    <li><a href="subscription_management.php">Manage Subscription</a></li>
-                </ul>
-            </li>
-            <li>
-                <span id="mobile-user-name">User</span>
-                <ul>
-                    <li><a href="#" id="mobile-logout">Sign Out</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+    <?php include 'includes/navigation.php'; ?>
 
     <!-- Main Content -->
     <div class="wrap">
