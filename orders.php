@@ -697,14 +697,13 @@ $currentUser = requireAuth();
     
     <!-- Template initialization -->
     <script type="module">
-        import { initAppAuth } from './src/app-auth.js';
+        import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize authentication for all pages
-        initAppAuth();
-        
-        // Initialize navigation for all pages
+        // Initialize navigation
         initNavigation();
+        
+        // Unified auth is automatically initialized when imported
         
         // Page-specific initialization will be injected here
         

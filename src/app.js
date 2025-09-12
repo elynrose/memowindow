@@ -1,5 +1,5 @@
 // App-specific functionality for memory creation
-import { getCurrentUser } from './app-auth.js';
+import unifiedAuth from './unified-auth.js';
 import { uploadWaveformFiles } from './storage.js';
 
 // Global variables
@@ -59,7 +59,7 @@ export function initApp() {
 // Wait for authentication and then load waveforms
 function waitForAuthAndLoadWaveforms() {
     const checkAuth = () => {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (currentUser) {
             // User authenticated, loading waveforms and audio limit
             loadUserWaveforms();
@@ -460,7 +460,7 @@ async function createMemory() {
     btnCreate.innerHTML = '<div class="loading-spinner" style="width: 20px; height: 20px; margin: 0 auto;"></div> Creating...';
     
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
             throw new Error('Not authenticated');
         }
@@ -859,7 +859,7 @@ async function saveMemoryToDatabase(memoryData) {
 // Load user waveforms
 async function loadUserWaveforms() {
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) return;
         
         const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
@@ -917,7 +917,7 @@ window.deleteWaveform = async function(waveformId) {
     if (!result.isConfirmed) return;
     
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) return;
         
         const response = await fetch('delete_memory.php', {
@@ -976,7 +976,7 @@ function showToast(message, type = 'info') {
 // Load user's audio length limit
 async function loadUserAudioLimit() {
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
             console.log('No user logged in, using default audio limit');
             // Show default limit info even when not logged in

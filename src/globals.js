@@ -3,8 +3,8 @@
  * This file ensures all functions called by onclick handlers are available globally
  */
 
-// Import necessary functions from auth module
-import { loadUserWaveforms as authLoadUserWaveforms } from './auth.js';
+// Import necessary functions from unified auth module
+import unifiedAuth from './unified-auth.js';
 
 // Re-export functions that need to be globally available
 // These functions are defined in the main HTML file but need to be accessible
@@ -83,7 +83,8 @@ window.deleteMemory = async function(memoryId, title, buttonElement) {
 };
 
 // Load user waveforms wrapper
-window.loadUserWaveforms = authLoadUserWaveforms;
+// loadUserWaveforms is now available from app.js via window.loadUserWaveforms
+// No need to re-export it here since it's already globally available
 
 // Function to show memory modal (defined in main HTML script)
 window.showMemoryModal = function(imageUrl, title, qrUrl) {

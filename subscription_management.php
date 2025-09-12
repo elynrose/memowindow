@@ -643,13 +643,14 @@ require_once 'config.php';
     
     <!-- Template initialization -->
     <script type="module">
-        import { initAppAuth } from './src/app-auth.js';
+        import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
-        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { auth } from './firebase-config.php';
         
-        // Check authentication state
-        onAuthStateChanged(auth, async (user) => {
+        // Initialize navigation
+        initNavigation();
+        
+        // Use unified auth system
+        unifiedAuth.addAuthListener(async (user, isAdmin) => {
             if (user) {
                 console.log('✅ User authenticated, showing subscription management page');
                 // User is authenticated, show the page content
@@ -664,11 +665,12 @@ require_once 'config.php';
             }
         });
         
-        // Initialize authentication for all pages
-        initAppAuth();
-        
-        // Initialize navigation for all pages
-        initNavigation();
+        // Check current state immediately
+        if (unifiedAuth.isAuthenticated()) {
+            const currentUser = unifiedAuth.getCurrentUser();
+            document.body.style.display = 'block';
+            await loadSubscriptionData();
+        }
         
         // Load subscription data from API
         async function loadSubscriptionData() {
