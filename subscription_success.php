@@ -42,15 +42,32 @@ if ($sessionId) {
             $packageId = $session->metadata['package_id'];
             $stripeSubscriptionId = $subscription->id;
             $stripeCustomerId = $subscription->customer;
+            $billingCycle = $session->metadata['billing_cycle'];
+            
+            // Get amount paid from subscription
+            $amountPaid = $subscription->items->data[0]->price->unit_amount / 100; // Convert from cents to dollars
+            
+            // Get package details to determine billing cycle
+            $subscriptionManager = new SubscriptionManager();
+            $package = $subscriptionManager->getPackageBySlug($packageId);
+            if (!$package) {
+                // Try by ID
+                $stmt = $subscriptionManager->getPdo()->prepare("SELECT * FROM subscription_packages WHERE id = ? AND is_active = 1");
+                $stmt->execute([$packageId]);
+                $package = $stmt->fetch(PDO::FETCH_ASSOC);
+            }
             
             // Update user subscription in database
-            $subscriptionManager = new SubscriptionManager();
             $subscriptionManager->createOrUpdateSubscription(
                 $userId,
                 $packageId,
                 $stripeSubscriptionId,
                 $stripeCustomerId,
-                'active'
+                'active',
+                $amountPaid,
+                $billingCycle,
+                date('Y-m-d H:i:s', $subscription->current_period_start),
+                date('Y-m-d H:i:s', $subscription->current_period_end)
             );
             
             $success = true;

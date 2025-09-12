@@ -118,7 +118,7 @@ class SubscriptionManager {
     /**
      * Create or update user subscription
      */
-    public function createOrUpdateSubscription($userId, $packageId, $stripeSubscriptionId = null, $stripeCustomerId = null, $status = 'active') {
+    public function createOrUpdateSubscription($userId, $packageId, $stripeSubscriptionId = null, $stripeCustomerId = null, $status = 'active', $amountPaid = null, $billingCycle = null, $currentPeriodStart = null, $currentPeriodEnd = null) {
         // Check if user already has an active subscription
         $existing = $this->getUserSubscription($userId);
         
@@ -127,17 +127,18 @@ class SubscriptionManager {
             $stmt = $this->pdo->prepare("
                 UPDATE user_subscriptions 
                 SET package_id = ?, stripe_subscription_id = ?, stripe_customer_id = ?, 
-                    status = ?, updated_at = CURRENT_TIMESTAMP
+                    status = ?, amount_paid = ?, billing_cycle = ?, 
+                    current_period_start = ?, current_period_end = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE user_id = ? AND status = 'active'
             ");
-            $stmt->execute([$packageId, $stripeSubscriptionId, $stripeCustomerId, $status, $userId]);
+            $stmt->execute([$packageId, $stripeSubscriptionId, $stripeCustomerId, $status, $amountPaid, $billingCycle, $currentPeriodStart, $currentPeriodEnd, $userId]);
         } else {
             // Create new subscription
             $stmt = $this->pdo->prepare("
-                INSERT INTO user_subscriptions (user_id, package_id, stripe_subscription_id, stripe_customer_id, status)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO user_subscriptions (user_id, package_id, stripe_subscription_id, stripe_customer_id, status, amount_paid, billing_cycle, current_period_start, current_period_end)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$userId, $packageId, $stripeSubscriptionId, $stripeCustomerId, $status]);
+            $stmt->execute([$userId, $packageId, $stripeSubscriptionId, $stripeCustomerId, $status, $amountPaid, $billingCycle, $currentPeriodStart, $currentPeriodEnd]);
         }
     }
     
