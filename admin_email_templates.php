@@ -192,6 +192,7 @@ function getDefaultTemplates() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Templates - MemoWindow Admin</title>
     <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="includes/admin_styles.css?v=<?php echo time(); ?>">
     <style>
         .admin-container {
             max-width: 1200px;
