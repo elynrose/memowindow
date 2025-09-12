@@ -5,9 +5,17 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Database configuration
-// Load configuration
+// Load configuration and unified auth
 require_once 'config.php';
+require_once 'unified_auth.php';
+
+// Get current user from unified auth system
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
 
 $dbHost = DB_HOST;
 $dbName = DB_NAME;
@@ -16,14 +24,14 @@ $dbPass = DB_PASS;
 $table = 'wave_assets';
 
 // Validate required parameters
-if (!isset($_POST['memory_id']) || !isset($_POST['user_id'])) {
+if (!isset($_POST['memory_id'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing required parameters']);
+    echo json_encode(['error' => 'Missing memory_id parameter']);
     exit;
 }
 
 $memoryId = intval($_POST['memory_id']);
-$userId = $_POST['user_id'];
+$userId = $currentUser['uid'];
 
 if ($memoryId <= 0) {
     http_response_code(400);

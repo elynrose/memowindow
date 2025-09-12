@@ -2,14 +2,19 @@
 // Simplified subscription check for testing - bypasses database lookups
 header('Content-Type: application/json');
 
+// Load unified auth
+require_once 'unified_auth.php';
+
 try {
-    $userId = $_GET['user_id'] ?? '';
-    
-    if (!$userId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'User ID required']);
+    // Get current user from unified auth system
+    $currentUser = getCurrentUser();
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
         exit;
     }
+    
+    $userId = $currentUser['uid'];
     
     // Always allow memory creation for testing
     echo json_encode([

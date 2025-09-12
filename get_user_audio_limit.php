@@ -2,14 +2,19 @@
 // get_user_audio_limit.php - Get user's current audio length limit
 header('Content-Type: application/json');
 require_once 'config.php';
+require_once 'unified_auth.php';
 require_once 'SubscriptionManager.php';
 
 try {
-    $userId = $_GET['user_id'] ?? '';
-    
-    if (empty($userId)) {
-        throw new Exception('User ID is required');
+    // Get current user from unified auth system
+    $currentUser = getCurrentUser();
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
     }
+    
+    $userId = $currentUser['uid'];
     
     $subscriptionManager = new SubscriptionManager();
     $userSubscription = $subscriptionManager->getUserSubscription($userId);

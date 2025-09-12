@@ -463,7 +463,9 @@ async function createMemory() {
         
         // Check subscription limits (simplified for testing)
         try {
-            const subscriptionResponse = await fetch(`check_subscription_simple.php?user_id=${currentUser.uid}`);
+            const subscriptionResponse = await fetch(`check_subscription_simple.php`, {
+                credentials: 'include' // Include cookies for session management
+            });
             const subscriptionData = await subscriptionResponse.json();
             
             if (!subscriptionResponse.ok) {
@@ -919,7 +921,8 @@ window.deleteWaveform = async function(waveformId) {
         const response = await fetch('delete_memory.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `memory_id=${waveformId}&user_id=${encodeURIComponent(currentUser.uid)}`
+            credentials: 'include', // Include cookies for session management
+            body: `memory_id=${waveformId}`
         });
         
         if (!response.ok) {
@@ -985,7 +988,9 @@ async function loadUserAudioLimit() {
         }
         
         console.log('Loading audio limit for user:', currentUser.uid);
-        const response = await fetch(`get_user_audio_limit.php?user_id=${currentUser.uid}`);
+        const response = await fetch(`get_user_audio_limit.php`, {
+            credentials: 'include' // Include cookies for session management
+        });
         const data = await response.json();
         
         console.log('Audio limit response:', data);
