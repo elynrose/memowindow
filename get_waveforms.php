@@ -17,15 +17,15 @@ $dbUser = DB_USER;
 $dbPass = DB_PASS;
 $table  = 'wave_assets';
 
-try {
-  // Require authentication - get current user
-  $currentUser = requireAuth();
-  $userId = $currentUser['uid']; // Get UID from the authenticated user object
-} catch (Exception $e) {
+// Check authentication - get current user
+$currentUser = getCurrentUser();
+if (!$currentUser) {
   http_response_code(401);
-  echo json_encode(['error' => 'Authentication required', 'detail' => $e->getMessage()]);
+  echo json_encode(['error' => 'Authentication required']);
   exit;
 }
+
+$userId = $currentUser['uid']; // Get UID from the authenticated user object
 $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 5;
 
