@@ -757,6 +757,7 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
         
         // Create modal
         const dialog = document.createElement('div');
+        dialog.className = 'generate-audio-modal';
         dialog.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.5); display: flex; align-items: center; 
@@ -788,7 +789,7 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
                 </div>
                 
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <button onclick="this.closest('div').parentElement.remove()" 
+                    <button id="cancelGenerateAudio" 
                             style="padding: 10px 20px; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 6px; cursor: pointer;">
                         Cancel
                     </button>
@@ -799,6 +800,21 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
                 </div>
             </div>
         `;
+        
+        // Add click handler for cancel button
+        dialog.querySelector('#cancelGenerateAudio').addEventListener('click', () => {
+            dialog.remove();
+        });
+        
+        // Add click handler for overlay (click outside to close)
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                dialog.remove();
+            }
+        });
+        
+        // Store reference for later use
+        window.currentGenerateAudioModal = dialog;
         
         document.body.appendChild(dialog);
         
@@ -928,7 +944,10 @@ window.generateAudio = async function(memoryId) {
             }
             
             // Close modal
-            document.querySelector('div[style*="position: fixed"]').remove();
+            if (window.currentGenerateAudioModal) {
+                window.currentGenerateAudioModal.remove();
+                window.currentGenerateAudioModal = null;
+            }
             // Refresh memories to show the new audio
             loadMemories();
         } else {
@@ -938,6 +957,12 @@ window.generateAudio = async function(memoryId) {
     } catch (error) {
         console.error('Error generating audio:', error);
         alert('Error generating audio');
+        
+        // Close modal on error
+        if (window.currentGenerateAudioModal) {
+            window.currentGenerateAudioModal.remove();
+            window.currentGenerateAudioModal = null;
+        }
     } finally {
         // Reset button state
         const generateBtn = document.querySelector('button[onclick*="generateAudio"]');
