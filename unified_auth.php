@@ -4,6 +4,19 @@
  * Secure, session-based authentication for both frontend and admin
  */
 
+// Set error handling for JSON responses
+set_error_handler(function($severity, $message, $file, $line) {
+    if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Server error: ' . $message
+        ]);
+        exit;
+    }
+});
+
 require_once 'config.php';
 
 // Start session if not already started
@@ -294,6 +307,15 @@ function handleAuthAPI() {
 
 // If this file is called directly as an API endpoint
 if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
-    handleAuthAPI();
+    try {
+        handleAuthAPI();
+    } catch (Exception $e) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Server error: ' . $e->getMessage()
+        ]);
+    }
 }
 ?>
