@@ -19,7 +19,7 @@ function waitForAuthAndLoadMemories() {
     
     const checkAuth = () => {
         attempts++;
-        const currentUser = unifiedAuth.unifiedAuth.getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         
         if (currentUser) {
             // User authenticated, loading memories
@@ -59,7 +59,7 @@ function showLoginPrompt() {
 // Load user memories
 async function loadMemories() {
     try {
-        const currentUser = unifiedAuth.unifiedAuth.getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
             console.error('User not authenticated');
             showLoginPrompt();
