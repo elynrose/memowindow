@@ -1,39 +1,28 @@
 // Orders page functionality
-import { getCurrentUser } from './app-auth.js';
+import unifiedAuth from './unified-auth.js';
 
 let currentUser = null;
 
 export function initOrders() {
-    // Orders page loaded
+    console.log("📦 Orders page loaded");
     
-    // Wait for authentication and then load orders
-    waitForAuthAndLoadOrders();
-}
-
-async function waitForAuthAndLoadOrders() {
-    const maxAttempts = 100; // 10 seconds max wait
-    let attempts = 0;
-    
-    console.log("🔍 Waiting for authentication...");
-    
-    while (attempts < maxAttempts) {
-        currentUser = getCurrentUser();
-        console.log(`🔍 Attempt ${attempts + 1}: currentUser =`, currentUser ? 'authenticated' : 'null');
-        
-        if (currentUser) {
+    // Set up authentication listener
+    unifiedAuth.addAuthListener((user, isAdmin) => {
+        currentUser = user;
+        if (user) {
             console.log("✅ User authenticated, loading orders");
-            await loadOrders();
-            return;
+            loadOrders();
+        } else {
+            console.log("❌ User not authenticated, showing login prompt");
+            showLoginPrompt();
         }
-        
-        // Wait 100ms before trying again
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-    }
+    });
     
-    // If we get here, authentication timed out
-    console.log("❌ Authentication timeout, showing login prompt");
-    showLoginPrompt();
+    // Check if already authenticated
+    if (unifiedAuth.isAuthenticated()) {
+        currentUser = unifiedAuth.getCurrentUser();
+        loadOrders();
+    }
 }
 
 async function loadOrders() {
@@ -52,8 +41,10 @@ async function loadOrders() {
             </div>
         `;
         
-        // Fetch orders from server
-        const response = await fetch(`get_orders.php?user_id=${currentUser.uid}`);
+        // Fetch orders from server (no user_id parameter needed - server knows current user)
+        const response = await fetch('get_orders.php', {
+            credentials: 'include'
+        });
         const data = await response.json();
         
         if (data.success) {

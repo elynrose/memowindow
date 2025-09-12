@@ -1,3 +1,10 @@
+<?php
+// orders.php - User Orders Page
+require_once 'unified_auth.php';
+
+// Require authentication
+$currentUser = requireAuth();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
