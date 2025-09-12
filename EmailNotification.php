@@ -73,10 +73,23 @@ class EmailNotification {
      * Send payment confirmation email
      */
     public function sendPaymentConfirmation($user_email, $user_name, $payment_data) {
-        $subject = "Payment Confirmation - MemoWindow";
+        $template = $this->getTemplate('payment_confirmation');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Payment confirmation template not found'];
+        }
         
-        $html_body = $this->getPaymentConfirmationTemplate($user_name, $payment_data);
-        $text_body = $this->getPaymentConfirmationTextTemplate($user_name, $payment_data);
+        $variables = [
+            'user_name' => $user_name,
+            'amount' => number_format($payment_data['amount'], 2),
+            'date' => date('F j, Y \a\t g:i A', strtotime($payment_data['created_at'])),
+            'transaction_id' => $payment_data['transaction_id'],
+            'payment_method' => $payment_data['payment_method'],
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
         
         return $this->sendEmail($user_email, $subject, $html_body, $text_body);
     }
@@ -85,10 +98,24 @@ class EmailNotification {
      * Send subscription confirmation email
      */
     public function sendSubscriptionConfirmation($user_email, $user_name, $subscription_data) {
-        $subject = "Subscription Confirmed - MemoWindow";
+        $template = $this->getTemplate('subscription_confirmation');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Subscription confirmation template not found'];
+        }
         
-        $html_body = $this->getSubscriptionConfirmationTemplate($user_name, $subscription_data);
-        $text_body = $this->getSubscriptionConfirmationTextTemplate($user_name, $subscription_data);
+        $variables = [
+            'user_name' => $user_name,
+            'package_name' => $subscription_data['package_name'],
+            'amount' => number_format($subscription_data['amount'], 2),
+            'billing_cycle' => $subscription_data['billing_cycle'],
+            'next_billing' => date('F j, Y', strtotime($subscription_data['current_period_end'])),
+            'stripe_subscription_id' => $subscription_data['stripe_subscription_id'],
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
         
         return $this->sendEmail($user_email, $subject, $html_body, $text_body);
     }
@@ -97,10 +124,22 @@ class EmailNotification {
      * Send subscription cancellation email
      */
     public function sendSubscriptionCancellation($user_email, $user_name, $subscription_data) {
-        $subject = "Subscription Cancelled - MemoWindow";
+        $template = $this->getTemplate('subscription_cancellation');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Subscription cancellation template not found'];
+        }
         
-        $html_body = $this->getSubscriptionCancellationTemplate($user_name, $subscription_data);
-        $text_body = $this->getSubscriptionCancellationTextTemplate($user_name, $subscription_data);
+        $variables = [
+            'user_name' => $user_name,
+            'package_name' => $subscription_data['package_name'],
+            'end_date' => date('F j, Y', strtotime($subscription_data['current_period_end'])),
+            'stripe_subscription_id' => $subscription_data['stripe_subscription_id'],
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
         
         return $this->sendEmail($user_email, $subject, $html_body, $text_body);
     }
@@ -109,12 +148,54 @@ class EmailNotification {
      * Send order confirmation email
      */
     public function sendOrderConfirmation($user_email, $user_name, $order_data) {
-        $subject = "Order Confirmation - MemoWindow";
+        $template = $this->getTemplate('order_confirmation');
+        if (!$template) {
+            return ['success' => false, 'message' => 'Order confirmation template not found'];
+        }
         
-        $html_body = $this->getOrderConfirmationTemplate($user_name, $order_data);
-        $text_body = $this->getOrderConfirmationTextTemplate($user_name, $order_data);
+        $variables = [
+            'user_name' => $user_name,
+            'order_id' => $order_data['order_id'],
+            'product_name' => $order_data['product_name'],
+            'amount' => number_format($order_data['amount'], 2),
+            'date' => date('F j, Y \a\t g:i A', strtotime($order_data['created_at'])),
+            'site_url' => $this->site_url
+        ];
+        
+        $subject = $this->replaceVariables($template['subject'], $variables);
+        $html_body = $this->replaceVariables($template['html_body'], $variables);
+        $text_body = $template['text_body'] ? $this->replaceVariables($template['text_body'], $variables) : null;
         
         return $this->sendEmail($user_email, $subject, $html_body, $text_body);
+    }
+    
+    /**
+     * Get email template from database
+     */
+    private function getTemplate($template_key) {
+        try {
+            $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            ]);
+            
+            $stmt = $pdo->prepare("SELECT * FROM email_templates WHERE template_key = ? AND is_active = 1");
+            $stmt->execute([$template_key]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+            
+        } catch (PDOException $e) {
+            error_log("❌ Failed to get email template: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Replace variables in template content
+     */
+    private function replaceVariables($content, $variables) {
+        foreach ($variables as $key => $value) {
+            $content = str_replace('{{' . $key . '}}', $value, $content);
+        }
+        return $content;
     }
     
     /**

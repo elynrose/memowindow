@@ -47,6 +47,10 @@ $userFirebaseUID = $currentUser ? $currentUser['uid'] : '';
                class="admin-nav-link <?php echo $currentPage === 'admin_backups.php' ? 'active' : ''; ?>">
                 🔒 Backups
             </a>
+            <a href="admin_email_templates.php" 
+               class="admin-nav-link <?php echo $currentPage === 'admin_email_templates.php' ? 'active' : ''; ?>">
+                📧 Email Templates
+            </a>
         </div>
         
         <div class="admin-nav-actions">
