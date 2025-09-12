@@ -682,7 +682,6 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <!-- App Scripts -->
-    <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
     <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
@@ -690,11 +689,18 @@
     
     <!-- Template initialization -->
     <script type="module">
-        import { initAppAuth } from './src/app-auth.js';
+        import unifiedAuth from './src/unified-auth.js';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize authentication for all pages
-        initAppAuth();
+        // Initialize unified authentication
+        unifiedAuth.addAuthListener((user, isAdmin) => {
+            if (user) {
+                console.log('✅ User authenticated in memories:', user.email);
+            } else {
+                console.log('❌ User not authenticated, redirecting to login...');
+                window.location.href = 'login.php';
+            }
+        });
         
         // Initialize navigation for all pages
         initNavigation();
