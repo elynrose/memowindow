@@ -1,55 +1,5 @@
 <?php
 require_once 'config.php';
-require_once 'auth_check.php';
-require_once 'SubscriptionManager.php';
-
-// Check if user is authenticated
-$userId = requireAuth();
-if (!$userId) {
-    header('Location: login.php');
-    exit;
-}
-
-$subscriptionManager = new SubscriptionManager();
-$userLimits = $subscriptionManager->getUserLimits($userId);
-$availablePackages = $subscriptionManager->getAvailablePackages();
-
-// Get current subscription details
-$currentSubscription = null;
-$hasActiveSubscription = false;
-
-try {
-    $stmt = $pdo->prepare("
-        SELECT s.*, p.package_name, p.package_slug, p.price_monthly, p.price_yearly, p.features
-        FROM subscriptions s 
-        JOIN packages p ON s.package_id = p.id 
-        WHERE s.user_id = ? AND s.status = 'active'
-        ORDER BY s.created_at DESC 
-        LIMIT 1
-    ");
-    $stmt->execute([$userId]);
-    $currentSubscription = $stmt->fetch(PDO::FETCH_ASSOC);
-    $hasActiveSubscription = !empty($currentSubscription);
-} catch (PDOException $e) {
-    error_log("Error fetching subscription: " . $e->getMessage());
-}
-
-// Get subscription history
-$subscriptionHistory = [];
-try {
-    $stmt = $pdo->prepare("
-        SELECT s.*, p.package_name, p.package_slug
-        FROM subscriptions s 
-        JOIN packages p ON s.package_id = p.id 
-        WHERE s.user_id = ? 
-        ORDER BY s.created_at DESC 
-        LIMIT 10
-    ");
-    $stmt->execute([$userId]);
-    $subscriptionHistory = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    error_log("Error fetching subscription history: " . $e->getMessage());
-}
 ?>
 
 <!DOCTYPE html>
@@ -81,6 +31,7 @@ try {
             min-height: 100vh;
             color: #333;
             line-height: 1.6;
+            display: none; /* Hide until authenticated */
         }
         
         /* Modern Header */
@@ -644,130 +595,45 @@ try {
             <h2 class="usage-title">Current Usage</h2>
             <div class="usage-grid">
                 <div class="usage-item">
-                    <div class="usage-number"><?php echo $userLimits['memories_used'] ?? 0; ?></div>
+                    <div class="usage-number" id="memories-used">0</div>
                     <div class="usage-label">Memories Created</div>
                 </div>
                 <div class="usage-item">
-                    <div class="usage-number"><?php echo $userLimits['memories_limit'] ?? 0; ?></div>
+                    <div class="usage-number" id="memories-limit">5</div>
                     <div class="usage-label">Memory Limit</div>
                 </div>
                 <div class="usage-item">
-                    <div class="usage-number"><?php echo $userLimits['audio_minutes_used'] ?? 0; ?></div>
+                    <div class="usage-number" id="audio-minutes-used">0</div>
                     <div class="usage-label">Audio Minutes Used</div>
                 </div>
                 <div class="usage-item">
-                    <div class="usage-number"><?php echo $userLimits['audio_minutes_limit'] ?? 0; ?></div>
+                    <div class="usage-number" id="audio-minutes-limit">60</div>
                     <div class="usage-label">Audio Minutes Limit</div>
                 </div>
             </div>
         </div>
 
         <!-- Current Subscription -->
-        <?php if ($hasActiveSubscription): ?>
-        <div class="subscription-card current">
-            <h3 class="card-title">Current Plan: <?php echo htmlspecialchars($currentSubscription['package_name']); ?></h3>
-            <div class="card-price">
-                $<?php echo number_format($currentSubscription['price_monthly'], 2); ?>/month
-            </div>
-            <ul class="card-features">
-                <?php 
-                $features = json_decode($currentSubscription['features'], true);
-                if ($features) {
-                    foreach ($features as $feature) {
-                        echo '<li>' . htmlspecialchars($feature) . '</li>';
-                    }
-                }
-                ?>
-            </ul>
-            <div class="card-actions">
-                <a href="subscription_checkout.php?user_id=<?php echo urlencode($userId); ?>" class="btn btn-primary">Change Plan</a>
-                <button onclick="cancelSubscription()" class="btn btn-danger">Cancel Subscription</button>
-            </div>
+        <div id="current-subscription-container">
+            <!-- Will be populated by JavaScript -->
         </div>
-        <?php else: ?>
-        <div class="subscription-card">
-            <h3 class="card-title">Free Plan</h3>
-            <div class="card-price">$0/month</div>
-            <ul class="card-features">
-                <li>Limited memories</li>
-                <li>Basic features</li>
-                <li>Standard support</li>
-            </ul>
-            <div class="card-actions">
-                <a href="index.php#pricing" class="btn btn-primary">Upgrade Plan</a>
-            </div>
-        </div>
-        <?php endif; ?>
 
         <!-- Available Plans -->
-        <div class="subscription-grid">
-            <?php foreach ($availablePackages as $package): ?>
-                <?php if (!$hasActiveSubscription || $package['package_slug'] !== $currentSubscription['package_slug']): ?>
-                <div class="subscription-card">
-                    <h3 class="card-title"><?php echo htmlspecialchars($package['package_name']); ?></h3>
-                    <div class="card-price">$<?php echo number_format($package['price_monthly'], 2); ?>/month</div>
-                    <ul class="card-features">
-                        <?php 
-                        $features = json_decode($package['features'], true);
-                        if ($features) {
-                            foreach ($features as $feature) {
-                                echo '<li>' . htmlspecialchars($feature) . '</li>';
-                            }
-                        }
-                        ?>
-                    </ul>
-                    <div class="card-actions">
-                        <a href="subscription_checkout.php?user_id=<?php echo urlencode($userId); ?>&package=<?php echo urlencode($package['package_slug']); ?>" class="btn btn-primary">
-                            <?php echo $hasActiveSubscription ? 'Switch to This Plan' : 'Choose Plan'; ?>
-                        </a>
-                    </div>
-                </div>
-                <?php endif; ?>
-            <?php endforeach; ?>
+        <div id="available-plans-container">
+            <!-- Will be populated by JavaScript -->
         </div>
 
         <!-- Subscription History -->
-        <?php if (!empty($subscriptionHistory)): ?>
-        <div class="history-section">
-            <h2 class="history-title">Subscription History</h2>
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Plan</th>
-                        <th>Status</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($subscriptionHistory as $history): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($history['package_name']); ?></td>
-                        <td>
-                            <span class="status-badge status-<?php echo $history['status']; ?>">
-                                <?php echo ucfirst($history['status']); ?>
-                            </span>
-                        </td>
-                        <td><?php echo date('M j, Y', strtotime($history['created_at'])); ?></td>
-                        <td>
-                            <?php 
-                            if ($history['end_date']) {
-                                echo date('M j, Y', strtotime($history['end_date']));
-                            } else {
-                                echo 'N/A';
-                            }
-                            ?>
-                        </td>
-                        <td>$<?php echo number_format($history['amount'], 2); ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div id="subscription-history-container">
+            <!-- Will be populated by JavaScript -->
         </div>
-        <?php endif; ?>
     </div>
 
+    <!-- Firebase Authentication -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script type="module" src="firebase-config.php"></script>
+    
     <!-- App Scripts -->
     <script type="module" src="src/app-auth.js"></script>
     <script type="module" src="src/storage.js"></script>
@@ -779,12 +645,229 @@ try {
     <script type="module">
         import { initAppAuth } from './src/app-auth.js';
         import { initNavigation } from './includes/navigation.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { auth } from './firebase-config.php';
+        
+        // Check authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log('✅ User authenticated, showing subscription management page');
+                // User is authenticated, show the page content
+                document.body.style.display = 'block';
+                
+                // Fetch subscription data
+                await loadSubscriptionData();
+            } else {
+                console.log('❌ User not authenticated, redirecting to login');
+                // User is not authenticated, redirect to login
+                window.location.href = 'login.php';
+            }
+        });
         
         // Initialize authentication for all pages
         initAppAuth();
         
         // Initialize navigation for all pages
         initNavigation();
+        
+        // Load subscription data from API
+        async function loadSubscriptionData() {
+            try {
+                console.log('📊 Loading subscription data...');
+                const response = await fetch('get_subscription_data.php', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ Subscription data loaded successfully');
+                    populateSubscriptionData(result.data);
+                } else {
+                    console.error('❌ Failed to load subscription data:', result.error);
+                    showError('Failed to load subscription data: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Error loading subscription data:', error);
+                showError('Error loading subscription data. Please try again.');
+            }
+        }
+        
+        // Populate the page with subscription data
+        function populateSubscriptionData(data) {
+            const { currentSubscription, hasActiveSubscription, subscriptionHistory, availablePackages, userLimits } = data;
+            
+            // Update usage statistics
+            document.getElementById('memories-used').textContent = userLimits.memories_used;
+            document.getElementById('memories-limit').textContent = userLimits.memories_limit;
+            document.getElementById('audio-minutes-used').textContent = userLimits.audio_minutes_used;
+            document.getElementById('audio-minutes-limit').textContent = userLimits.audio_minutes_limit;
+            
+            // Populate current subscription
+            populateCurrentSubscription(currentSubscription, hasActiveSubscription);
+            
+            // Populate available plans
+            populateAvailablePlans(availablePackages, hasActiveSubscription, currentSubscription);
+            
+            // Populate subscription history
+            populateSubscriptionHistory(subscriptionHistory);
+        }
+        
+        // Populate current subscription section
+        function populateCurrentSubscription(currentSubscription, hasActiveSubscription) {
+            const container = document.getElementById('current-subscription-container');
+            
+            if (hasActiveSubscription && currentSubscription) {
+                const features = JSON.parse(currentSubscription.features || '[]');
+                const featuresHtml = features.map(feature => `<li>${escapeHtml(feature)}</li>`).join('');
+                
+                container.innerHTML = `
+                    <div class="subscription-card current">
+                        <h3 class="card-title">Current Plan: ${escapeHtml(currentSubscription.package_name)}</h3>
+                        <div class="card-price">$${parseFloat(currentSubscription.price_monthly).toFixed(2)}/month</div>
+                        <ul class="card-features">
+                            ${featuresHtml}
+                        </ul>
+                        <div class="card-actions">
+                            <a href="subscription_checkout.php" class="btn btn-primary">Change Plan</a>
+                            <button onclick="cancelSubscription()" class="btn btn-danger">Cancel Subscription</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="subscription-card">
+                        <h3 class="card-title">Free Plan</h3>
+                        <div class="card-price">$0/month</div>
+                        <ul class="card-features">
+                            <li>Limited memories</li>
+                            <li>Basic features</li>
+                            <li>Standard support</li>
+                        </ul>
+                        <div class="card-actions">
+                            <a href="index.php#pricing" class="btn btn-primary">Upgrade Plan</a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Populate available plans section
+        function populateAvailablePlans(availablePackages, hasActiveSubscription, currentSubscription) {
+            const container = document.getElementById('available-plans-container');
+            
+            if (!availablePackages || availablePackages.length === 0) {
+                container.innerHTML = '<p>No packages available at the moment.</p>';
+                return;
+            }
+            
+            const plansHtml = availablePackages.map(pkg => {
+                const isCurrentPlan = hasActiveSubscription && currentSubscription && 
+                                    pkg.package_slug === currentSubscription.package_slug;
+                
+                if (isCurrentPlan) return ''; // Skip current plan
+                
+                const features = JSON.parse(pkg.features || '[]');
+                const featuresHtml = features.map(feature => `<li>${escapeHtml(feature)}</li>`).join('');
+                
+                return `
+                    <div class="subscription-card">
+                        <h3 class="card-title">${escapeHtml(pkg.package_name)}</h3>
+                        <div class="card-price">$${parseFloat(pkg.price_monthly).toFixed(2)}/month</div>
+                        <ul class="card-features">
+                            ${featuresHtml}
+                        </ul>
+                        <div class="card-actions">
+                            <a href="subscription_checkout.php?package=${encodeURIComponent(pkg.package_slug)}" class="btn btn-primary">
+                                ${hasActiveSubscription ? 'Switch to This Plan' : 'Choose Plan'}
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).filter(html => html !== '').join('');
+            
+            container.innerHTML = `
+                <div class="subscription-grid">
+                    ${plansHtml}
+                </div>
+            `;
+        }
+        
+        // Populate subscription history section
+        function populateSubscriptionHistory(subscriptionHistory) {
+            const container = document.getElementById('subscription-history-container');
+            
+            if (!subscriptionHistory || subscriptionHistory.length === 0) {
+                container.innerHTML = '<p>No subscription history available.</p>';
+                return;
+            }
+            
+            const historyRows = subscriptionHistory.map(history => {
+                const endDate = history.end_date ? 
+                    new Date(history.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
+                    'N/A';
+                
+                return `
+                    <tr>
+                        <td>${escapeHtml(history.package_name)}</td>
+                        <td>
+                            <span class="status-badge status-${history.status}">
+                                ${history.status.charAt(0).toUpperCase() + history.status.slice(1)}
+                            </span>
+                        </td>
+                        <td>${new Date(history.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                        <td>${endDate}</td>
+                        <td>$${parseFloat(history.amount).toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            container.innerHTML = `
+                <div class="history-section">
+                    <h2 class="history-title">Subscription History</h2>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${historyRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Show error message
+        function showError(message) {
+            const container = document.querySelector('.wrap');
+            container.innerHTML = `
+                <div class="page-header">
+                    <h1>Error</h1>
+                    <p>${escapeHtml(message)}</p>
+                    <button onclick="location.reload()" class="btn btn-primary">Try Again</button>
+                </div>
+            `;
+        }
         
         // Cancel subscription function
         window.cancelSubscription = async function() {
@@ -795,16 +878,15 @@ try {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            user_id: '<?php echo $userId; ?>'
-                        })
+                        body: JSON.stringify({})
                     });
                     
                     const result = await response.json();
                     
                     if (result.success) {
                         alert('Subscription cancelled successfully. You will retain access until the end of your billing period.');
-                        location.reload();
+                        // Reload the subscription data
+                        await loadSubscriptionData();
                     } else {
                         alert('Error cancelling subscription: ' + result.error);
                     }

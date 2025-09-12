@@ -350,7 +350,7 @@
             }
             
             .user-info {
-                gap: 0.5rem;
+                display: none !important;
             }
             
             .header-link {

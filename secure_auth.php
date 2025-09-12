@@ -26,6 +26,11 @@ function verifyFirebaseToken($idToken) {
  * Checks both new token-based auth and legacy URL-based auth
  */
 function requireSecureAuth() {
+    // First check if user is already authenticated in session
+    if (isset($_SESSION['current_user_id']) && !empty($_SESSION['current_user_id'])) {
+        return $_SESSION['current_user_id'];
+    }
+    
     // Check for Authorization header (new secure method)
     $headers = function_exists('getallheaders') ? getallheaders() : [];
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? null;
@@ -44,23 +49,16 @@ function requireSecureAuth() {
     // Fallback to legacy URL-based auth for backward compatibility
     $userId = $_GET['user_id'] ?? $_POST['user_id'] ?? null;
     
-    if (!$userId) {
-        // Redirect to login page if no user_id provided
-        header('Location: ' . BASE_URL . '/login.php');
-        exit;
+    if ($userId) {
+        // Store user_id in session for this request
+        $_SESSION['current_user_id'] = $userId;
+        $_SESSION['auth_method'] = 'legacy';
+        return $userId;
     }
     
-    // Validate user_id format (basic security check)
-    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $userId)) {
-        header('Location: ' . BASE_URL . '/login.php?error=invalid_user_id');
-        exit;
-    }
-    
-    // Store user_id in session for this request
-    $_SESSION['current_user_id'] = $userId;
-    $_SESSION['auth_method'] = 'legacy';
-    
-    return $userId;
+    // No authentication found, redirect to login page
+    header('Location: ' . BASE_URL . '/login.php');
+    exit;
 }
 
 /**

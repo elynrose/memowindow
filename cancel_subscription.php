@@ -12,26 +12,12 @@ if (!$userId) {
     exit;
 }
 
-// Get JSON input
-$input = json_decode(file_get_contents('php://input'), true);
-
-if (!$input || !isset($input['user_id'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'User ID required']);
-    exit;
-}
-
-// Verify the user ID matches the logged-in user
-if ($input['user_id'] !== $userId) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-    exit;
-}
+// No need to get user_id from input since we already have it from authentication
 
 try {
     // Update the subscription status to cancelled
     $stmt = $pdo->prepare("
-        UPDATE subscriptions 
+        UPDATE user_subscriptions 
         SET status = 'cancelled', 
             cancelled_at = NOW(),
             updated_at = NOW()
