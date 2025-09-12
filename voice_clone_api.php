@@ -413,9 +413,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 ]);
                 
-                // Update the audio_url with the Firebase URL (primary) and store local backup URL
-                $stmt = $pdo->prepare("UPDATE generated_audio SET audio_url = ?, local_backup_url = ? WHERE id = ? AND user_id = ?");
-                $stmt->execute([$firebaseUrl, $localBackupUrl, $generatedAudioId, $userId]);
+                // Update the audio_url with the Firebase URL (primary)
+                $stmt = $pdo->prepare("UPDATE generated_audio SET audio_url = ? WHERE id = ? AND user_id = ?");
+                $stmt->execute([$firebaseUrl, $generatedAudioId, $userId]);
                 
                 if ($stmt->rowCount() > 0) {
                     echo json_encode([
