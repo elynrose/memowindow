@@ -1,10 +1,10 @@
 <?php
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 require_once 'config.php';
-require_once 'secure_auth.php';
 
 // Check if user is admin
-requireAdmin();
+$currentUser = requireAdmin();
+$userFirebaseUID = $currentUser['uid'];
 
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);

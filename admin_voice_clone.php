@@ -1,10 +1,11 @@
 <?php
 require_once 'config.php';
 require_once 'VoiceCloneSettings.php';
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 
 // Require admin authentication
-$userFirebaseUID = requireAdmin();
+$currentUser = requireAdmin();
+$userFirebaseUID = $currentUser['uid'];
 
 $settings = new VoiceCloneSettings();
 $message = '';

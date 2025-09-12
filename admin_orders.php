@@ -1,11 +1,12 @@
 <?php
 // admin_orders.php - Orders management interface
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'PriceManager.php';
 
 // Require admin authentication
-$userFirebaseUID = requireAdmin();
+$currentUser = requireAdmin();
+$userFirebaseUID = $currentUser['uid'];
 
 $success = '';
 $error = '';
@@ -331,19 +332,19 @@ $statusOptions = [
             <?php if ($totalPages > 1): ?>
                 <div class="admin-pagination">
                 <?php if ($currentPage > 1): ?>
-                    <a href="?user_id=<?php echo $userFirebaseUID; ?>&page=<?php echo $currentPage - 1; ?>">← Previous</a>
+                    <a href="?page=<?php echo $currentPage - 1; ?>">← Previous</a>
                 <?php endif; ?>
                 
                 <?php for ($i = max(1, $currentPage - 2); $i <= min($totalPages, $currentPage + 2); $i++): ?>
                     <?php if ($i === $currentPage): ?>
                         <span class="current"><?php echo $i; ?></span>
                     <?php else: ?>
-                        <a href="?user_id=<?php echo $userFirebaseUID; ?>&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                        <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
                     <?php endif; ?>
                 <?php endfor; ?>
                 
                 <?php if ($currentPage < $totalPages): ?>
-                    <a href="?user_id=<?php echo $userFirebaseUID; ?>&page=<?php echo $currentPage + 1; ?>">Next →</a>
+                    <a href="?page=<?php echo $currentPage + 1; ?>">Next →</a>
                 <?php endif; ?>
                 </div>
             <?php endif; ?>

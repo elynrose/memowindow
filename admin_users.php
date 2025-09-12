@@ -1,10 +1,11 @@
 <?php
 // admin_users.php - User management interface
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 require_once 'config.php';
 
 // Require admin authentication
-$userFirebaseUID = requireAdmin();
+$currentUser = requireAdmin();
+$userFirebaseUID = $currentUser['uid'];
 
 // Check if user is admin
 try {
@@ -253,7 +254,7 @@ try {
                     <?php endif; ?>
 
                     <div class="user-actions">
-                        <a href="user_details.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=<?php echo urlencode($user['user_id']); ?>" 
+                        <a href="user_details.php?target_user=<?php echo urlencode($user['user_id']); ?>" 
                            class="admin-btn admin-btn-sm">View Details</a>
                         <a href="orders.php" 
                            class="admin-btn admin-btn-secondary admin-btn-sm">View Orders</a>
@@ -321,7 +322,7 @@ try {
         }
 
         function exportUserData(userId) {
-            window.open(`export_user_data.php?user_id=<?php echo urlencode($userFirebaseUID); ?>&target_user=${encodeURIComponent(userId)}`, '_blank');
+            window.open(`export_user_data.php?target_user=${encodeURIComponent(userId)}`, '_blank');
         }
 
         // Auto-refresh every 60 seconds

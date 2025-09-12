@@ -1,10 +1,11 @@
 <?php
 // admin.php - MemoWindow Admin Dashboard
-require_once 'auth_check.php';
+require_once 'unified_auth.php';
 require_once 'secure_db.php';
 
 // Require admin authentication
-$userFirebaseUID = requireAdmin();
+$currentUser = requireAdmin();
+$userFirebaseUID = $currentUser['uid'];
 
 // User is already verified as admin by requireAdmin()
 // Update last login using secure database helper
@@ -156,25 +157,25 @@ try {
                     <button onclick="exportData('orders')" class="admin-btn">
                         📈 Export Orders
                     </button>
-                    <a href="analytics.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="analytics.php" class="admin-btn">
                         📈 Analytics
                     </a>
-                    <a href="admin_users.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="admin_users.php" class="admin-btn">
                         👥 Manage Users
                     </a>
-                    <a href="admin_backups.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="admin_backups.php" class="admin-btn">
                         🔒 Audio Backups
                     </a>
-                    <a href="admin_products.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="admin_products.php" class="admin-btn">
                         🛒 Manage Products
                     </a>
-                    <a href="admin_orders.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="admin_orders.php" class="admin-btn">
                         📦 Manage Orders
                     </a>
-                    <a href="admin_voice_clone.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="admin_voice_clone.php" class="admin-btn">
                         🎤 Voice Clone Settings
                     </a>
-                    <a href="admin_subscriptions.php?user_id=<?php echo urlencode($userFirebaseUID); ?>" class="admin-btn">
+                    <a href="admin_subscriptions.php" class="admin-btn">
                         💳 Subscription Management
                     </a>
                 </div>
@@ -329,7 +330,7 @@ try {
         }
 
         function exportData(type) {
-            window.open(`export_data.php?type=${type}&user_id=<?php echo urlencode($userFirebaseUID); ?>`, '_blank');
+            window.open(`export_data.php?type=${type}`, '_blank');
         }
 
         // Analytics now has dedicated page
