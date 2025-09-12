@@ -217,7 +217,7 @@ class VoiceCloneAPI {
             ]);
             
             $stmt = $pdo->prepare("
-                SELECT vc.*, wa.memory_title, wa.audio_url 
+                SELECT vc.*, wa.title as memory_title, wa.audio_url 
                 FROM voice_clones vc 
                 LEFT JOIN wave_assets wa ON vc.source_memory_id = wa.id 
                 WHERE vc.user_id = ? 
