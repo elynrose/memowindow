@@ -3,6 +3,9 @@ require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'SubscriptionManager.php';
 
+// Include Stripe library
+require_once 'vendor/autoload.php';
+
 // Check if this is an AJAX request or direct link
 $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
@@ -48,9 +51,9 @@ try {
         throw new Exception('Package not found');
     }
     
-    // Get user details (you might want to fetch from Firebase or your user system)
-    $userEmail = $_POST['user_email'] ?? 'user@example.com'; // You'll need to get this from your auth system
-    $userName = $_POST['user_name'] ?? 'User'; // You'll need to get this from your auth system
+    // Get user details from authenticated user
+    $userEmail = $currentUser['email'];
+    $userName = $currentUser['displayName'] ?? $currentUser['email'];
     
     // Set up Stripe
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
