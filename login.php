@@ -303,6 +303,42 @@
       // Debug: Check if button exists
       const btnLogin = document.getElementById('btnLogin');
       console.log('🔍 Login button found:', !!btnLogin);
+      
+      // Set up Google sign-in button
+      if (btnLogin) {
+        btnLogin.addEventListener('click', async (e) => {
+          e.preventDefault();
+          console.log('🔐 Google sign-in button clicked');
+          
+          try {
+            // Import Firebase auth
+            const { auth } = await import('./firebase-config.php');
+            const { signInWithPopup, GoogleAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            
+            // Create Google provider
+            const provider = new GoogleAuthProvider();
+            
+            // Sign in with popup
+            const result = await signInWithPopup(auth, provider);
+            console.log('✅ Google sign-in successful:', result.user);
+            
+            // The unified auth system will handle the rest automatically
+            // through the Firebase auth state listener
+            
+          } catch (error) {
+            console.error('❌ Google sign-in failed:', error);
+            
+            // Show user-friendly error message
+            if (error.code === 'auth/popup-closed-by-user') {
+              console.log('ℹ️ User closed the popup');
+            } else if (error.code === 'auth/cancelled-popup-request') {
+              console.log('ℹ️ Popup request was cancelled');
+            } else {
+              alert('Sign-in failed. Please try again.');
+            }
+          }
+        });
+      }
     });
 </script>
 </body>
