@@ -327,8 +327,15 @@ class UnifiedAuth {
      */
     showUserInfo(user) {
         const els = this.getElements();
-        if (!els.userInfo) return;
+        console.log('🔍 showUserInfo called with user:', user);
+        console.log('🔍 Found elements:', els);
         
+        if (!els.userInfo) {
+            console.error('❌ userInfo element not found');
+            return;
+        }
+        
+        console.log('✅ Showing user info in navigation');
         els.userInfo.classList.remove('hidden');
         
         const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
@@ -388,12 +395,12 @@ class UnifiedAuth {
      */
     getElements() {
         return {
-            userInfo: document.querySelector('.user-info'),
-            userName: document.querySelector('.user-name'),
-            userEmail: document.querySelector('.user-email'),
-            userAvatar: document.querySelector('.user-avatar'),
-            adminButton: document.querySelector('.admin-button'),
-            ordersLink: document.querySelector('.orders-link')
+            userInfo: document.querySelector('#userInfo') || document.querySelector('.user-info'),
+            userName: document.querySelector('#userName') || document.querySelector('.user-name'),
+            userEmail: document.querySelector('#userEmail') || document.querySelector('.user-email'),
+            userAvatar: document.querySelector('#userAvatar') || document.querySelector('.user-avatar'),
+            adminButton: document.querySelector('#adminButton') || document.querySelector('.admin-button'),
+            ordersLink: document.querySelector('#ordersLink') || document.querySelector('.orders-link')
         };
     }
 
