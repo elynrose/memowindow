@@ -151,6 +151,7 @@ class SubscriptionManager {
             WHERE user_id = ? AND status = 'active'
         ");
         $stmt->execute([$userId]);
+        return $stmt->rowCount() > 0;
     }
     
     /**

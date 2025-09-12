@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'unified_auth.php';
+require_once 'SubscriptionManager.php';
 
 header('Content-Type: application/json');
 
@@ -12,27 +13,13 @@ if (!$currentUser) {
     exit;
 }
 $userId = $currentUser['uid'];
-if (!$userId) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Authentication required']);
-    exit;
-}
-
-// No need to get user_id from input since we already have it from authentication
 
 try {
-    // Update the subscription status to cancelled
-    $stmt = $pdo->prepare("
-        UPDATE user_subscriptions 
-        SET status = 'cancelled', 
-            cancelled_at = NOW(),
-            updated_at = NOW()
-        WHERE user_id = ? AND status = 'active'
-    ");
+    // Use SubscriptionManager to cancel subscription
+    $subscriptionManager = new SubscriptionManager();
+    $result = $subscriptionManager->cancelSubscription($userId);
     
-    $result = $stmt->execute([$userId]);
-    
-    if ($result && $stmt->rowCount() > 0) {
+    if ($result) {
         // Log the cancellation
         error_log("Subscription cancelled for user: $userId");
         
@@ -53,6 +40,13 @@ try {
     echo json_encode([
         'success' => false, 
         'error' => 'Database error occurred'
+    ]);
+} catch (Exception $e) {
+    error_log("Error cancelling subscription: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'success' => false, 
+        'error' => 'Error occurred: ' . $e->getMessage()
     ]);
 }
 ?>
