@@ -86,13 +86,6 @@
             color: #333;
         }
         
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
         
         /* Main Content */
         .wrap {
@@ -301,24 +294,6 @@
                 padding: 0.75rem 0;
             }
             
-            .user-details {
-                align-items: center;
-            }
-            
-            .user-submenu {
-                position: static;
-                display: block;
-                background: none;
-                box-shadow: none;
-                padding: 0;
-                min-width: auto;
-            }
-            
-            .submenu-link {
-                padding: 0.5rem 0;
-                text-align: center;
-                border-top: 1px solid rgba(0, 0, 0, 0.1);
-            }
         }
         
         .loading {
