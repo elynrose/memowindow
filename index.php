@@ -16,10 +16,6 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Unified Styles -->
-    <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
-    
-    
     <style>
         * {
             margin: 0;
@@ -612,6 +608,9 @@
             }
         }
     </style>
+    
+    <!-- Unified Styles - Load after inline styles to override -->
+    <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <?php include 'includes/navigation.php'; ?>
