@@ -609,7 +609,6 @@
     
     <!-- App Scripts -->
     <script type="module" src="src/storage.js"></script>
-    <script type="module" src="src/globals.js"></script>
     <script type="module" src="src/utils.js"></script>
     <script type="module" src="includes/navigation.js"></script>
     

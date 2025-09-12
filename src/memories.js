@@ -1,6 +1,7 @@
 // Memories-specific functionality
 import unifiedAuth from './unified-auth.js';
 import { uploadToFirebaseStorage } from './storage.js';
+import './globals.js'; // Import globals module to ensure it loads
 
 // Initialize memories functionality
 export function initMemories() {
@@ -124,30 +125,19 @@ async function waitForGlobalsAndLoadMemories() {
 
 // Wait for globals module to be available
 async function waitForGlobalsModule() {
-    console.log("🔍 Waiting for globals module...");
+    console.log("🔍 Checking globals module...");
     
-    // Check if globals module is already loaded
+    // Since we're importing globals.js directly, it should be available immediately
+    // But let's add a small delay to ensure it's fully initialized
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Check if globals module is loaded
     if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
-        console.log("✅ Globals module already available");
+        console.log("✅ Globals module available");
         return;
     }
     
-    // Wait for globals module to load
-    let attempts = 0;
-    const maxAttempts = 50; // 5 seconds max wait
-    
-    while (attempts < maxAttempts) {
-        if (window.globalsModuleReady && window.showOrderOptions && window.orderProduct && window.selectProduct) {
-            console.log("✅ Globals module loaded successfully");
-            return;
-        }
-        
-        console.log(`⏳ Waiting for globals module... attempt ${attempts + 1}/${maxAttempts}`);
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-    }
-    
-    console.error("❌ Globals module failed to load within timeout");
+    console.error("❌ Globals module not available after import");
     console.error("❌ Window state:", {
         globalsModuleReady: window.globalsModuleReady,
         showOrderOptions: typeof window.showOrderOptions,
