@@ -28,7 +28,7 @@ window.deleteMemory = async function(memoryId, title, buttonElement) {
   buttonElement.disabled = true;
   
   try {
-    const currentUser = window.getCurrentUser();
+    const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
     if (!currentUser) {
       throw new Error('Not authenticated');
     }
@@ -168,7 +168,7 @@ window.loadMoreMemories = function() {
   const offset = window.currentWaveformsOffset || 0;
   // Load more clicked
   
-  const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
+  const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
   if (!currentUser) {
     // No user for load more
     return;
@@ -181,7 +181,7 @@ window.loadMoreMemories = function() {
 window.loadMoreWaveforms = async function(offset) {
   try {
     // Loading more waveforms
-    const currentUser = window.getCurrentUser();
+    const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
     const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}&offset=${offset}&limit=5`);
     
     if (!response.ok) throw new Error('Failed to load more waveforms');
@@ -265,8 +265,9 @@ window.loadMoreWaveforms = async function(offset) {
 // Order functionality (implemented from HTML)
 window.orderProduct = async function(productId, memoryId, imageUrl) {
   try {
-    const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
+    const currentUser = window.unifiedAuth ? window.unifiedAuth.getCurrentUser() : null;
     if (!currentUser) {
+      alert('Please log in to place an order');
       return;
     }
     
@@ -281,11 +282,9 @@ window.orderProduct = async function(productId, memoryId, imageUrl) {
       body: JSON.stringify({
         product_id: productId,
         memory_id: memoryId,
-        image_url: imageUrl,
-        user_id: currentUser.uid,
-        user_email: currentUser.email,
-        user_name: currentUser.displayName || currentUser.email
-      })
+        image_url: imageUrl
+      }),
+      credentials: 'include' // Include session cookies for authentication
     });
     
     // Checkout response received
@@ -350,7 +349,7 @@ window.showOrderOptions = async function(memoryId, imageUrl, title, buttonElemen
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
           ${products.map(product => `
             <div class="product-card" style="border: 2px solid #e6e9f2; border-radius: 12px; padding: 16px; background: #fafbfc; text-align: center; transition: all 0.2s ease; cursor: pointer;" 
-                 onclick="selectProduct('${product.id}', ${memoryId}, '${imageUrl}', this)"${product.id}', ${memoryId}, '${imageUrl}', this)">
+                 onclick="selectProduct('${product.id}', ${memoryId}, '${imageUrl}', this)">
               <div style="width: 100%; height: 120px; margin-bottom: 12px; border-radius: 8px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
                 ${product.image_url ? 
                   `<img src="${product.image_url}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">

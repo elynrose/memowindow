@@ -2,6 +2,15 @@
 // create_checkout.php - Create Stripe checkout session
 header('Content-Type: application/json');
 require_once 'config.php';
+require_once 'unified_auth.php';
+
+// Check if user is authenticated
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+}
 
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
@@ -13,7 +22,7 @@ if (!$input) {
 }
 
 // Validate required fields
-$required = ['product_id', 'memory_id', 'image_url', 'user_id', 'user_email'];
+$required = ['product_id', 'memory_id', 'image_url'];
 foreach ($required as $field) {
     if (!isset($input[$field]) || empty($input[$field])) {
         http_response_code(400);
@@ -25,9 +34,9 @@ foreach ($required as $field) {
 $productId = $input['product_id'];
 $memoryId = intval($input['memory_id']);
 $imageUrl = $input['image_url'];
-$userId = $input['user_id'];
-$userEmail = $input['user_email'];
-$userName = $input['user_name'] ?? $userEmail;
+$userId = $currentUser['uid']; // Use authenticated user's ID
+$userEmail = $currentUser['email']; // Use authenticated user's email
+$userName = $currentUser['displayName'] ?? $currentUser['email'];
 
 // Get product details
 $product = getProduct($productId);
