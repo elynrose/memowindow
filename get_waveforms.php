@@ -18,10 +18,23 @@ $dbPass = DB_PASS;
 $table  = 'wave_assets';
 
 // Check authentication - get current user
-$currentUser = getCurrentUser();
-if (!$currentUser) {
-  http_response_code(401);
-  echo json_encode(['error' => 'Authentication required']);
+try {
+  $currentUser = getCurrentUser();
+  if (!$currentUser) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication required']);
+    exit;
+  }
+  
+  // Debug: Check if user has required fields
+  if (!isset($currentUser['uid'])) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Invalid user data', 'detail' => 'User object missing uid field']);
+    exit;
+  }
+} catch (Exception $e) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Authentication error', 'detail' => $e->getMessage()]);
   exit;
 }
 
