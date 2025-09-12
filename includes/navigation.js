@@ -16,6 +16,7 @@ export function initNavigation() {
     const els = getElements();
     
     if (!els.userInfo || !els.btnLogout) {
+        console.error('❌ Navigation elements not found');
         return;
     }
     

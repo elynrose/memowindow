@@ -30,6 +30,7 @@ class UnifiedAuth {
             this.isInitialized = true;
             
         } catch (error) {
+            console.error('❌ Failed to initialize Unified Authentication:', error);
         }
     }
 
@@ -39,8 +40,10 @@ class UnifiedAuth {
     setupFirebaseAuthListener() {
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                console.log('✅ User authenticated:', user.email);
                 await this.authenticateWithServer(user);
             } else {
+                console.log('ℹ️ User not authenticated (normal for login page)');
                 this.currentUser = null;
                 this.isAdmin = false;
                 this.notifyListeners();
@@ -75,12 +78,14 @@ class UnifiedAuth {
             if (data.success) {
                 this.currentUser = data.user;
                 this.isAdmin = data.isAdmin;
+                console.log('✅ Server authentication successful');
                 this.notifyListeners();
             } else {
                 throw new Error(data.error || 'Authentication failed');
             }
             
         } catch (error) {
+            console.error('❌ Server authentication failed:', error);
             this.currentUser = null;
             this.isAdmin = false;
             this.notifyListeners();
