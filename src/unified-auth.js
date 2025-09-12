@@ -17,8 +17,13 @@ class UnifiedAuth {
     async init() {
         console.log('🔐 Initializing Unified Authentication...');
         
-        // Check if user is already authenticated
-        await this.checkAuthStatus();
+        // Only check auth status if we're not on the login page
+        const currentPage = window.location.pathname;
+        if (!currentPage.includes('login.php')) {
+            await this.checkAuthStatus();
+        } else {
+            console.log('ℹ️ On login page, skipping initial auth check');
+        }
         
         // Set up Firebase auth state listener
         this.setupFirebaseAuthListener();
@@ -36,6 +41,15 @@ class UnifiedAuth {
                 method: 'GET',
                 credentials: 'include'
             });
+            
+            if (response.status === 401) {
+                // Not authenticated - this is normal, don't log as error
+                this.currentUser = null;
+                this.isAdmin = false;
+                this.notifyListeners();
+                console.log('ℹ️ User not authenticated (normal for login page)');
+                return;
+            }
             
             const data = await response.json();
             
@@ -72,8 +86,12 @@ class UnifiedAuth {
                         const idToken = await user.getIdToken();
                         await this.authenticateWithServer(idToken);
                     } else {
-                        // User signed out
-                        await this.logout();
+                        // User signed out - just clear local state, don't call logout
+                        this.currentUser = null;
+                        this.isAdmin = false;
+                        this.notifyListeners();
+                        this.updateNavigation();
+                        console.log('ℹ️ User signed out from Firebase');
                     }
                 });
             });
@@ -106,11 +124,19 @@ class UnifiedAuth {
                 console.log('✅ Server authentication successful');
             } else {
                 console.error('❌ Server authentication failed:', data.error);
-                await this.logout();
+                // Don't call logout here - just clear local state
+                this.currentUser = null;
+                this.isAdmin = false;
+                this.notifyListeners();
+                this.updateNavigation();
             }
         } catch (error) {
             console.error('Error authenticating with server:', error);
-            await this.logout();
+            // Don't call logout here - just clear local state
+            this.currentUser = null;
+            this.isAdmin = false;
+            this.notifyListeners();
+            this.updateNavigation();
         }
     }
 
@@ -142,13 +168,19 @@ class UnifiedAuth {
             
             console.log('✅ User logged out successfully');
             
-            // Redirect to login page
-            window.location.href = 'login.php';
+            // Only redirect if we're not already on the login page
+            const currentPage = window.location.pathname;
+            if (!currentPage.includes('login.php')) {
+                window.location.href = 'login.php';
+            }
             
         } catch (error) {
             console.error('Error during logout:', error);
-            // Force redirect even if logout fails
-            window.location.href = 'login.php';
+            // Only redirect if we're not already on the login page
+            const currentPage = window.location.pathname;
+            if (!currentPage.includes('login.php')) {
+                window.location.href = 'login.php';
+            }
         }
     }
 
