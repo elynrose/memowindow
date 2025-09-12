@@ -1,17 +1,20 @@
 <?php
 require_once 'config.php';
+require_once 'unified_auth.php';
 require_once 'SubscriptionManager.php';
 
 header('Content-Type: application/json');
 
 try {
-    $userId = $_GET['user_id'] ?? '';
-    
-    if (!$userId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'User ID required']);
+    // Get current user from unified auth system
+    $currentUser = getCurrentUser();
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
         exit;
     }
+    
+    $userId = $currentUser['uid'];
     
     $subscriptionManager = new SubscriptionManager();
     $limits = $subscriptionManager->getUserLimits($userId);

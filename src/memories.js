@@ -247,7 +247,7 @@ window.closeImageModal = function() {
 // Order print
 window.orderPrint = async function(memoryId, imageUrl) {
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
             alert('Please log in to order prints.');
             return;
@@ -294,7 +294,7 @@ window.deleteMemory = async function(memoryId) {
     }
     
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         if (!currentUser) {
             alert('Please log in to delete memories.');
             return;
@@ -303,7 +303,8 @@ window.deleteMemory = async function(memoryId) {
         const response = await fetch('delete_memory.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `memory_id=${memoryId}&user_id=${encodeURIComponent(currentUser.uid)}`
+            credentials: 'include', // Include cookies for session management
+            body: `memory_id=${memoryId}`
         });
         
         if (!response.ok) {
@@ -479,7 +480,7 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
     try {
         progressDiv.textContent = 'Downloading audio file...';
         
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
@@ -519,10 +520,12 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
 // Check voice clone status before showing modal
 window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         
         // Check subscription limits first
-        const subscriptionResponse = await fetch(`check_subscription.php?user_id=${currentUser.uid}`);
+        const subscriptionResponse = await fetch(`check_subscription.php`, {
+            credentials: 'include' // Include cookies for session management
+        });
         const subscriptionData = await subscriptionResponse.json();
         
         if (subscriptionData.success && !subscriptionData.limits.can_create_voice_clone.allowed) {
@@ -563,15 +566,15 @@ window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
 // Check voice clone feature status and show/hide buttons
 async function checkVoiceCloneFeatureStatus() {
     try {
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            credentials: 'include', // Include cookies for session management
             body: new URLSearchParams({
-                action: 'check_status',
-                user_id: currentUser.uid
+                action: 'check_status'
             })
         });
         
@@ -601,7 +604,7 @@ async function checkVoiceCloneFeatureStatus() {
 window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
     try {
         // Get user's cloned voices
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
@@ -703,15 +706,15 @@ window.generateAudio = async function(memoryId) {
         generateBtn.textContent = 'Generating...';
         generateBtn.disabled = true;
         
-        const currentUser = getCurrentUser();
+        const currentUser = unifiedAuth.getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            credentials: 'include', // Include cookies for session management
             body: new URLSearchParams({
                 action: 'generate_speech',
-                user_id: currentUser.uid,
                 voice_id: voiceId,
                 text: text,
                 memory_id: memoryId

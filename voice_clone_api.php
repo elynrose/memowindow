@@ -13,6 +13,7 @@ ini_set('memory_limit', '256M');
 ini_set('output_buffering', '8192');
 
 require_once 'config.php';
+require_once 'unified_auth.php';
 require_once 'VoiceCloneSettings.php';
 
 class VoiceCloneAPI {
@@ -241,7 +242,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     header('Content-Type: application/json');
     
     $action = $_POST['action'] ?? '';
-    $userId = $_POST['user_id'] ?? '';
+    
+    // Get current user from unified auth system
+    $currentUser = getCurrentUser();
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
+    }
+    
+    $userId = $currentUser['uid'];
     
     try {
         $voiceAPI = new VoiceCloneAPI();
@@ -465,13 +475,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
     // Regular API request
     header('Content-Type: application/json');
     
-    $userId = $_GET['user_id'] ?? '';
-    
-    if (!$userId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'User ID required']);
+    // Get current user from unified auth system
+    $currentUser = getCurrentUser();
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
         exit;
     }
+    
+    $userId = $currentUser['uid'];
     
     try {
         $voiceAPI = new VoiceCloneAPI();
