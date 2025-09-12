@@ -34,16 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
   // Window loaded, checking if auth is initialized
   
-  // Check if login button exists and has event listener
-  const loginBtn = document.getElementById('btnLogin');
-  if (loginBtn && !loginBtn.dataset.initialized) {
-    // Login button found but not initialized, retrying
-    try {
-      initAuth();
-    } catch (error) {
-      console.error('❌ Retry auth initialization failed:', error);
-    }
-  }
+  // Unified auth is auto-initialized, no need for retry logic
+  console.log('✅ App fully loaded');
 });
 
 // Make functions available globally for the existing waveform code
