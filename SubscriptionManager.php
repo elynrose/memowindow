@@ -11,6 +11,13 @@ class SubscriptionManager {
     }
     
     /**
+     * Get PDO connection for external use
+     */
+    public function getPdo() {
+        return $this->pdo;
+    }
+    
+    /**
      * Get user's current subscription
      */
     public function getUserSubscription($userId) {

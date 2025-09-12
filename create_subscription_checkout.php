@@ -42,7 +42,7 @@ try {
     
     if (!$package) {
         // Try by ID
-        $stmt = $subscriptionManager->pdo->prepare("SELECT * FROM subscription_packages WHERE id = ? AND is_active = 1");
+        $stmt = $subscriptionManager->getPdo()->prepare("SELECT * FROM subscription_packages WHERE id = ? AND is_active = 1");
         $stmt->execute([$packageId]);
         $package = $stmt->fetch(PDO::FETCH_ASSOC);
     }
