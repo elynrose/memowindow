@@ -206,9 +206,10 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            credentials: 'include', // Include cookies for session management
             body: new URLSearchParams({
                 action: 'create_clone',
-                user_id: currentUser.uid,
+                user_id: unifiedAuth.getCurrentUser().uid,
                 memory_id: memoryId,
                 voice_name: voiceName,
                 audio_url: audioUrl
@@ -362,9 +363,10 @@ async function generateAudio(voiceId, text, dialog) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            credentials: 'include', // Include cookies for session management
             body: new URLSearchParams({
                 action: 'generate_speech',
-                user_id: currentUser.uid,
+                user_id: unifiedAuth.getCurrentUser().uid,
                 voice_id: voiceId,
                 text: text
             })

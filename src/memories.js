@@ -660,6 +660,7 @@ window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            credentials: 'include', // Include cookies for session management
             body: new URLSearchParams({
                 action: 'check_status',
                 user_id: currentUser.uid
@@ -732,6 +733,7 @@ window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            credentials: 'include', // Include cookies for session management
             body: new URLSearchParams({
                 action: 'get_user_voices',
                 user_id: currentUser.uid
