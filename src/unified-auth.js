@@ -230,6 +230,15 @@ class UnifiedAuth {
      * Notify all listeners of authentication state change
      */
     notifyListeners() {
+        // Automatically show/hide user info in navigation
+        if (this.currentUser) {
+            this.showUserInfo(this.currentUser);
+            this.setupOrdersLink();
+        } else {
+            this.hideUserInfo();
+        }
+        
+        // Call registered listeners
         this.authListeners.forEach(callback => {
             try {
                 callback(this.currentUser, this.isAdmin);
