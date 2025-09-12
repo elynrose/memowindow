@@ -292,38 +292,97 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor(0x000000, 0); // Transparent background
             
-            // Create sound wave geometry
-            const waveCount = 8;
+            // Create realistic sound wave geometry
+            const waveCount = 3; // Fewer, more detailed waves
             const waves = [];
-            const colors = [0xffffff, 0xf0f0f0, 0xe0e0e0, 0xd0d0d0];
+            const colors = [0xffffff, 0xf8f8f8, 0xf0f0f0];
             
             for (let i = 0; i < waveCount; i++) {
-                const geometry = new THREE.PlaneGeometry(20, 2);
+                // Create detailed waveform geometry
+                const segments = 200; // More segments for detailed waveform
+                const geometry = new THREE.BufferGeometry();
+                
+                const positions = [];
+                const indices = [];
+                
+                // Generate waveform vertices
+                for (let j = 0; j <= segments; j++) {
+                    const x = (j / segments) * 40 - 20; // Spread across width
+                    const y = 0;
+                    const z = 0;
+                    positions.push(x, y, z);
+                }
+                
+                // Create triangles for the waveform
+                for (let j = 0; j < segments; j++) {
+                    const base = j * 2;
+                    indices.push(base, base + 1, base + 2);
+                    indices.push(base + 1, base + 3, base + 2);
+                }
+                
+                geometry.setIndex(indices);
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                
                 const material = new THREE.MeshBasicMaterial({ 
                     color: colors[i % colors.length],
                     transparent: true,
-                    opacity: 0.4 - (i * 0.03)
+                    opacity: 0.6 - (i * 0.1),
+                    wireframe: false
                 });
                 
                 const wave = new THREE.Mesh(geometry, material);
-                wave.position.x = (i - waveCount / 2) * 3;
-                wave.position.y = Math.sin(i) * 2;
-                wave.position.z = -10;
+                wave.position.z = -5 - (i * 2);
                 wave.rotation.x = Math.PI / 2;
+                
+                // Store original positions for animation
+                wave.userData = {
+                    originalPositions: [...positions],
+                    segments: segments
+                };
                 
                 waves.push(wave);
                 scene.add(wave);
             }
             
+            // Add particle system for granular effect
+            const particleCount = 1000;
+            const particles = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(particleCount * 3);
+            const particleColors = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                particlePositions[i3] = (Math.random() - 0.5) * 40; // x
+                particlePositions[i3 + 1] = (Math.random() - 0.5) * 10; // y
+                particlePositions[i3 + 2] = (Math.random() - 0.5) * 10; // z
+                
+                // White particles
+                particleColors[i3] = 1; // r
+                particleColors[i3 + 1] = 1; // g
+                particleColors[i3 + 2] = 1; // b
+            }
+            
+            particles.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            particles.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.5,
+                transparent: true,
+                opacity: 0.3,
+                vertexColors: true
+            });
+            
+            const particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+            
             // Camera position
-            camera.position.z = 5;
+            camera.position.z = 8;
             camera.position.y = 0;
             camera.position.x = 0;
             
             // Animation variables
             let time = 0;
-            const waveSpeed = 0.02;
-            const amplitude = 1.5;
+            const waveSpeed = 0.03;
             
             // Animation loop
             function animate() {
@@ -331,28 +390,55 @@
                 
                 time += waveSpeed;
                 
-                // Animate each wave
+                // Animate each wave with realistic sound wave patterns
                 waves.forEach((wave, index) => {
-                    // Create wave motion
-                    const waveOffset = index * 0.5;
-                    const waveHeight = Math.sin(time + waveOffset) * amplitude;
-                    const waveWidth = Math.sin(time * 0.7 + waveOffset) * 0.5;
+                    const positions = wave.geometry.attributes.position.array;
+                    const originalPositions = wave.userData.originalPositions;
+                    const segments = wave.userData.segments;
                     
-                    wave.position.y = waveHeight;
-                    wave.scale.x = 1 + waveWidth * 0.3;
-                    wave.scale.y = 1 + Math.abs(waveHeight) * 0.2;
+                    for (let j = 0; j <= segments; j++) {
+                        const i = j * 3;
+                        const x = originalPositions[i];
+                        
+                        // Create realistic sound wave pattern
+                        const waveOffset = index * 0.3;
+                        const frequency1 = 0.1 + (index * 0.05);
+                        const frequency2 = 0.3 + (index * 0.1);
+                        const frequency3 = 0.7 + (index * 0.2);
+                        
+                        // Multiple sine waves for complex pattern
+                        const wave1 = Math.sin((time + x * frequency1) + waveOffset) * 2;
+                        const wave2 = Math.sin((time * 1.5 + x * frequency2) + waveOffset) * 1;
+                        const wave3 = Math.sin((time * 2 + x * frequency3) + waveOffset) * 0.5;
+                        
+                        // Add some noise for granular effect
+                        const noise = (Math.random() - 0.5) * 0.3;
+                        
+                        const y = wave1 + wave2 + wave3 + noise;
+                        positions[i + 1] = y;
+                    }
                     
-                    // Subtle rotation
-                    wave.rotation.z = Math.sin(time * 0.5 + waveOffset) * 0.1;
-                    
-                    // Fade in/out effect
-                    wave.material.opacity = 0.4 - (index * 0.03) + Math.sin(time + waveOffset) * 0.1;
+                    wave.geometry.attributes.position.needsUpdate = true;
                 });
                 
-                // Rotate camera slightly for dynamic effect
-                camera.position.x = Math.sin(time * 0.1) * 2;
-                camera.position.y = Math.cos(time * 0.15) * 1;
-                camera.lookAt(0, 0, -10);
+                // Animate particles
+                const particlePositions = particleSystem.geometry.attributes.position.array;
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
+                    
+                    // Move particles in wave-like motion
+                    const x = particlePositions[i3];
+                    const waveOffset = i * 0.01;
+                    const waveHeight = Math.sin(time + x * 0.1 + waveOffset) * 2;
+                    
+                    particlePositions[i3 + 1] = waveHeight + (Math.random() - 0.5) * 0.5;
+                }
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+                
+                // Subtle camera movement
+                camera.position.x = Math.sin(time * 0.05) * 1;
+                camera.position.y = Math.cos(time * 0.08) * 0.5;
+                camera.lookAt(0, 0, -5);
                 
                 renderer.render(scene, camera);
             }
@@ -369,7 +455,7 @@
             // Start animation
             animate();
             
-            console.log('🎵 3D Sound Wave animation initialized');
+            console.log('🎵 Realistic 3D Sound Wave animation initialized');
         }
         
         // Make auth globally available after a short delay to ensure initialization
