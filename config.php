@@ -38,11 +38,6 @@ define('PRINTFUL_STORE_ID', $env['PRINTFUL_STORE_ID'] ?? '12587389');
 // ElevenLabs API configuration
 define('ELEVENLABS_API_KEY', $env['ELEVENLABS_API_KEY'] ?? '');
 
-// Firebase Configuration
-define('FIREBASE_API_KEY', $env['FIREBASE_API_KEY'] ?? 'AIzaSyAUTI2-Ab0-ZKaV0kon_60Uoa6SqJuldjk');
-define('FIREBASE_AUTH_DOMAIN', $env['FIREBASE_AUTH_DOMAIN'] ?? 'leadlink-ai-api08.firebaseapp.com');
-define('FIREBASE_PROJECT_ID', $env['FIREBASE_PROJECT_ID'] ?? 'leadlink-ai-api08');
-
 // Database Configuration
 define('DB_HOST', $env['DB_HOST'] ?? '127.0.0.1');
 define('DB_NAME', $env['DB_NAME'] ?? 'wavemy');

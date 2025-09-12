@@ -1,28 +1,39 @@
 // Orders page functionality
-import unifiedAuth from './unified-auth.js';
+import { getCurrentUser } from './app-auth.js';
 
 let currentUser = null;
 
 export function initOrders() {
-    console.log("📦 Orders page loaded");
+    // Orders page loaded
     
-    // Set up authentication listener
-    unifiedAuth.addAuthListener((user, isAdmin) => {
-        currentUser = user;
-        if (user) {
+    // Wait for authentication and then load orders
+    waitForAuthAndLoadOrders();
+}
+
+async function waitForAuthAndLoadOrders() {
+    const maxAttempts = 100; // 10 seconds max wait
+    let attempts = 0;
+    
+    console.log("🔍 Waiting for authentication...");
+    
+    while (attempts < maxAttempts) {
+        currentUser = getCurrentUser();
+        console.log(`🔍 Attempt ${attempts + 1}: currentUser =`, currentUser ? 'authenticated' : 'null');
+        
+        if (currentUser) {
             console.log("✅ User authenticated, loading orders");
-            loadOrders();
-        } else {
-            console.log("❌ User not authenticated, showing login prompt");
-            showLoginPrompt();
+            await loadOrders();
+            return;
         }
-    });
-    
-    // Check if already authenticated
-    if (unifiedAuth.isAuthenticated()) {
-        currentUser = unifiedAuth.getCurrentUser();
-        loadOrders();
+        
+        // Wait 100ms before trying again
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
     }
+    
+    // If we get here, authentication timed out
+    console.log("❌ Authentication timeout, showing login prompt");
+    showLoginPrompt();
 }
 
 async function loadOrders() {
@@ -41,10 +52,8 @@ async function loadOrders() {
             </div>
         `;
         
-        // Fetch orders from server (no user_id parameter needed - server knows current user)
-        const response = await fetch('get_orders.php', {
-            credentials: 'include'
-        });
+        // Fetch orders from server
+        const response = await fetch(`get_orders.php?user_id=${currentUser.uid}`);
         const data = await response.json();
         
         if (data.success) {

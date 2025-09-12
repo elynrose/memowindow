@@ -7,8 +7,8 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Load unified authentication
-require_once 'unified_auth.php';
+// Load configuration
+require_once 'config.php';
 
 // --- CONFIG --- //
 $dbHost = DB_HOST;
@@ -17,37 +17,14 @@ $dbUser = DB_USER;
 $dbPass = DB_PASS;
 $table  = 'wave_assets';
 
-// Debug: Check session state
-error_log("get_waveforms.php called - Session ID: " . session_id() . " Session data: " . print_r($_SESSION, true));
-
-$debugInfo = [
-  'session_id' => session_id(),
-  'session_data' => $_SESSION,
-  'is_authenticated' => isAuthenticated()
-];
-
-// Check authentication - get current user
-try {
-  $currentUser = getCurrentUser();
-  if (!$currentUser) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Authentication required', 'debug' => $debugInfo]);
-    exit;
-  }
-  
-  // Debug: Check if user has required fields
-  if (!isset($currentUser['uid'])) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Invalid user data', 'detail' => 'User object missing uid field', 'debug' => $debugInfo]);
-    exit;
-  }
-} catch (Exception $e) {
-  http_response_code(500);
-  echo json_encode(['error' => 'Authentication error', 'detail' => $e->getMessage(), 'debug' => $debugInfo]);
+// Validate user_id parameter
+if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
+  http_response_code(400);
+  echo json_encode(['error' => 'user_id parameter required']);
   exit;
 }
 
-$userId = $currentUser['uid']; // Get UID from the authenticated user object
+$userId = $_GET['user_id'];
 $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 5;
 

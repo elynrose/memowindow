@@ -187,7 +187,7 @@
     <script type="module">
         // Import necessary modules
         import { uploadWaveformFiles, uploadToFirebaseStorage } from './src/storage.js';
-        import unifiedAuth from './src/unified-auth.js';
+        import { getCurrentUser } from './src/app-auth.js';
 
         let testStats = {
             total: 0,

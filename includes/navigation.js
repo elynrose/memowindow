@@ -1,5 +1,4 @@
 // navigation.js - Reusable navigation functionality
-import unifiedAuth from '../src/unified-auth.js';
 
 // Get DOM elements for navigation
 const getElements = () => ({
@@ -25,13 +24,17 @@ export function initNavigation() {
     els.btnLogout.addEventListener('click', async (e) => {
         e.preventDefault();
         try {
-            await unifiedAuth.logout();
+            // Import auth dynamically to avoid circular dependencies
+            const { auth } = await import('../firebase-config.php');
+            await auth.signOut();
+            console.log('✅ User signed out successfully');
+            window.location.href = 'index.php';
         } catch (error) {
             console.error('❌ Error signing out:', error);
         }
     });
     
-    // Orders link is handled by unified auth - no need to set up click handler here
+    // Orders link is handled by app-auth.js - no need to set up click handler here
     
     // Initialize custom mobile menu (simpler approach)
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');

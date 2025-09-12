@@ -5,12 +5,20 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
-require_once 'unified_auth.php';
+require_once 'config.php';
 
 try {
-    // Require authentication - get current user
-    $currentUser = requireAuth();
-    $userId = $currentUser['uid'];
+    // Validate user_id parameter
+    if (!isset($_GET['user_id']) || empty($_GET['user_id'])) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'user_id parameter required'
+        ]);
+        exit;
+    }
+    
+    $userId = $_GET['user_id'];
     
     // Connect to database
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [

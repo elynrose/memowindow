@@ -12,7 +12,6 @@
     
     <!-- Firebase -->
     <script type="module" src="firebase-config.php"></script>
-    <script type="module" src="src/unified-auth.js"></script>
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -861,20 +860,17 @@
     </footer>
 
     <script type="module">
-        // Import unified authentication system
-        import unifiedAuth from './src/unified-auth.js';
+        // Import Firebase modules
+        import { auth } from './firebase-config.php';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize navigation
-        initNavigation();
-        
-        // Make auth globally available for subscription functionality
+        // Make auth globally available after a short delay to ensure initialization
         setTimeout(() => {
-            // Get Firebase auth from unified system
-            import('./firebase-config.php').then(({ auth }) => {
-                window.auth = auth;
-                console.log('Auth object made globally available:', window.auth);
-            });
+            window.auth = auth;
+            console.log('Auth object made globally available:', window.auth);
+            
+            // Initialize navigation
+            initNavigation();
         }, 100);
         
         // Load packages dynamically
@@ -988,12 +984,22 @@
         console.log('Loading packages immediately...');
         loadPackages();
         
-        // Check if user is already logged in and update navigation
+        // Check if user is already logged in and redirect to app
         window.addEventListener('load', function() {
             console.log('Index page loaded, checking auth state...');
+            console.log('Auth object:', auth);
+            console.log('Auth currentUser:', auth.currentUser);
             
-            // Use unified auth system to check authentication
-            unifiedAuth.addAuthListener((user, isAdmin) => {
+            // Check current user immediately
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                console.log('Current user found, staying on homepage for subscription access');
+                // Don't redirect - let logged-in users access subscription buttons
+                updateNavigationForLoggedInUser(currentUser);
+            }
+            
+            // Also set up auth state listener as backup
+            auth.onAuthStateChanged(function(user) {
                 console.log('Auth state changed on index:', user ? 'Logged in' : 'Logged out');
                 if (user) {
                     // User is signed in, but don't redirect - let them access subscription buttons
@@ -1004,15 +1010,6 @@
                     updateNavigationForLoggedOutUser();
                 }
             });
-            
-            // Check current state immediately
-            if (unifiedAuth.isAuthenticated()) {
-                const currentUser = unifiedAuth.getCurrentUser();
-                console.log('Current user found, staying on homepage for subscription access');
-                updateNavigationForLoggedInUser(currentUser);
-            } else {
-                updateNavigationForLoggedOutUser();
-            }
         });
         
         // Function to update navigation for logged-in users
@@ -1093,8 +1090,14 @@
                         e.preventDefault();
                         try {
                             console.log('🚪 Logging out...');
-                            await unifiedAuth.logout();
-                            console.log('✅ Logout successful');
+                            const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                            const result = await response.json();
+                            console.log('🔍 Server logout response:', result);
+                            await auth.signOut();
+                            console.log('✅ Firebase sign out successful');
+                            sessionStorage.removeItem('currentUser');
+                            localStorage.removeItem('currentUser');
+                            window.location.href = 'login.php';
                         } catch (error) {
                             console.error('❌ Logout failed:', error);
                             window.location.href = 'login.php';
@@ -1134,8 +1137,14 @@
                         e.preventDefault();
                         try {
                             console.log('🚪 Logging out...');
-                            await unifiedAuth.logout();
-                            console.log('✅ Logout successful');
+                            const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                            const result = await response.json();
+                            console.log('🔍 Server logout response:', result);
+                            await auth.signOut();
+                            console.log('✅ Firebase sign out successful');
+                            sessionStorage.removeItem('currentUser');
+                            localStorage.removeItem('currentUser');
+                            window.location.href = 'login.php';
                         } catch (error) {
                             console.error('❌ Logout failed:', error);
                             window.location.href = 'login.php';
@@ -1242,16 +1251,33 @@
         // Subscription functionality
         window.startSubscription = async function(packageSlug, billingCycle, buttonElement) {
             console.log('startSubscription called with:', packageSlug, billingCycle);
+            console.log('window.auth available:', !!window.auth);
+            console.log('window.auth object:', window.auth);
             
-            // Check if user is authenticated using unified auth
-            if (!unifiedAuth.isAuthenticated()) {
-                console.log('User not authenticated, redirecting to login');
+            // Wait a moment for auth to be available if it's not yet
+            if (!window.auth) {
+                console.log('Auth not immediately available, waiting 200ms...');
+                await new Promise(resolve => setTimeout(resolve, 200));
+                console.log('After wait - window.auth available:', !!window.auth);
+            }
+            
+            // Check if auth is available
+            if (!window.auth) {
+                console.error('Auth not available after wait, redirecting to login');
                 window.location.href = 'login.php';
                 return;
             }
             
-            const currentUser = unifiedAuth.getCurrentUser();
+            // Check if user is authenticated
+            const currentUser = window.auth.currentUser;
             console.log('Current user:', currentUser);
+            
+            if (!currentUser) {
+                // User not authenticated, redirect to login
+                console.log('User not authenticated, redirecting to login');
+                window.location.href = 'login.php';
+                return;
+            }
             
             // User is authenticated, create Stripe checkout session
             const userId = currentUser.uid;

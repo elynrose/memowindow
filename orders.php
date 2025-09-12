@@ -1,10 +1,3 @@
-<?php
-// orders.php - User Orders Page
-require_once 'unified_auth.php';
-
-// Require authentication
-$currentUser = requireAuth();
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -697,13 +690,14 @@ $currentUser = requireAuth();
     
     <!-- Template initialization -->
     <script type="module">
-        import unifiedAuth from './src/unified-auth.js';
+        import { initAppAuth } from './src/app-auth.js';
         import { initNavigation } from './includes/navigation.js';
         
-        // Initialize navigation
-        initNavigation();
+        // Initialize authentication for all pages
+        initAppAuth();
         
-        // Unified auth is automatically initialized when imported
+        // Initialize navigation for all pages
+        initNavigation();
         
         // Page-specific initialization will be injected here
         

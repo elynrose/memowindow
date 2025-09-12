@@ -1,5 +1,5 @@
 // Memories-specific functionality
-import unifiedAuth from './unified-auth.js';
+import { getCurrentUser } from './app-auth.js';
 import { uploadToFirebaseStorage } from './storage.js';
 
 // Initialize memories functionality
@@ -19,7 +19,7 @@ function waitForAuthAndLoadMemories() {
     
     const checkAuth = () => {
         attempts++;
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         
         if (currentUser) {
             // User authenticated, loading memories
@@ -59,7 +59,7 @@ function showLoginPrompt() {
 // Load user memories
 async function loadMemories() {
     try {
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         if (!currentUser) {
             console.error('User not authenticated');
             showLoginPrompt();
@@ -68,9 +68,7 @@ async function loadMemories() {
         
         // Loading memories for user
         
-        const response = await fetch('get_waveforms.php', {
-            credentials: 'include' // Ensure session cookies are sent
-        });
+        const response = await fetch(`get_waveforms.php?user_id=${encodeURIComponent(currentUser.uid)}`);
         // API Response received
         
         if (!response.ok) {
@@ -258,7 +256,7 @@ window.closeImageModal = function() {
 // Order print
 window.orderPrint = async function(memoryId, imageUrl) {
     try {
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         if (!currentUser) {
             alert('Please log in to order prints.');
             return;
@@ -305,7 +303,7 @@ window.deleteMemory = async function(memoryId) {
     }
     
     try {
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         if (!currentUser) {
             alert('Please log in to delete memories.');
             return;
@@ -490,7 +488,7 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
     try {
         progressDiv.textContent = 'Downloading audio file...';
         
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
@@ -530,7 +528,7 @@ async function createVoiceClone(memoryId, audioUrl, voiceName, dialog) {
 // Check voice clone status before showing modal
 window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
     try {
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         
         // Check subscription limits first
         const subscriptionResponse = await fetch(`check_subscription.php?user_id=${currentUser.uid}`);
@@ -574,7 +572,7 @@ window.checkVoiceCloneStatus = async function(memoryId, audioUrl, memoryTitle) {
 // Check voice clone feature status and show/hide buttons
 async function checkVoiceCloneFeatureStatus() {
     try {
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
@@ -612,7 +610,7 @@ async function checkVoiceCloneFeatureStatus() {
 window.showGenerateAudioModal = async function(memoryId, memoryTitle) {
     try {
         // Get user's cloned voices
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
@@ -714,7 +712,7 @@ window.generateAudio = async function(memoryId) {
         generateBtn.textContent = 'Generating...';
         generateBtn.disabled = true;
         
-        const currentUser = unifiedAuth.getCurrentUser();
+        const currentUser = getCurrentUser();
         const response = await fetch('voice_clone_api.php', {
             method: 'POST',
             headers: {
