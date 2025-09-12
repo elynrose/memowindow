@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Upload</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+        button:hover { background: #2563eb; }
+        .result {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .info { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+    </style>
+</head>
+<body>
+    <h1>🔧 API Endpoint Test</h1>
+    
+    <div class="test-section">
+        <h2>Test API Memory Upload</h2>
+        <button onclick="testAPIUpload()">Test API/Memories/Upload</button>
+        <div id="apiResults"></div>
+    </div>
+
+    <script>
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+            console.log(message);
+        }
+
+        async function testAPIUpload() {
+            const container = document.getElementById('apiResults');
+            container.innerHTML = '';
+
+            log('apiResults', '📤 Testing API memory upload...', 'info');
+
+            try {
+                // Test data
+                const testData = {
+                    title: 'API Test Memory',
+                    user_id: 'test-user-' + Date.now(),
+                    image_url: 'https://via.placeholder.com/800x600/3b82f6/ffffff?text=Test+Waveform',
+                    qr_url: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=test',
+                    audio_url: 'https://via.placeholder.com/100x100/ef4444/ffffff?text=Audio',
+                    original_name: 'test-audio.mp3',
+                    play_url: 'https://example.com/play?uid=test123',
+                    unique_id: 'mw_api_test_' + Date.now()
+                };
+
+                log('apiResults', 'Sending request to: api/memories/upload', 'info');
+                log('apiResults', 'Data: ' + JSON.stringify(testData, null, 2), 'info');
+
+                const response = await fetch('api/memories/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                log('apiResults', `Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+
+                const responseText = await response.text();
+                log('apiResults', 'Raw Response: ' + responseText, 'info');
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error('Invalid JSON response: ' + responseText);
+                }
+
+                if (result.success) {
+                    log('apiResults', '✅ API Upload successful!', 'success');
+                    log('apiResults', 'Memory ID: ' + result.id, 'success');
+                    log('apiResults', 'Message: ' + result.message, 'success');
+                    log('apiResults', 'Data: ' + JSON.stringify(result.data, null, 2), 'info');
+                } else {
+                    log('apiResults', '❌ API Upload failed: ' + result.error, 'error');
+                    if (result.details) {
+                        log('apiResults', 'Details: ' + result.details, 'error');
+                    }
+                }
+
+            } catch (error) {
+                log('apiResults', '❌ Request failed: ' + error.message, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Auto-run test
+        setTimeout(() => {
+            log('apiResults', 'Ready to test API endpoint', 'info');
+        }, 500);
+    </script>
+</body>
+</html>

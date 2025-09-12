@@ -342,7 +342,36 @@ export function initAuth() {
   });
 }
 
-// Admin link creation is handled by app-auth.js - no need to duplicate here
+// Function to check if user is admin and add admin link
+async function checkAdminStatus(userUID) {
+  try {
+    const response = await fetch(`check_admin.php?user_id=${encodeURIComponent(userUID)}`);
+    const data = await response.json();
+    
+    if (data.is_admin) {
+      // Add admin link to user info area
+      const userInfo = document.getElementById('userInfo');
+      if (userInfo && !userInfo.querySelector('.admin-link')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = `admin.php?user_id=${encodeURIComponent(userUID)}`;
+        adminLink.className = 'admin-link';
+        adminLink.style.cssText = 'background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; margin-right: 8px;';
+        adminLink.textContent = 'Admin';
+        
+        // Insert before orders link
+        const ordersLink = userInfo.querySelector('#ordersLink');
+        if (ordersLink) {
+          userInfo.insertBefore(adminLink, ordersLink);
+        } else {
+          userInfo.appendChild(adminLink);
+        }
+      }
+    }
+  } catch (error) {
+    // Silently fail - not critical functionality
+    // Admin check failed
+  }
+}
 
 // Get current user
 export function getCurrentUser() {
