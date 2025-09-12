@@ -59,6 +59,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     $success_message = "Template status updated successfully!";
                     break;
+                    
+                case 'reset_template':
+                    // Get the template key to reset to default
+                    $stmt = $pdo->prepare("SELECT template_key FROM email_templates WHERE id = ?");
+                    $stmt->execute([$_POST['template_id']]);
+                    $template = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($template) {
+                        // Reset to default template based on template_key
+                        $defaultTemplates = getDefaultTemplates();
+                        $templateKey = $template['template_key'];
+                        
+                        if (isset($defaultTemplates[$templateKey])) {
+                            $defaultTemplate = $defaultTemplates[$templateKey];
+                            
+                            $stmt = $pdo->prepare("
+                                UPDATE email_templates 
+                                SET template_name = :template_name,
+                                    subject = :subject,
+                                    html_body = :html_body,
+                                    text_body = :text_body,
+                                    updated_at = CURRENT_TIMESTAMP
+                                WHERE id = :id
+                            ");
+                            
+                            $stmt->execute([
+                                ':id' => $_POST['template_id'],
+                                ':template_name' => $defaultTemplate['template_name'],
+                                ':subject' => $defaultTemplate['subject'],
+                                ':html_body' => $defaultTemplate['html_body'],
+                                ':text_body' => $defaultTemplate['text_body']
+                            ]);
+                            
+                            $success_message = "Template reset to default successfully!";
+                        } else {
+                            $error_message = "Default template not found for this template type.";
+                        }
+                    } else {
+                        $error_message = "Template not found.";
+                    }
+                    break;
             }
         }
     } catch (PDOException $e) {
@@ -88,6 +129,36 @@ $templateVariables = [
     'subscription_cancellation' => ['user_name', 'package_name', 'end_date', 'stripe_subscription_id', 'site_url'],
     'order_confirmation' => ['user_name', 'order_id', 'product_name', 'amount', 'date', 'site_url']
 ];
+
+// Function to get default templates for reset functionality
+function getDefaultTemplates() {
+    return [
+        'payment_confirmation' => [
+            'template_name' => 'Payment Confirmation',
+            'subject' => 'Payment Confirmation - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Payment Confirmation</title></head><body><h1>Payment Confirmed!</h1><p>Hi {{user_name}},</p><p>Thank you for your payment of {{amount}} on {{date}}.</p><p>Transaction ID: {{transaction_id}}</p><p>Payment Method: {{payment_method}}</p><p><a href="{{site_url}}">Visit MemoWindow</a></p></body></html>',
+            'text_body' => 'Payment Confirmed!\n\nHi {{user_name}},\n\nThank you for your payment of {{amount}} on {{date}}.\n\nTransaction ID: {{transaction_id}}\nPayment Method: {{payment_method}}\n\nVisit: {{site_url}}'
+        ],
+        'subscription_confirmation' => [
+            'template_name' => 'Subscription Confirmation',
+            'subject' => 'Subscription Confirmed - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Subscription Confirmed</title></head><body><h1>Subscription Confirmed!</h1><p>Hi {{user_name}},</p><p>Welcome to {{package_name}}! Your subscription is now active.</p><p>Amount: {{amount}} per {{billing_cycle}}</p><p>Next billing: {{next_billing}}</p><p><a href="{{site_url}}">Manage Subscription</a></p></body></html>',
+            'text_body' => 'Subscription Confirmed!\n\nHi {{user_name}},\n\nWelcome to {{package_name}}! Your subscription is now active.\n\nAmount: {{amount}} per {{billing_cycle}}\nNext billing: {{next_billing}}\n\nManage: {{site_url}}'
+        ],
+        'subscription_cancellation' => [
+            'template_name' => 'Subscription Cancellation',
+            'subject' => 'Subscription Cancelled - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Subscription Cancelled</title></head><body><h1>Subscription Cancelled</h1><p>Hi {{user_name}},</p><p>Your {{package_name}} subscription has been cancelled.</p><p>Access until: {{end_date}}</p><p><a href="{{site_url}}">Reactivate Subscription</a></p></body></html>',
+            'text_body' => 'Subscription Cancelled\n\nHi {{user_name}},\n\nYour {{package_name}} subscription has been cancelled.\n\nAccess until: {{end_date}}\n\nReactivate: {{site_url}}'
+        ],
+        'order_confirmation' => [
+            'template_name' => 'Order Confirmation',
+            'subject' => 'Order Confirmation - MemoWindow',
+            'html_body' => '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Order Confirmation</title></head><body><h1>Order Confirmed!</h1><p>Hi {{user_name}},</p><p>Thank you for your order!</p><p>Order ID: {{order_id}}</p><p>Product: {{product_name}}</p><p>Amount: {{amount}}</p><p>Date: {{date}}</p><p><a href="{{site_url}}">Track Order</a></p></body></html>',
+            'text_body' => 'Order Confirmed!\n\nHi {{user_name}},\n\nThank you for your order!\n\nOrder ID: {{order_id}}\nProduct: {{product_name}}\nAmount: {{amount}}\nDate: {{date}}\n\nTrack: {{site_url}}'
+        ]
+    ];
+}
 ?>
 
 <!DOCTYPE html>
@@ -280,12 +351,107 @@ $templateVariables = [
         }
         
         .preview-content {
-            max-height: 200px;
+            max-height: 400px;
             overflow-y: auto;
             background: white;
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #ddd;
+        }
+        
+        .template-stats {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .template-stats h4 {
+            margin: 0 0 8px 0;
+            color: #0066cc;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .stat-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .stat-value {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .template-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .template-history {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .history-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .history-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .history-changes {
+            font-size: 14px;
+            color: #333;
         }
     </style>
 </head>
@@ -342,6 +508,49 @@ $templateVariables = [
                 </div>
                 
                 <div class="template-content">
+                    <!-- Template Statistics -->
+                    <div class="template-stats">
+                        <h4>📊 Template Statistics</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Subject Length</div>
+                                <div class="stat-value"><?php echo strlen($template['subject']); ?> chars</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">HTML Body Length</div>
+                                <div class="stat-value"><?php echo strlen($template['html_body']); ?> chars</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Text Body Length</div>
+                                <div class="stat-value"><?php echo strlen($template['text_body'] ?: ''); ?> chars</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Variables Used</div>
+                                <div class="stat-value"><?php 
+                                    $variables = json_decode($template['variables'] ?: '[]', true);
+                                    echo count($variables);
+                                ?></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Last Updated</div>
+                                <div class="stat-value"><?php echo date('M j, Y', strtotime($template['updated_at'])); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Actions -->
+                    <div class="template-actions">
+                        <button type="button" class="btn btn-info btn-small" onclick="previewTemplate(<?php echo $template['id']; ?>)">
+                            👁️ Preview
+                        </button>
+                        <button type="button" class="btn btn-warning btn-small" onclick="testTemplate(<?php echo $template['id']; ?>)">
+                            🧪 Test Email
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="resetTemplate(<?php echo $template['id']; ?>)">
+                            🔄 Reset to Default
+                        </button>
+                    </div>
+                    
                     <form method="POST">
                         <input type="hidden" name="action" value="update_template">
                         <input type="hidden" name="template_id" value="<?php echo $template['id']; ?>">
@@ -418,6 +627,101 @@ $templateVariables = [
             previewDiv.style.display = previewDiv.style.display === 'none' ? 'block' : 'none';
         }
         
+        function testTemplate(templateId) {
+            const templateName = document.getElementById('template_name_' + templateId).value;
+            const testEmail = prompt('Enter test email address:', 'test@example.com');
+            
+            if (testEmail && testEmail.includes('@')) {
+                // Create a test form and submit it
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'test_email_notifications.php';
+                form.target = '_blank';
+                
+                const templateInput = document.createElement('input');
+                templateInput.type = 'hidden';
+                templateInput.name = 'template_id';
+                templateInput.value = templateId;
+                
+                const emailInput = document.createElement('input');
+                emailInput.type = 'hidden';
+                emailInput.name = 'test_email';
+                emailInput.value = testEmail;
+                
+                form.appendChild(templateInput);
+                form.appendChild(emailInput);
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+                
+                showToast(`Test email sent to ${testEmail}`, 'success');
+            } else if (testEmail) {
+                showToast('Please enter a valid email address', 'error');
+            }
+        }
+        
+        function resetTemplate(templateId) {
+            if (confirm('Are you sure you want to reset this template to default? This will overwrite all your changes.')) {
+                // Create a reset form and submit it
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = window.location.href;
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'reset_template';
+                
+                const templateInput = document.createElement('input');
+                templateInput.type = 'hidden';
+                templateInput.name = 'template_id';
+                templateInput.value = templateId;
+                
+                form.appendChild(actionInput);
+                form.appendChild(templateInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 300px;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            // Add animation styles
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(toast);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+        
         // Auto-save functionality (optional)
         let saveTimeout;
         document.querySelectorAll('textarea, input[type="text"]').forEach(element => {
@@ -427,6 +731,27 @@ $templateVariables = [
                     // Auto-save could be implemented here
                 }, 2000);
             });
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S to save
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                const activeForm = document.querySelector('form[method="POST"]');
+                if (activeForm) {
+                    activeForm.submit();
+                }
+            }
+            
+            // Ctrl+P to preview
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                const firstPreviewBtn = document.querySelector('button[onclick*="previewTemplate"]');
+                if (firstPreviewBtn) {
+                    firstPreviewBtn.click();
+                }
+            }
         });
     </script>
 </body>

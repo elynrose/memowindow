@@ -6,6 +6,79 @@
 
 require_once 'EmailNotification.php';
 
+// Handle individual template testing from admin interface
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['template_id']) && isset($_POST['test_email'])) {
+    $templateId = $_POST['template_id'];
+    $test_email = $_POST['test_email'];
+    $test_name = 'Test User';
+    
+    try {
+        $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+        
+        $stmt = $pdo->prepare("SELECT * FROM email_templates WHERE id = ?");
+        $stmt->execute([$templateId]);
+        $template = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($template) {
+            $emailNotification = new EmailNotification();
+            
+            // Test based on template type
+            switch ($template['template_key']) {
+                case 'payment_confirmation':
+                    $result = $emailNotification->sendPaymentConfirmation($test_email, $test_name, [
+                        'amount' => 29.99,
+                        'transaction_id' => 'txn_test_' . time(),
+                        'payment_method' => 'Credit Card',
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                    break;
+                    
+                case 'subscription_confirmation':
+                    $result = $emailNotification->sendSubscriptionConfirmation($test_email, $test_name, [
+                        'package_name' => 'Premium Plan',
+                        'amount' => 19.99,
+                        'billing_cycle' => 'monthly',
+                        'stripe_subscription_id' => 'sub_test_' . time(),
+                        'current_period_end' => date('Y-m-d H:i:s', strtotime('+1 month'))
+                    ]);
+                    break;
+                    
+                case 'subscription_cancellation':
+                    $result = $emailNotification->sendSubscriptionCancellation($test_email, $test_name, [
+                        'package_name' => 'Premium Plan',
+                        'stripe_subscription_id' => 'sub_test_' . time(),
+                        'current_period_end' => date('Y-m-d H:i:s', strtotime('+1 month'))
+                    ]);
+                    break;
+                    
+                case 'order_confirmation':
+                    $result = $emailNotification->sendOrderConfirmation($test_email, $test_name, [
+                        'order_id' => 'ORD-' . time(),
+                        'product_name' => 'Premium Canvas Print',
+                        'amount' => 49.99,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                    break;
+                    
+                default:
+                    $result = ['success' => false, 'message' => 'Unknown template type'];
+            }
+            
+            echo json_encode($result);
+            exit;
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Template not found']);
+            exit;
+        }
+        
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
 // Test email configuration
 $test_email = 'test@example.com'; // Change this to your test email
 $test_name = 'Test User';
