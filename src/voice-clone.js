@@ -1,12 +1,12 @@
 // Voice cloning functionality
-import { getCurrentUser } from './app-auth.js';
+import unifiedAuth from './unified-auth.js';
 
 let currentUser = null;
 
 // Initialize voice cloning functionality
 export function initVoiceClone() {
     console.log('🎤 Initializing voice clone functionality...');
-    currentUser = getCurrentUser();
+    currentUser = unifiedAuth.getCurrentUser();
     if (!currentUser) {
         console.error('User not authenticated for voice cloning');
         return;

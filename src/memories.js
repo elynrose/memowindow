@@ -1,5 +1,5 @@
 // Memories-specific functionality
-import { getCurrentUser } from './app-auth.js';
+import unifiedAuth from './unified-auth.js';
 import { uploadToFirebaseStorage } from './storage.js';
 
 // Initialize memories functionality
@@ -13,29 +13,18 @@ export function initMemories() {
 }
 
 // Wait for authentication and then load memories
-function waitForAuthAndLoadMemories() {
-    let attempts = 0;
-    const maxAttempts = 20; // 10 seconds total
+async function waitForAuthAndLoadMemories() {
+    console.log("🔍 Waiting for authentication...");
+    await unifiedAuth.waitForAuth();
+    const currentUser = unifiedAuth.getCurrentUser();
     
-    const checkAuth = () => {
-        attempts++;
-        const currentUser = getCurrentUser();
-        
-        if (currentUser) {
-            // User authenticated, loading memories
-            loadMemories();
-        } else if (attempts >= maxAttempts) {
-            // Authentication timeout, showing login prompt
-            showLoginPrompt();
-        } else {
-            // Waiting for authentication
-            // Check again in 500ms
-            setTimeout(checkAuth, 500);
-        }
-    };
-    
-    // Start checking
-    checkAuth();
+    if (currentUser) {
+        console.log("✅ User authenticated, loading memories");
+        loadMemories();
+    } else {
+        console.log("❌ User not authenticated, showing login prompt");
+        showLoginPrompt();
+    }
 }
 
 // Show login prompt if user is not authenticated
