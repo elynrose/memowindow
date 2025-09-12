@@ -257,54 +257,13 @@
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
-  <!-- Immediate auth check for faster redirect -->
-  <script type="module">
-    import { auth } from './firebase-config.php';
-    
-    // Check auth state immediately when Firebase loads
-    auth.onAuthStateChanged(function(user) {
-      if (user) {
-        console.log('🚀 Fast redirect: User already logged in, redirecting to app...');
-        window.location.href = 'app.php';
-      }
-    });
-  </script>
-  
-  <!-- Auth Script -->
-  <script type="module" src="src/auth.js"></script>
+  <!-- Navigation Script -->
   <script type="module" src="includes/navigation.js"></script>
   
   <script type="module">
-    // Import Firebase modules
-    import { auth } from './firebase-config.php';
-    import { initNavigation } from './includes/navigation.js';
-    
-    // Check if user is already logged in and redirect to app
-    window.addEventListener('load', function() {
-        console.log('Login page loaded, checking auth state...');
-        
-        // Check current user immediately
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            console.log('Current user found, redirecting to app...');
-            window.location.href = 'app.php';
-            return;
-        }
-        
-        // Set up auth state listener for immediate redirect
-        auth.onAuthStateChanged(function(user) {
-            console.log('Auth state changed on login:', user ? 'Logged in' : 'Logged out');
-            if (user) {
-                // User is signed in, redirect to app immediately
-                console.log('User is logged in, redirecting to app...');
-                window.location.href = 'app.php';
-            }
-        });
-    });
-    
-
     // Initialize unified authentication
     import unifiedAuth from './src/unified-auth.js';
+    import { initNavigation } from './includes/navigation.js';
     
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
@@ -332,6 +291,61 @@
         });
       }
       
+      // Set up email/password login
+      const btnEmailLogin = document.getElementById('btnEmailLogin');
+      const btnEmailRegister = document.getElementById('btnEmailRegister');
+      const emailInput = document.getElementById('emailInput');
+      const passwordInput = document.getElementById('passwordInput');
+      
+      if (btnEmailLogin) {
+        btnEmailLogin.addEventListener('click', async () => {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          
+          if (!email || !password) {
+            alert('Please enter both email and password');
+            return;
+          }
+          
+          try {
+            console.log('🔐 Starting email sign-in...');
+            await unifiedAuth.signInWithEmail(email, password);
+            console.log('✅ Email sign-in successful');
+            // Redirect will be handled by auth state listener
+          } catch (error) {
+            console.error('❌ Email sign-in failed:', error);
+            alert('Sign-in failed: ' + error.message);
+          }
+        });
+      }
+      
+      if (btnEmailRegister) {
+        btnEmailRegister.addEventListener('click', async () => {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          
+          if (!email || !password) {
+            alert('Please enter both email and password');
+            return;
+          }
+          
+          if (password.length < 6) {
+            alert('Password must be at least 6 characters long');
+            return;
+          }
+          
+          try {
+            console.log('🔐 Starting account creation...');
+            await unifiedAuth.createAccount(email, password);
+            console.log('✅ Account created successfully');
+            // Redirect will be handled by auth state listener
+          } catch (error) {
+            console.error('❌ Account creation failed:', error);
+            alert('Account creation failed: ' + error.message);
+          }
+        });
+      }
+      
       // Set up authentication state listener
       unifiedAuth.addAuthListener((user, isAdmin) => {
         if (user) {
@@ -339,7 +353,7 @@
           window.location.href = 'app.php';
         }
       });
-});
+    });
 </script>
 </body>
 </html>
