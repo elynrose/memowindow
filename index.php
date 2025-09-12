@@ -16,6 +16,8 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Three.js for 3D sound wave animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <!-- Unified Styles - Load after inline styles to override -->
     <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
@@ -25,6 +27,8 @@
 
     <!-- Hero Section -->
     <section class="hero">
+        <!-- 3D Sound Wave Canvas -->
+        <canvas id="sound-wave-canvas" class="sound-wave-canvas"></canvas>
         <div class="hero-content">
             <h1>Transform Voice into Beautiful Waveform Art</h1>
             <p>Turn your precious voice recordings into stunning visual memories. Create unique waveform prints that capture the essence of your most meaningful moments.</p>
@@ -271,6 +275,103 @@
         import { auth } from './firebase-config.php';
         import { initNavigation } from './includes/navigation.js';
         
+        // 3D Sound Wave Animation
+        function initSoundWaveAnimation() {
+            const canvas = document.getElementById('sound-wave-canvas');
+            if (!canvas) return;
+            
+            // Scene setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: canvas, 
+                alpha: true, 
+                antialias: true 
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0); // Transparent background
+            
+            // Create sound wave geometry
+            const waveCount = 8;
+            const waves = [];
+            const colors = [0xffffff, 0xf0f0f0, 0xe0e0e0, 0xd0d0d0];
+            
+            for (let i = 0; i < waveCount; i++) {
+                const geometry = new THREE.PlaneGeometry(20, 2);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: colors[i % colors.length],
+                    transparent: true,
+                    opacity: 0.4 - (i * 0.03)
+                });
+                
+                const wave = new THREE.Mesh(geometry, material);
+                wave.position.x = (i - waveCount / 2) * 3;
+                wave.position.y = Math.sin(i) * 2;
+                wave.position.z = -10;
+                wave.rotation.x = Math.PI / 2;
+                
+                waves.push(wave);
+                scene.add(wave);
+            }
+            
+            // Camera position
+            camera.position.z = 5;
+            camera.position.y = 0;
+            camera.position.x = 0;
+            
+            // Animation variables
+            let time = 0;
+            const waveSpeed = 0.02;
+            const amplitude = 1.5;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                time += waveSpeed;
+                
+                // Animate each wave
+                waves.forEach((wave, index) => {
+                    // Create wave motion
+                    const waveOffset = index * 0.5;
+                    const waveHeight = Math.sin(time + waveOffset) * amplitude;
+                    const waveWidth = Math.sin(time * 0.7 + waveOffset) * 0.5;
+                    
+                    wave.position.y = waveHeight;
+                    wave.scale.x = 1 + waveWidth * 0.3;
+                    wave.scale.y = 1 + Math.abs(waveHeight) * 0.2;
+                    
+                    // Subtle rotation
+                    wave.rotation.z = Math.sin(time * 0.5 + waveOffset) * 0.1;
+                    
+                    // Fade in/out effect
+                    wave.material.opacity = 0.4 - (index * 0.03) + Math.sin(time + waveOffset) * 0.1;
+                });
+                
+                // Rotate camera slightly for dynamic effect
+                camera.position.x = Math.sin(time * 0.1) * 2;
+                camera.position.y = Math.cos(time * 0.15) * 1;
+                camera.lookAt(0, 0, -10);
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Handle window resize
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation
+            animate();
+            
+            console.log('🎵 3D Sound Wave animation initialized');
+        }
+        
         // Make auth globally available after a short delay to ensure initialization
         setTimeout(() => {
             window.auth = auth;
@@ -278,6 +379,9 @@
             
             // Initialize navigation
             initNavigation();
+            
+            // Initialize 3D sound wave animation
+            initSoundWaveAnimation();
         }, 100);
         
         // Load packages dynamically
