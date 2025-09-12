@@ -254,9 +254,19 @@ function logoutUser() {
     // Destroy session
     session_destroy();
     
-    // Redirect to login
-    header('Location: ' . BASE_URL . '/login.php?message=logged_out');
-    exit;
+    // Check if this is an API call
+    if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
+        // Return JSON response for API calls
+        echo json_encode([
+            'success' => true,
+            'message' => 'Logged out successfully'
+        ]);
+        exit;
+    } else {
+        // Redirect to login for regular page requests
+        header('Location: ' . BASE_URL . '/login.php?message=logged_out');
+        exit;
+    }
 }
 
 /**
@@ -317,8 +327,6 @@ function handleAuthAPI() {
 }
 
 // If this file is called directly as an API endpoint
-// Temporarily commented out to debug redirect issues
-/*
 if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
     try {
         handleAuthAPI();
@@ -331,5 +339,4 @@ if (basename($_SERVER['PHP_SELF']) === 'unified_auth.php') {
         ]);
     }
 }
-*/
 ?>
