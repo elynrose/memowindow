@@ -22,7 +22,20 @@ async function showUserInfo(user) {
   if (!els.userInfo) return;
   
   els.userInfo.classList.remove('hidden');
+  
+  // Show hamburger menu button when user is logged in
+  const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+  if (mobileMenuToggle) {
+    mobileMenuToggle.classList.remove('hidden');
+    console.log('✅ Hamburger menu button shown for logged-in user');
+  }
   els.userName.textContent = user.displayName || user.email;
+  
+  // Update mobile menu user name
+  const mobileUserName = document.getElementById('mobile-user-name');
+  if (mobileUserName) {
+    mobileUserName.textContent = user.displayName || user.email || 'User';
+  }
   
   // Set user avatar with better fallback
   if (user.photoURL) {

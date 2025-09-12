@@ -75,18 +75,60 @@ export function initNavigation() {
         });
     }
     
-    // Set up mobile menu toggle
-    if (els.mobileMenuToggle) {
-        els.mobileMenuToggle.addEventListener('click', () => {
-            els.mobileMenuToggle.classList.toggle('active');
-            els.userInfo.classList.toggle('mobile-open');
+    // Initialize custom mobile menu (simpler approach)
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuToggle && mobileMenu) {
+        // Set up mobile menu toggle
+        mobileMenuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            mobileMenuToggle.classList.toggle('active');
+            mobileMenu.classList.toggle('mobile-open');
+            document.body.classList.toggle('menu-open');
+            console.log('✅ Mobile menu toggled');
         });
         
         // Close mobile menu when clicking outside
         document.addEventListener('click', (e) => {
-            if (!els.mobileMenuToggle.contains(e.target) && !els.userInfo.contains(e.target)) {
-                els.mobileMenuToggle.classList.remove('active');
-                els.userInfo.classList.remove('mobile-open');
+            if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('mobile-open');
+                document.body.classList.remove('menu-open');
+            }
+        });
+        
+        // Close mobile menu when clicking on a link
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('mobile-open');
+                document.body.classList.remove('menu-open');
+            }
+        });
+        
+        console.log('✅ Custom mobile menu initialized successfully');
+    }
+    
+    // Set up logout button for mobile menu
+    const mobileLogoutBtn = document.getElementById('mobile-logout');
+    if (mobileLogoutBtn) {
+        mobileLogoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                console.log('🚪 Logging out from mobile menu...');
+                const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const result = await response.json();
+                console.log('🔍 Server logout response:', result);
+                const { auth } = await import('../firebase-config.php');
+                await auth.signOut();
+                console.log('✅ Firebase sign out successful');
+                sessionStorage.removeItem('currentUser');
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.php';
+            } catch (error) {
+                console.error('❌ Logout failed:', error);
+                window.location.href = 'login.php';
             }
         });
     }
@@ -99,6 +141,11 @@ export function showUserInfo(user) {
     
     els.userInfo.classList.remove('hidden');
     
+    // Show hamburger menu button when user is logged in
+    if (els.mobileMenuToggle) {
+        els.mobileMenuToggle.classList.remove('hidden');
+    }
+    
     if (els.userName) {
         els.userName.textContent = user.displayName || user.email || 'User';
     }
@@ -106,6 +153,12 @@ export function showUserInfo(user) {
     if (els.userAvatar) {
         els.userAvatar.src = user.photoURL || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHZpZXdCb3g9IjAgMCAyOCAyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTQiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIgMTRDOC42ODYyOSAxNCA2IDE2LjY4NjMgNiAyMEgyMEMyMCAxNi42ODYzIDE3LjMxMzcgMTQgMTQgMTRIOloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K';
         els.userAvatar.alt = user.displayName || 'User avatar';
+    }
+    
+    // Update mobile menu user name
+    const mobileUserName = document.getElementById('mobile-user-name');
+    if (mobileUserName) {
+        mobileUserName.textContent = user.displayName || user.email || 'User';
     }
     
     // Load and display subscription status
@@ -117,6 +170,11 @@ export function hideUserInfo() {
     const els = getElements();
     if (els.userInfo) {
         els.userInfo.classList.add('hidden');
+    }
+    
+    // Hide hamburger menu button when user is logged out
+    if (els.mobileMenuToggle) {
+        els.mobileMenuToggle.classList.add('hidden');
     }
 }
 

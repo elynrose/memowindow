@@ -46,6 +46,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
         
         .logo {
@@ -115,6 +116,8 @@
             cursor: pointer;
             padding: 0.5rem;
             gap: 4px;
+            text-decoration: none;
+            color: #333;
         }
 
         .mobile-menu-toggle.hidden {
@@ -127,6 +130,7 @@
             background: #333;
             transition: all 0.3s ease;
             border-radius: 2px;
+            display: block;
         }
 
         .mobile-menu-toggle.active span:nth-child(1) {
@@ -139,6 +143,73 @@
 
         .mobile-menu-toggle.active span:nth-child(3) {
             transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Mobile menu styles */
+        #mobile-menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 1001;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 2rem 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #mobile-menu.mobile-open {
+            left: 0;
+        }
+
+        #mobile-menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #mobile-menu li {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        #mobile-menu a,
+        #mobile-menu span {
+            display: block;
+            padding: 1rem 2rem;
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        #mobile-menu a:hover,
+        #mobile-menu span:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        #mobile-menu ul ul {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        #mobile-menu ul ul a {
+            padding-left: 3rem;
+            font-size: 1rem;
+        }
+
+        /* Page overlay when menu is open */
+        body.menu-open::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
         }
 
         /* Responsive Design */
@@ -154,7 +225,16 @@
             
             /* Show hamburger menu on mobile */
             .mobile-menu-toggle {
-                display: flex;
+                display: flex !important;
+                order: -1; /* Move to the left */
+            }
+            
+            /* Center the logo on mobile */
+            .logo {
+                order: 0;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
             }
             
             /* Hide user info on mobile by default */
@@ -520,6 +600,7 @@
         }
         
     </style>
+    
 </head>
 <body>
     <!-- Modern Header -->
@@ -529,16 +610,17 @@
                 <img src="images/logo.png" alt="MemoWindow" style="height: 40px; width: auto;">
             </a>
             
-            <!-- Mobile hamburger menu toggle -->
-            <button id="mobileMenuToggle" class="mobile-menu-toggle hidden">
+            <!-- Mobile hamburger menu -->
+            <a href="#mobile-menu" class="mobile-menu-toggle hidden">
                 <span></span>
                 <span></span>
                 <span></span>
-            </button>
+            </a>
             
             <div id="userInfo" class="user-info hidden">
                 <a href="memories.php" class="header-link">My Memories</a>
                 <a id="ordersLink" href="#" class="header-link">My Orders</a>
+                <a href="subscription_management.php" class="header-link">Manage Subscription</a>
                 <a id="btnLogout" href="#" class="header-link">Sign Out</a>
                 <div class="user-profile">
                     <img id="userAvatar" class="user-avatar" src="" alt="User avatar">
@@ -547,6 +629,27 @@
             </div>
         </nav>
     </header>
+
+    <!-- mmenu mobile menu -->
+    <nav id="mobile-menu">
+        <ul>
+            <li><a href="memories.php">My Memories</a></li>
+            <li><a href="orders.php">My Orders</a></li>
+            <li>
+                <span>Subscription</span>
+                <ul id="subscription-menu">
+                    <li><a href="index.php#pricing">Upgrade Plan</a></li>
+                    <li><a href="subscription_management.php">Manage Subscription</a></li>
+                </ul>
+            </li>
+            <li>
+                <span id="mobile-user-name">User</span>
+                <ul>
+                    <li><a href="#" id="mobile-logout">Sign Out</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
 
     <!-- Main Content -->
     <div class="wrap">
@@ -627,5 +730,6 @@
         });
         
     </script>
+    
 </body>
 </html>

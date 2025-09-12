@@ -19,6 +19,7 @@
     <!-- Navigation Styles -->
     <link rel="stylesheet" href="includes/navigation.css">
     
+    
     <style>
         * {
             margin: 0;
@@ -1014,17 +1015,29 @@
         // Function to update navigation for logged-in users
         async function updateNavigationForLoggedInUser(user) {
             try {
+                // Show hamburger menu button when user is logged in
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                if (mobileMenuToggle) {
+                    mobileMenuToggle.classList.remove('hidden');
+                    console.log('✅ Hamburger menu button shown for logged-in user');
+                } else {
+                    console.error('❌ Hamburger menu button not found');
+                }
+                
                 // Get user's subscription status
                 const response = await fetch(`get_user_subscription.php?user_id=${encodeURIComponent(user.uid)}`);
                 const data = await response.json();
                 
-                const navSection = document.getElementById('nav-auth-section');
+                const navSection = document.getElementById('userInfo');
                 
                 if (data.success) {
                     const subscription = data.subscription;
                     const isFree = subscription.package_slug === 'free' || !data.has_subscription;
                     
                     navSection.innerHTML = `
+                        <a href="memories.php" class="header-link">My Memories</a>
+                        <a href="orders.php" class="header-link">My Orders</a>
+                        <a href="subscription_management.php" class="header-link">Manage Subscription</a>
                         <div class="subscription-status">
                             <div class="subscription-info">
                                 <div class="subscription-plan">${subscription.package_name} Plan</div>
@@ -1035,10 +1048,22 @@
                                 '<a href="subscription_checkout.php?user_id=' + encodeURIComponent(user.uid) + '" class="upgrade-button">Manage</a>'
                             }
                         </div>
+                        <div class="user-profile">
+                            <img class="user-avatar" src="${user.photoURL || 'images/default-avatar.png'}" alt="User avatar">
+                            <div class="user-details">
+                                <span>${user.displayName || user.email || 'User'}</span>
+                                <div class="user-submenu">
+                                    <a href="#" id="btnLogout" class="header-link submenu-link">Sign Out</a>
+                                </div>
+                            </div>
+                        </div>
                     `;
                 } else {
                     // Fallback if subscription check fails
                     navSection.innerHTML = `
+                        <a href="memories.php" class="header-link">My Memories</a>
+                        <a href="orders.php" class="header-link">My Orders</a>
+                        <a href="subscription_management.php" class="header-link">Manage Subscription</a>
                         <div class="subscription-status">
                             <div class="subscription-info">
                                 <div class="subscription-plan">Free Plan</div>
@@ -1046,13 +1071,47 @@
                             </div>
                             <a href="#pricing" class="upgrade-button">Upgrade</a>
                         </div>
+                        <div class="user-profile">
+                            <img class="user-avatar" src="${user.photoURL || 'images/default-avatar.png'}" alt="User avatar">
+                            <div class="user-details">
+                                <span>${user.displayName || user.email || 'User'}</span>
+                                <div class="user-submenu">
+                                    <a href="#" id="btnLogout" class="header-link submenu-link">Sign Out</a>
+                                </div>
+                            </div>
+                        </div>
                     `;
+                }
+                
+                // Add logout event listener
+                const logoutBtn = document.getElementById('btnLogout');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        try {
+                            console.log('🚪 Logging out...');
+                            const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                            const result = await response.json();
+                            console.log('🔍 Server logout response:', result);
+                            await auth.signOut();
+                            console.log('✅ Firebase sign out successful');
+                            sessionStorage.removeItem('currentUser');
+                            localStorage.removeItem('currentUser');
+                            window.location.href = 'login.php';
+                        } catch (error) {
+                            console.error('❌ Logout failed:', error);
+                            window.location.href = 'login.php';
+                        }
+                    });
                 }
             } catch (error) {
                 console.error('Error fetching subscription status:', error);
                 // Fallback to upgrade button
-                const navSection = document.getElementById('nav-auth-section');
+                const navSection = document.getElementById('userInfo');
                 navSection.innerHTML = `
+                    <a href="memories.php" class="header-link">My Memories</a>
+                    <a href="orders.php" class="header-link">My Orders</a>
+                    <a href="subscription_management.php" class="header-link">Manage Subscription</a>
                     <div class="subscription-status">
                         <div class="subscription-info">
                             <div class="subscription-plan">Free Plan</div>
@@ -1060,13 +1119,51 @@
                         </div>
                         <a href="#pricing" class="upgrade-button">Upgrade</a>
                     </div>
+                    <div class="user-profile">
+                        <img class="user-avatar" src="${user.photoURL || 'images/default-avatar.png'}" alt="User avatar">
+                        <div class="user-details">
+                            <span>${user.displayName || user.email || 'User'}</span>
+                            <div class="user-submenu">
+                                <a href="#" id="btnLogout" class="header-link submenu-link">Sign Out</a>
+                            </div>
+                        </div>
+                    </div>
                 `;
+                
+                // Add logout event listener for error fallback
+                const logoutBtn = document.getElementById('btnLogout');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        try {
+                            console.log('🚪 Logging out...');
+                            const response = await fetch('logout.php', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                            const result = await response.json();
+                            console.log('🔍 Server logout response:', result);
+                            await auth.signOut();
+                            console.log('✅ Firebase sign out successful');
+                            sessionStorage.removeItem('currentUser');
+                            localStorage.removeItem('currentUser');
+                            window.location.href = 'login.php';
+                        } catch (error) {
+                            console.error('❌ Logout failed:', error);
+                            window.location.href = 'login.php';
+                        }
+                    });
+                }
             }
         }
         
         // Function to update navigation for logged-out users
         function updateNavigationForLoggedOutUser() {
-            const navSection = document.getElementById('nav-auth-section');
+            // Hide hamburger menu button when user is logged out
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            if (mobileMenuToggle) {
+                mobileMenuToggle.classList.add('hidden');
+                console.log('✅ Hamburger menu button hidden for logged-out user');
+            }
+            
+            const navSection = document.getElementById('userInfo');
             navSection.innerHTML = '<a href="login.php" class="cta-button">Get Started</a>';
         }
 
@@ -1245,5 +1342,6 @@
             }
         };
     </script>
+    
 </body>
 </html>
