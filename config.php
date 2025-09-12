@@ -25,6 +25,9 @@ function loadEnv($path) {
 
 $env = loadEnv(__DIR__ . '/.env');
 
+// Firebase Configuration
+define('FIREBASE_API_KEY', $env['FIREBASE_API_KEY'] ?? 'AIzaSyAUTI2-Ab0-ZKaV0kon_60Uoa6SqJuldjk');
+
 // Stripe Configuration
 define('STRIPE_PUBLISHABLE_KEY', $env['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_test_your_stripe_publishable_key_here');
 define('STRIPE_SECRET_KEY', $env['STRIPE_SECRET_KEY'] ?? 'sk_test_your_stripe_secret_key_here');
