@@ -125,6 +125,8 @@ async function waitForGlobalsModule() {
         return;
     }
     
+    // Log the current state for debugging
+    console.log("Window state:", {
         globalsModuleReady: window.globalsModuleReady,
         showOrderOptions: typeof window.showOrderOptions,
         orderProduct: typeof window.orderProduct,
