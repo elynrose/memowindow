@@ -1,14 +1,17 @@
 <?php
+require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'SubscriptionManager.php';
 
-// Get user ID from session or parameter
-$userId = $_GET['user_id'] ?? '';
-
-if (!$userId) {
-    die('User ID required');
+// Get current authenticated user
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    // Redirect to login if not authenticated
+    header('Location: login.php?error=login_required');
+    exit;
 }
 
+$userId = $currentUser['uid'];
 $subscriptionManager = new SubscriptionManager();
 $packages = $subscriptionManager->getAvailablePackages();
 $currentLimits = $subscriptionManager->getUserLimits($userId);
@@ -300,11 +303,11 @@ $currentLimits = $subscriptionManager->getUserLimits($userId);
                     </div>
                     
                     <?php if ($package['price_monthly'] > 0): ?>
-                        <a href="create_subscription_checkout.php?user_id=<?= urlencode($userId) ?>&package_id=<?= $package['id'] ?>&billing=monthly" class="btn">
+                        <a href="create_subscription_checkout.php?package_id=<?= $package['id'] ?>&billing=monthly" class="btn">
                             Start Monthly Plan
                         </a>
                         <?php if ($package['price_yearly'] > 0): ?>
-                            <a href="create_subscription_checkout.php?user_id=<?= urlencode($userId) ?>&package_id=<?= $package['id'] ?>&billing=yearly" class="btn btn-secondary" style="margin-top: 10px;">
+                            <a href="create_subscription_checkout.php?package_id=<?= $package['id'] ?>&billing=yearly" class="btn btn-secondary" style="margin-top: 10px;">
                                 Start Yearly Plan
                             </a>
                         <?php endif; ?>

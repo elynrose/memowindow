@@ -1,19 +1,27 @@
 <?php
+require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'SubscriptionManager.php';
 
+// Get current authenticated user
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    header('Location: login.php?error=login_required');
+    exit;
+}
+
 $sessionId = $_GET['session_id'] ?? '';
-$userId = $_GET['user_id'] ?? '';
+$userId = $currentUser['uid'];
 $packageId = $_GET['package_id'] ?? '';
 $packageName = $_GET['package_name'] ?? '';
 $billing = $_GET['billing'] ?? 'monthly';
 
 // If we have direct parameters (for testing without Stripe), handle them
-if (!$sessionId && $userId && $packageId) {
+if (!$sessionId && $packageId) {
     $success = true;
     $packageName = $packageName ?: 'Standard';
 } elseif (!$sessionId) {
-    die('Session ID or user parameters required');
+    die('Session ID or package parameters required');
 }
 
 if ($sessionId) {

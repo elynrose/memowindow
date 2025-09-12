@@ -1,16 +1,25 @@
 <?php
+require_once 'unified_auth.php';
 require_once 'config.php';
 require_once 'SubscriptionManager.php';
 
 header('Content-Type: application/json');
 
 try {
-    $userId = $_POST['user_id'] ?? $_GET['user_id'] ?? '';
+    // Get current authenticated user
+    $currentUser = getCurrentUser();
+    if (!$currentUser) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
+    }
+    
+    $userId = $currentUser['uid'];
     $packageId = $_POST['package_id'] ?? $_GET['package_id'] ?? '';
     $billing = $_POST['billing'] ?? $_GET['billing'] ?? 'monthly';
     
-    if (!$userId || !$packageId) {
-        throw new Exception('User ID and Package ID required');
+    if (!$packageId) {
+        throw new Exception('Package ID required');
     }
     
     $subscriptionManager = new SubscriptionManager();
@@ -41,7 +50,7 @@ try {
     if (!$priceId) {
         // For now, redirect to a simple success page since Stripe is not fully configured
         // In production, you would need to create Stripe products and prices first
-        header('Location: subscription_success.php?user_id=' . urlencode($userId) . '&package_id=' . urlencode($package['id']) . '&package_name=' . urlencode($package['name']) . '&billing=' . urlencode($billing));
+        header('Location: subscription_success.php?package_id=' . urlencode($package['id']) . '&package_name=' . urlencode($package['name']) . '&billing=' . urlencode($billing));
         exit;
     }
     
@@ -54,7 +63,7 @@ try {
         ]],
         'mode' => 'subscription',
         'success_url' => BASE_URL . '/subscription_success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url' => BASE_URL . '/subscription_checkout.php?user_id=' . urlencode($userId),
+        'cancel_url' => BASE_URL . '/subscription_checkout.php',
         'customer_email' => $userEmail,
         'metadata' => [
             'user_id' => $userId,
