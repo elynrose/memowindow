@@ -3,9 +3,12 @@
 require_once 'unified_auth.php';
 require_once 'config.php';
 
-// Require admin authentication
-$currentUser = requireAdmin();
-$userFirebaseUID = $currentUser['uid'];
+// Check if user is authenticated
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    header('Location: login.php');
+    exit;
+}
 
 // Check if user is admin
 try {
@@ -13,13 +16,14 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
     
-    $adminCheck = $pdo->prepare("SELECT * FROM admin_users WHERE firebase_uid = :uid AND is_admin = 1");
-    $adminCheck->execute([':uid' => $userFirebaseUID]);
-    $adminUser = $adminCheck->fetch(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = ?");
+    $stmt->execute([$currentUser['uid']]);
+    $user = $stmt->fetch();
     
-    if (!$adminUser) {
-        http_response_code(403);
-        echo "Access denied. Admin privileges required.";
+    $isAdmin = $user && $user['is_admin'] == 1;
+    
+    if (!$isAdmin) {
+        header('Location: app.php');
         exit;
     }
     
@@ -222,6 +226,9 @@ try {
             <button onclick="verifyAllBackups()" class="btn btn-primary">
                 ✅ Verify All Backups
             </button>
+            <button onclick="restoreAllBackups()" class="btn btn-warning">
+                🔄 Restore All to Firebase
+            </button>
             <button onclick="exportBackupReport()" class="btn btn-warning">
                 📊 Export Backup Report
             </button>
@@ -265,6 +272,7 @@ try {
                         <div style="display: flex; gap: 4px;">
                             <button onclick="createBackup(<?php echo $memory['id']; ?>)" class="btn btn-success" title="Create Backup">🔄</button>
                             <button onclick="verifyBackup(<?php echo $memory['id']; ?>)" class="btn btn-primary" title="Verify Backup">✅</button>
+                            <button onclick="restoreBackup(<?php echo $memory['id']; ?>)" class="btn btn-warning" title="Restore to Firebase">🔄</button>
                             <button onclick="viewBackupDetails(<?php echo $memory['id']; ?>)" class="btn btn-warning" title="View Details">📋</button>
                         </div>
                     </div>
@@ -390,8 +398,53 @@ try {
             window.open(`export_data.php?type=backups`, '_blank');
         }
 
+        async function restoreBackup(memoryId) {
+            if (!confirm('Restore this memory from local backup to Firebase Storage?\n\nThis will upload the backup file to Firebase and update the memory record.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('backup_audio.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=restore_backup&memory_id=${memoryId}`
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`✅ Memory restored successfully!\nNew Firebase URL: ${result.new_url}\nFile size: ${(result.file_size / 1024 / 1024).toFixed(1)} MB`);
+                    location.reload();
+                } else {
+                    alert('❌ Restore failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error restoring backup: ' + error.message);
+            }
+        }
+
+        async function restoreAllBackups() {
+            if (!confirm('Restore all local backups to Firebase Storage?\n\nThis will process all memories with local backups and upload them to Firebase. This may take several minutes.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('backup_audio.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'action=restore_all_backups'
+                });
+                
+                const result = await response.json();
+                alert(result.message || 'Restore process completed');
+                location.reload();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
         function showBackupSettings() {
-            alert('Backup settings:\n\n✅ Automatic backup creation\n✅ Multiple Firebase Storage locations\n✅ Checksum verification\n✅ Weekly health checks\n\nSettings are configured in backup_audio.php');
+            alert('Backup settings:\n\n✅ Automatic backup creation\n✅ Multiple Firebase Storage locations\n✅ Checksum verification\n✅ Weekly health checks\n✅ Local to Firebase restore\n\nSettings are configured in backup_audio.php');
         }
 
         // Auto-refresh every 2 minutes

@@ -1,6 +1,39 @@
 <?php
 // backup_audio.php - Audio backup and recovery system
 require_once 'config.php';
+require_once 'unified_auth.php';
+
+// Check if user is authenticated and is admin
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Authentication required']);
+    exit;
+}
+
+// Check admin status
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    ]);
+    
+    $stmt = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = ?");
+    $stmt->execute([$currentUser['uid']]);
+    $user = $stmt->fetch();
+    
+    $isAdmin = $user && $user['is_admin'] == 1;
+    
+    if (!$isAdmin) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Admin privileges required']);
+        exit;
+    }
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Database error']);
+    exit;
+}
 
 class AudioBackupSystem {
     private $pdo;
@@ -181,6 +214,121 @@ class AudioBackupSystem {
             return ['error' => $e->getMessage()];
         }
     }
+    
+    public function restoreFromBackup($memoryId) {
+        try {
+            // Get memory details and backup information
+            // Look for any backup that's different from the current audio_url
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    w.id,
+                    w.title,
+                    w.audio_url,
+                    w.audio_size,
+                    w.audio_duration,
+                    ab.backup_url,
+                    ab.file_size,
+                    ab.backup_type
+                FROM wave_assets w
+                INNER JOIN audio_backups ab ON w.id = ab.memory_id
+                WHERE w.id = ? 
+                AND (
+                    ab.backup_type = 'local_backup' 
+                    OR ab.backup_type IN ('firebase_backup', 'firebase_archive')
+                )
+                ORDER BY ab.created_at DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$memoryId]);
+            $backup = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$backup) {
+                return ['success' => false, 'error' => 'No suitable backup found for this memory'];
+            }
+            
+            // Download the backup file
+            $backupData = file_get_contents($backup['backup_url']);
+            if (!$backupData) {
+                return ['success' => false, 'error' => 'Failed to download backup file'];
+            }
+            
+            // Generate a unique filename for Firebase Storage
+            $fileExtension = pathinfo($backup['backup_url'], PATHINFO_EXTENSION) ?: 'mp3';
+            $fileName = 'restored_' . $memoryId . '_' . time() . '.' . $fileExtension;
+            $firebasePath = 'audio/' . $fileName;
+            
+            // Upload to Firebase Storage
+            $firebaseUrl = $this->uploadToFirebase($backupData, $firebasePath);
+            if (!$firebaseUrl) {
+                return ['success' => false, 'error' => 'Failed to upload to Firebase Storage'];
+            }
+            
+            // Update the memory record with the new Firebase URL
+            $updateStmt = $this->pdo->prepare("
+                UPDATE wave_assets 
+                SET audio_url = ?, 
+                    audio_size = ?, 
+                    audio_duration = ?,
+                    backup_status = 'restored',
+                    last_backup_check = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ");
+            $updateStmt->execute([
+                $firebaseUrl,
+                $backup['file_size'] ?: strlen($backupData),
+                $backup['audio_duration'],
+                $memoryId
+            ]);
+            
+            // Create a new backup record for the restored file
+            $backupStmt = $this->pdo->prepare("
+                INSERT INTO audio_backups (memory_id, backup_type, backup_url, file_size, status, created_at)
+                VALUES (?, 'firebase_restored', ?, ?, 'active', CURRENT_TIMESTAMP)
+            ");
+            $backupStmt->execute([
+                $memoryId,
+                $firebaseUrl,
+                $backup['file_size'] ?: strlen($backupData)
+            ]);
+            
+            return [
+                'success' => true,
+                'message' => 'Memory restored successfully to Firebase Storage',
+                'new_url' => $firebaseUrl,
+                'file_size' => $backup['file_size'] ?: strlen($backupData),
+                'memory_id' => $memoryId
+            ];
+            
+        } catch (Exception $e) {
+            return ['success' => false, 'error' => 'Restore failed: ' . $e->getMessage()];
+        }
+    }
+    
+    private function uploadToFirebase($fileData, $path) {
+        try {
+            // Initialize Firebase Storage
+            require_once 'firebase-config.php';
+            
+            $bucket = $storage->bucket();
+            $object = $bucket->upload($fileData, [
+                'name' => $path,
+                'metadata' => [
+                    'contentType' => 'audio/mpeg',
+                    'cacheControl' => 'public, max-age=31536000'
+                ]
+            ]);
+            
+            // Make the file publicly accessible
+            $object->update(['acl' => [['entity' => 'allUsers', 'role' => 'READER']]]);
+            
+            // Return the public URL
+            return 'https://storage.googleapis.com/' . $bucket->name() . '/' . $path;
+            
+        } catch (Exception $e) {
+            error_log("Firebase upload error: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 
 // API endpoints
@@ -189,18 +337,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $memoryId = intval($_POST['memory_id'] ?? 0);
     $audioUrl = $_POST['audio_url'] ?? '';
     
+    // Create PDO connection for database operations
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    ]);
+    
     $backupSystem = new AudioBackupSystem();
     
     switch ($action) {
+        case 'create_backup':
         case 'create_backups':
-            if ($memoryId && $audioUrl) {
+            if ($memoryId) {
+                // Get the audio URL from the database if not provided
+                if (!$audioUrl) {
+                    $stmt = $pdo->prepare("SELECT audio_url FROM wave_assets WHERE id = ?");
+                    $stmt->execute([$memoryId]);
+                    $memory = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($memory && $memory['audio_url']) {
+                        $audioUrl = $memory['audio_url'];
+                    } else {
+                        echo json_encode(['success' => false, 'error' => 'No audio URL found for this memory']);
+                        exit;
+                    }
+                }
+                
                 $result = $backupSystem->createAudioBackups($memoryId, $audioUrl);
                 echo json_encode($result);
             } else {
-                echo json_encode(['success' => false, 'error' => 'Missing parameters']);
+                echo json_encode(['success' => false, 'error' => 'Missing memory ID']);
             }
             break;
             
+        case 'verify_backup':
         case 'verify_backups':
             if ($memoryId) {
                 $result = $backupSystem->verifyBackups($memoryId);
@@ -210,8 +378,157 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
             
+        case 'create_all_backups':
+            try {
+                // Get all memories that need backups
+                $stmt = $pdo->query("
+                    SELECT id, audio_url 
+                    FROM wave_assets 
+                    WHERE audio_url IS NOT NULL 
+                    AND (backup_status IS NULL OR backup_status = 'pending' OR backup_status = 'failed')
+                ");
+                $memories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $totalBackups = 0;
+                $totalSize = 0;
+                $errors = [];
+                
+                foreach ($memories as $memory) {
+                    $result = $backupSystem->createAudioBackups($memory['id'], $memory['audio_url']);
+                    if ($result['success']) {
+                        $totalBackups += $result['backups_created'] ?? 0;
+                        $totalSize += $result['total_size'] ?? 0;
+                    } else {
+                        $errors[] = "Memory {$memory['id']}: " . $result['error'];
+                    }
+                }
+                
+                $message = "Backup process completed!\n";
+                $message .= "Memories processed: " . count($memories) . "\n";
+                $message .= "Total backups created: $totalBackups\n";
+                $message .= "Total size: " . number_format($totalSize / 1024 / 1024, 1) . " MB";
+                
+                if (!empty($errors)) {
+                    $message .= "\n\nErrors:\n" . implode("\n", array_slice($errors, 0, 5));
+                    if (count($errors) > 5) {
+                        $message .= "\n... and " . (count($errors) - 5) . " more errors";
+                    }
+                }
+                
+                echo json_encode(['success' => true, 'message' => $message]);
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'error' => 'Bulk backup failed: ' . $e->getMessage()]);
+            }
+            break;
+            
+        case 'verify_all_backups':
+            try {
+                // Get all memories with backups
+                $stmt = $pdo->query("
+                    SELECT DISTINCT w.id 
+                    FROM wave_assets w
+                    INNER JOIN audio_backups ab ON w.id = ab.memory_id
+                    WHERE w.audio_url IS NOT NULL
+                ");
+                $memories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $totalVerified = 0;
+                $totalAccessible = 0;
+                $errors = [];
+                
+                foreach ($memories as $memory) {
+                    $result = $backupSystem->verifyBackups($memory['id']);
+                    if ($result && is_array($result)) {
+                        $totalVerified += count($result);
+                        $totalAccessible += count(array_filter($result, function($b) { return $b['accessible']; }));
+                    } else {
+                        $errors[] = "Memory {$memory['id']}: Verification failed";
+                    }
+                }
+                
+                $message = "Verification process completed!\n";
+                $message .= "Memories verified: " . count($memories) . "\n";
+                $message .= "Total backups checked: $totalVerified\n";
+                $message .= "Accessible backups: $totalAccessible\n";
+                $message .= "Success rate: " . ($totalVerified > 0 ? round(($totalAccessible / $totalVerified) * 100, 1) : 0) . "%";
+                
+                if (!empty($errors)) {
+                    $message .= "\n\nErrors:\n" . implode("\n", array_slice($errors, 0, 5));
+                    if (count($errors) > 5) {
+                        $message .= "\n... and " . (count($errors) - 5) . " more errors";
+                    }
+                }
+                
+                echo json_encode(['success' => true, 'message' => $message]);
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'error' => 'Bulk verification failed: ' . $e->getMessage()]);
+            }
+            break;
+            
+        case 'restore_backup':
+            if ($memoryId) {
+                $result = $backupSystem->restoreFromBackup($memoryId);
+                echo json_encode($result);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Missing memory ID']);
+            }
+            break;
+            
+        case 'restore_all_backups':
+            try {
+                // Get all memories that have backups but may need restoration
+                // This includes memories with local URLs or any memories with backups
+                $stmt = $pdo->query("
+                    SELECT DISTINCT w.id, w.title, w.audio_url
+                    FROM wave_assets w
+                    INNER JOIN audio_backups ab ON w.id = ab.memory_id
+                    WHERE w.audio_url IS NOT NULL
+                    AND (
+                        w.audio_url LIKE '%localhost%' 
+                        OR w.audio_url LIKE '%127.0.0.1%' 
+                        OR w.audio_url LIKE '%local%'
+                        OR w.audio_url LIKE '%/audio_cache/%'
+                        OR w.audio_url LIKE '%/temp/%'
+                        OR ab.backup_type = 'local_backup'
+                        OR ab.backup_type IN ('firebase_backup', 'firebase_archive')
+                    )
+                ");
+                $memories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $totalRestored = 0;
+                $totalSize = 0;
+                $errors = [];
+                
+                foreach ($memories as $memory) {
+                    $result = $backupSystem->restoreFromBackup($memory['id']);
+                    if ($result['success']) {
+                        $totalRestored++;
+                        $totalSize += $result['file_size'] ?? 0;
+                    } else {
+                        $errors[] = "Memory {$memory['id']} ({$memory['title']}): " . $result['error'];
+                    }
+                }
+                
+                $message = "Restore process completed!\n";
+                $message .= "Memories processed: " . count($memories) . "\n";
+                $message .= "Successfully restored: $totalRestored\n";
+                $message .= "Total size restored: " . number_format($totalSize / 1024 / 1024, 1) . " MB";
+                
+                if (!empty($errors)) {
+                    $message .= "\n\nErrors:\n" . implode("\n", array_slice($errors, 0, 5));
+                    if (count($errors) > 5) {
+                        $message .= "\n... and " . (count($errors) - 5) . " more errors";
+                    }
+                }
+                
+                echo json_encode(['success' => true, 'message' => $message]);
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'error' => 'Bulk restore failed: ' . $e->getMessage()]);
+            }
+            break;
+            
         default:
-            echo json_encode(['success' => false, 'error' => 'Invalid action']);
+            echo json_encode(['success' => false, 'error' => 'Invalid action: ' . $action]);
     }
     exit;
 }

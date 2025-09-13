@@ -75,3 +75,4 @@ test-*.php
 
 # Firebase config (since we're using PHP to generate it dynamically)
 src/firebase-config.js
+sessions/

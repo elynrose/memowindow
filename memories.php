@@ -485,6 +485,16 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         }
         
+        .memory-image-link {
+            display: block;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .memory-image-link:hover {
+            transform: scale(1.02);
+        }
+        
         .memory-image {
             width: 100%;
             height: 200px;

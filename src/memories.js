@@ -221,48 +221,14 @@ function displayMemories(memories) {
              data-memory-id="${memory.id}" 
              data-audio-url="${memory.audio_url || ''}" 
              data-memory-title="${memory.title || 'Untitled'}">
-            <img src="${memory.image_url}" 
-                 alt="${memory.title || 'Memory'}" 
-                 class="memory-image memory-image-clickable" 
-                 data-image-url="${memory.image_url}" 
-                 data-title="${memory.title || 'Untitled'}" 
-                 data-qr-url="${memory.qr_url || ''}">
+            <a href="memory_detail.php?id=${memory.id}" class="memory-image-link">
+                <img src="${memory.image_url}" 
+                     alt="${memory.title || 'Memory'}" 
+                     class="memory-image">
+            </a>
             <div class="memory-content">
                 <h3 class="memory-title">${memory.title || 'Untitled'}</h3>
                 <p class="memory-date">${new Date(memory.created_at).toLocaleDateString()}</p>
-                <div class="memory-actions">
-                    <a href="${memory.image_url}" target="_blank" class="memory-action">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                        </svg>
-                        View
-                    </a>
-                    <a href="${memory.qr_url || '#'}" target="_blank" class="memory-action">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13-2h-2v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/>
-                        </svg>
-                        QR
-                    </a>
-                    <a href="#" class="memory-action order" data-memory-id="${memory.id}" data-image-url="${memory.image_url}" data-title="${memory.title || 'Untitled'}">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12.5h-8v-4h8v4z"/>
-                        </svg>
-                        Order
-                    </a>
-                    ${memory.audio_url ? `
-                    <button class="memory-action voice-clone" data-memory-id="${memory.id}" data-audio-url="${memory.audio_url}" data-title="${memory.title || 'Untitled'}" style="background: #8b5cf6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
-                        🎤 Clone Voice
-                    </button>
-                    <button class="memory-action generate-audio" data-memory-id="${memory.id}" data-title="${memory.title || 'Untitled'}" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: none;">
-                        🎵 Generate Audio
-                    </button>
-                    ` : ''}
-                    <a href="#" class="memory-action delete" data-memory-id="${memory.id}">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                        </svg>
-                    </a>
-                </div>
             </div>
         </div>
     `).join('');

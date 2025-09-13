@@ -1,32 +1,43 @@
 <?php
 // export_data.php - Export data for admin users
 require_once 'config.php';
+require_once 'unified_auth.php';
 
-$userFirebaseUID = $_GET['user_id'] ?? '';
 $exportType = $_GET['type'] ?? '';
 
-if (!$userFirebaseUID || !$exportType) {
+if (!$exportType) {
     http_response_code(400);
     echo "Missing parameters";
     exit;
 }
 
-// Check if user is admin
+// Check if user is authenticated and is admin
+$currentUser = getCurrentUser();
+if (!$currentUser) {
+    http_response_code(401);
+    echo "Authentication required";
+    exit;
+}
+
+// Check admin status
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
     
-    $adminCheck = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = :uid AND is_admin = 1");
-    $adminCheck->execute([':uid' => $userFirebaseUID]);
+    $stmt = $pdo->prepare("SELECT is_admin FROM admin_users WHERE firebase_uid = ?");
+    $stmt->execute([$currentUser['uid']]);
+    $user = $stmt->fetch();
     
-    if (!$adminCheck->fetch()) {
+    $isAdmin = $user && $user['is_admin'] == 1;
+    
+    if (!$isAdmin) {
         http_response_code(403);
-        echo "Access denied";
+        echo "Admin privileges required";
         exit;
     }
     
-} catch (PDOException $e) {
+} catch (Exception $e) {
     http_response_code(500);
     echo "Database error";
     exit;
@@ -92,6 +103,69 @@ try {
                 $row['status'],
                 $row['printful_order_id'],
                 $row['created_at']
+            ]);
+        }
+        
+    } elseif ($exportType === 'backups') {
+        // Export backup data
+        fputcsv($output, [
+            'Memory ID', 
+            'Title', 
+            'Original Name', 
+            'Audio URL', 
+            'Audio Size (bytes)', 
+            'Audio Duration (seconds)', 
+            'Backup Status', 
+            'Backup URLs', 
+            'Last Backup Check', 
+            'Created At',
+            'Backup Count',
+            'Total Backup Size (bytes)'
+        ]);
+        
+        $stmt = $pdo->query("
+            SELECT 
+                w.id,
+                w.title,
+                w.original_name,
+                w.audio_url,
+                w.audio_size,
+                w.audio_duration,
+                w.backup_status,
+                w.audio_backup_urls,
+                w.last_backup_check,
+                w.created_at,
+                COUNT(ab.id) as backup_count,
+                SUM(ab.file_size) as total_backup_size
+            FROM wave_assets w
+            LEFT JOIN audio_backups ab ON w.id = ab.memory_id
+            WHERE w.audio_url IS NOT NULL
+            GROUP BY w.id
+            ORDER BY w.created_at DESC
+        ");
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $backupUrls = '';
+            if ($row['audio_backup_urls']) {
+                $urls = json_decode($row['audio_backup_urls'], true);
+                if (is_array($urls)) {
+                    $backupUrls = implode('; ', $urls);
+                }
+            }
+            
+            fputcsv($output, [
+                $row['id'],
+                $row['title'] ?: 'Untitled',
+                $row['original_name'],
+                $row['audio_url'],
+                $row['audio_size'] ?: 0,
+                $row['audio_duration'] ?: 0,
+                $row['backup_status'] ?: 'pending',
+                $backupUrls,
+                $row['last_backup_check'] ?: 'Never',
+                $row['created_at'],
+                $row['backup_count'] ?: 0,
+                $row['total_backup_size'] ?: 0
             ]);
         }
         
