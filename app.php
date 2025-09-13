@@ -13,6 +13,9 @@
     <!-- Unified Styles -->
     <link rel="stylesheet" href="includes/unified.css?v=<?php echo time(); ?>">
     
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    
     <style>
         /* Reset and Base Styles */
         * {

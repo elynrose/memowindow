@@ -253,7 +253,7 @@ function showEmptyState() {
             <div class="empty-state-icon">🎵</div>
             <h3>No memories yet</h3>
             <p>Create your first beautiful waveform memory to get started!</p>
-            <a href="app.php" class="create-memory-btn" style="margin-top: 1rem;">
+            <a href="/app" class="create-memory-btn" style="margin-top: 1rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
                 </svg>

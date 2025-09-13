@@ -2,23 +2,7 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 import { storage } from '../firebase-config.php';
 
-// Generate QR code using external service
-async function generateQRCode(imageUrl) {
-  const qrParams = new URLSearchParams({
-    size: '512x512',
-    margin: '1',
-    data: imageUrl,
-  });
-  
-  try {
-    const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?${qrParams}`);
-    if (!response.ok) throw new Error('QR service error');
-    return await response.blob();
-  } catch (error) {
-    console.error('QR generation failed:', error);
-    throw new Error('Failed to generate QR code');
-  }
-}
+// QR code generation moved to server-side
 
 // Upload file to Firebase Storage (primary) and local backup
 export async function uploadToFirebaseStorage(blob, fileName, folder = 'waveforms') {
@@ -147,12 +131,8 @@ export async function uploadWaveformFiles(waveformBlob, originalFileName, userId
       audioUrl = await uploadToFirebaseStorage(audioFile, audioFileName, 'audio');
     }
     
-    // Generate QR code if playPageUrl is provided
+    // QR code will be generated server-side, not here
     let qrUrl = null;
-    if (playPageUrl) {
-      const qrBlob = await generateQRCode(playPageUrl);
-      qrUrl = await uploadToFirebaseStorage(qrBlob, qrFileName, 'qr-codes');
-    }
     
     // Log successful upload with hashed user ID for privacy
     const userHashShort = userHash.substring(0, 8);

@@ -18,6 +18,7 @@
         <div id="userInfo" class="user-info hidden">
             <a href="memories.php" class="header-link">My Memories</a>
             <a id="ordersLink" href="#" class="header-link">My Orders</a>
+            <a href="invitation_manager.php" class="header-link">Invitations</a>
             <a href="subscription_management.php" class="header-link">Manage Subscription</a>
             <a id="adminButton" href="admin.php" class="header-link admin-button" style="display: none;">Admin</a>
             <div id="subscriptionStatus" class="subscription-status">
@@ -41,6 +42,7 @@
     <ul>
         <li><a href="memories.php">My Memories</a></li>
         <li><a href="orders.php">My Orders</a></li>
+        <li><a href="invitation_manager.php">Invitations</a></li>
         <li>
             <span>Subscription</span>
             <ul id="subscription-menu">

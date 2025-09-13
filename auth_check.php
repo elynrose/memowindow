@@ -2,7 +2,6 @@
 // auth_check.php - Centralized authentication check for all pages
 // Updated to use secure authentication system
 require_once 'config.php';
-require_once 'secure_auth.php';
 
 // Start session if not already started
 if (session_status() == PHP_SESSION_NONE) {

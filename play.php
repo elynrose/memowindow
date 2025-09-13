@@ -6,32 +6,122 @@
 
 require_once 'config.php';
 
-// Get the unique ID from URL parameter
+// Get the unique ID or custom URL from URL parameter or path
 $uniqueId = $_GET['uid'] ?? '';
+$customUrl = $_GET['custom_url'] ?? '';
 
-if (empty($uniqueId)) {
+// If no custom_url from GET, check if this is a custom URL request (e.g., /play.php/my-custom-url)
+if (empty($customUrl) && isset($_SERVER['REQUEST_URI'])) {
+    $requestUri = $_SERVER['REQUEST_URI'];
+    $pathInfo = parse_url($requestUri, PHP_URL_PATH);
+    $pathParts = explode('/', trim($pathInfo, '/'));
+    
+    // If the path has more than just 'play.php', treat it as a custom URL
+    if (count($pathParts) > 1 && $pathParts[0] === 'play.php') {
+        $customUrl = $pathParts[1];
+    }
+}
+
+if (empty($uniqueId) && empty($customUrl)) {
     http_response_code(404);
     die('Memory not found');
 }
 
-// Get memory details from database using unique ID
+// Get memory details from database using unique ID or custom URL
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
     
-    $stmt = $pdo->prepare("
-        SELECT wa.*, u.email as user_email, u.display_name as user_name
-        FROM wave_assets wa
-        LEFT JOIN users u ON wa.user_id = u.firebase_uid
-        WHERE wa.unique_id = ? AND wa.is_public = 1
-    ");
-    $stmt->execute([$uniqueId]);
+    if (!empty($customUrl)) {
+        // Look up by custom URL
+        $stmt = $pdo->prepare("
+            SELECT wa.*
+            FROM wave_assets wa
+            WHERE wa.custom_url = ? AND wa.is_public = 1
+        ");
+        $stmt->execute([$customUrl]);
+    } else {
+        // Look up by unique ID
+        $stmt = $pdo->prepare("
+            SELECT wa.*
+            FROM wave_assets wa
+            WHERE wa.unique_id = ? AND wa.is_public = 1
+        ");
+        $stmt->execute([$uniqueId]);
+    }
+    
     $memory = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$memory) {
         http_response_code(404);
         die('Memory not found or not publicly accessible');
+    }
+    
+    // Get user information separately to avoid collation issues
+    $userInfo = null;
+    if ($memory['user_id']) {
+        try {
+            $stmt = $pdo->prepare("SELECT email, display_name FROM users WHERE firebase_uid = ?");
+            $stmt->execute([$memory['user_id']]);
+            $userInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // If user lookup fails, continue without user info
+            $userInfo = null;
+        }
+    }
+    
+    // Add user info to memory array
+    if ($userInfo) {
+        $memory['user_email'] = $userInfo['email'];
+        $memory['user_name'] = $userInfo['display_name'];
+    }
+    
+    // Fetch approved submissions for this memory (if it's associated with an invitation)
+    $approvedSubmissions = [];
+    try {
+        // Check if this memory is associated with any invitations
+        $stmt = $pdo->prepare("
+            SELECT ei.id as invitation_id, ei.invitation_title, ei.owner_user_id
+            FROM email_invitations ei
+            WHERE ei.owner_user_id = ? AND ei.status = 'pending'
+        ");
+        $stmt->execute([$memory['user_id']]);
+        $invitations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get approved submissions for each invitation
+        foreach ($invitations as $invitation) {
+            $stmt = $pdo->prepare("
+                SELECT ms.*, ei.invitation_title
+                FROM memory_submissions ms
+                JOIN email_invitations ei ON ms.invitation_id = ei.id
+                WHERE ms.invitation_id = ? AND ms.status = 'approved'
+                ORDER BY ms.approved_at DESC
+            ");
+            $stmt->execute([$invitation['invitation_id']]);
+            $submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $approvedSubmissions = array_merge($approvedSubmissions, $submissions);
+        }
+        
+        // Fetch generated audio for this memory
+        $generatedAudios = [];
+        try {
+            $stmt = $pdo->prepare("
+                SELECT ga.*, vc.voice_name, vc.voice_id
+                FROM generated_audio ga
+                JOIN voice_clones vc ON ga.voice_clone_id = vc.id
+                WHERE vc.source_memory_id = ?
+                ORDER BY ga.created_at DESC
+            ");
+            $stmt->execute([$memory['id']]);
+            $generatedAudios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // If there's an error fetching generated audio, continue without them
+            $generatedAudios = [];
+        }
+    } catch (PDOException $e) {
+        // If there's an error fetching submissions, continue without them
+        $approvedSubmissions = [];
     }
     
 } catch (PDOException $e) {
@@ -168,6 +258,147 @@ $pageTitle = $memory['title'] ?: 'Memory Playback';
             transform: translateY(-2px);
         }
         
+        .playlist-player {
+            margin-top: 20px;
+        }
+        
+        .playlist-info {
+            margin-bottom: 20px;
+        }
+        
+        .current-track {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .track-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .track-counter {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .playlist-progress {
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .playlist-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .playlist-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #333;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .playlist-btn:hover:not(:disabled) {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+        
+        .playlist-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .playlist-btn.primary:hover {
+            background: #5a6fd8;
+        }
+        
+        .playlist-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .playlist-tracks {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .track-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .track-item:hover {
+            background: #e9ecef;
+        }
+        
+        .track-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .track-item.active .track-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .track-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .track-item .track-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .track-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .track-duration {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .track-item.active .track-duration {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
         .share-section {
             margin-top: 30px;
             padding-top: 30px;
@@ -289,10 +520,10 @@ $pageTitle = $memory['title'] ?: 'Memory Playback';
             <div class="memory-player">
                 <?php if ($memory): ?>
                     <img src="<?php echo htmlspecialchars($memory['image_url']); ?>" 
-                         alt="<?php echo htmlspecialchars($memory['title'] ?: 'Memory'); ?>" 
+                         alt="<?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Memory', ENT_QUOTES, 'UTF-8')); ?>" 
                          class="memory-image">
                     
-                    <h2 class="memory-title"><?php echo htmlspecialchars($memory['title'] ?: 'Untitled Memory'); ?></h2>
+                    <h2 class="memory-title"><?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled Memory', ENT_QUOTES, 'UTF-8')); ?></h2>
                     
                     <div class="memory-meta">
                         Created by <?php echo htmlspecialchars($memory['user_name'] ?: $memory['user_email'] ?: 'Anonymous'); ?>
@@ -302,12 +533,60 @@ $pageTitle = $memory['title'] ?: 'Memory Playback';
                     </div>
                     
                     <?php if ($memory['audio_url']): ?>
-                        <div class="audio-player">
-                            <audio controls preload="metadata">
+                        <div class="playlist-player">
+                            <div class="playlist-info">
+                                <div class="current-track">
+                                    <span class="track-title">Loading playlist...</span>
+                                    <span class="track-counter">1 of <?php echo 1 + count($approvedSubmissions) + count($generatedAudios); ?></span>
+                                </div>
+                                <div class="playlist-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <audio id="playlistAudio" controls preload="metadata">
                                 <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/mpeg">
                                 <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/wav">
                                 Your browser does not support the audio element.
                             </audio>
+                            
+                            <div class="playlist-controls">
+                                <button id="prevBtn" class="playlist-btn" disabled>⏮️ Previous</button>
+                                <button id="playPauseBtn" class="playlist-btn primary">▶️ Play</button>
+                                <button id="nextBtn" class="playlist-btn">⏭️ Next</button>
+                            </div>
+                            
+                            <div class="playlist-tracks">
+                                <div class="track-item active" data-index="0">
+                                    <div class="track-info">
+                                        <span class="track-title"><?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Main Memory', ENT_QUOTES, 'UTF-8')); ?></span>
+                                        <span class="track-subtitle">Original Memory</span>
+                                    </div>
+                                    <span class="track-duration">--:--</span>
+                                </div>
+                                
+                                <?php foreach ($approvedSubmissions as $index => $submission): ?>
+                                    <div class="track-item" data-index="<?php echo $index + 1; ?>">
+                                        <div class="track-info">
+                                            <span class="track-title"><?php echo htmlspecialchars(html_entity_decode($submission['memory_title'], ENT_QUOTES, 'UTF-8')); ?></span>
+                                            <span class="track-subtitle">by <?php echo htmlspecialchars($submission['submitter_email']); ?></span>
+                                        </div>
+                                        <span class="track-duration">--:--</span>
+                                    </div>
+                                <?php endforeach; ?>
+                                
+                                <?php foreach ($generatedAudios as $index => $generated): ?>
+                                    <div class="track-item" data-index="<?php echo $index + 1 + count($approvedSubmissions); ?>">
+                                        <div class="track-info">
+                                            <span class="track-title"><?php echo htmlspecialchars(html_entity_decode($generated['memory_title'], ENT_QUOTES, 'UTF-8')); ?></span>
+                                            <span class="track-subtitle">Generated by AI</span>
+                                        </div>
+                                        <span class="track-duration">--:--</span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     <?php endif; ?>
                     
@@ -328,6 +607,7 @@ $pageTitle = $memory['title'] ?: 'Memory Playback';
                             🏠 Create Your Own
                         </a>
                     </div>
+                    
                     
                     <div class="share-section">
                         <h3>Share this memory</h3>
@@ -369,6 +649,169 @@ $pageTitle = $memory['title'] ?: 'Memory Playback';
     </div>
     
     <script>
+        // Playlist functionality
+        class PlaylistPlayer {
+            constructor() {
+                this.audio = document.getElementById('playlistAudio');
+                this.tracks = [];
+                this.currentTrackIndex = 0;
+                this.isPlaying = false;
+                
+                // Initialize playlist data
+                this.initializePlaylist();
+                this.setupEventListeners();
+                this.updateUI();
+            }
+            
+            initializePlaylist() {
+                // Add main memory as first track
+                this.tracks.push({
+                    title: <?php echo json_encode(html_entity_decode($memory['title'] ?: 'Main Memory', ENT_QUOTES, 'UTF-8')); ?>,
+                    subtitle: 'Original Memory',
+                    url: <?php echo json_encode($memory['audio_url']); ?>
+                });
+                
+                // Add approved submissions
+                <?php foreach ($approvedSubmissions as $submission): ?>
+                this.tracks.push({
+                    title: <?php echo json_encode(html_entity_decode($submission['memory_title'], ENT_QUOTES, 'UTF-8')); ?>,
+                    subtitle: 'by ' + <?php echo json_encode($submission['submitter_email']); ?>,
+                    url: <?php echo json_encode($submission['audio_url']); ?>
+                });
+                <?php endforeach; ?>
+                
+                // Add generated audio
+                <?php foreach ($generatedAudios as $generated): ?>
+                this.tracks.push({
+                    title: <?php echo json_encode(html_entity_decode($generated['memory_title'], ENT_QUOTES, 'UTF-8')); ?>,
+                    subtitle: 'Generated by AI',
+                    url: <?php echo json_encode($generated['audio_url']); ?>
+                });
+                <?php endforeach; ?>
+            }
+            
+            setupEventListeners() {
+                // Audio events
+                this.audio.addEventListener('ended', () => this.nextTrack());
+                this.audio.addEventListener('timeupdate', () => this.updateProgress());
+                this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
+                
+                // Button events
+                document.getElementById('playPauseBtn').addEventListener('click', () => this.togglePlayPause());
+                document.getElementById('prevBtn').addEventListener('click', () => this.previousTrack());
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextTrack());
+                
+                // Track click events
+                document.querySelectorAll('.track-item').forEach((item, index) => {
+                    item.addEventListener('click', () => this.playTrack(index));
+                });
+            }
+            
+            playTrack(index) {
+                if (index >= 0 && index < this.tracks.length) {
+                    this.currentTrackIndex = index;
+                    this.loadTrack();
+                    this.updateUI();
+                }
+            }
+            
+            loadTrack() {
+                const track = this.tracks[this.currentTrackIndex];
+                this.audio.src = track.url;
+                this.audio.load();
+            }
+            
+            togglePlayPause() {
+                if (this.isPlaying) {
+                    this.audio.pause();
+                    this.isPlaying = false;
+                } else {
+                    this.audio.play();
+                    this.isPlaying = true;
+                }
+                this.updatePlayPauseButton();
+            }
+            
+            nextTrack() {
+                if (this.currentTrackIndex < this.tracks.length - 1) {
+                    this.currentTrackIndex++;
+                    this.loadTrack();
+                    this.updateUI();
+                    if (this.isPlaying) {
+                        this.audio.play();
+                    }
+                }
+            }
+            
+            previousTrack() {
+                if (this.currentTrackIndex > 0) {
+                    this.currentTrackIndex--;
+                    this.loadTrack();
+                    this.updateUI();
+                    if (this.isPlaying) {
+                        this.audio.play();
+                    }
+                }
+            }
+            
+            updateUI() {
+                const track = this.tracks[this.currentTrackIndex];
+                
+                // Update current track info
+                document.querySelector('.current-track .track-title').textContent = track.title;
+                document.querySelector('.track-counter').textContent = `${this.currentTrackIndex + 1} of ${this.tracks.length}`;
+                
+                // Update track list
+                document.querySelectorAll('.track-item').forEach((item, index) => {
+                    item.classList.toggle('active', index === this.currentTrackIndex);
+                });
+                
+                // Update buttons
+                document.getElementById('prevBtn').disabled = this.currentTrackIndex === 0;
+                document.getElementById('nextBtn').disabled = this.currentTrackIndex === this.tracks.length - 1;
+                
+                this.updatePlayPauseButton();
+            }
+            
+            updatePlayPauseButton() {
+                const btn = document.getElementById('playPauseBtn');
+                btn.textContent = this.isPlaying ? '⏸️ Pause' : '▶️ Play';
+            }
+            
+            updateProgress() {
+                if (this.audio.duration && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                    const progress = (this.audio.currentTime / this.audio.duration) * 100;
+                    document.querySelector('.progress-fill').style.width = progress + '%';
+                }
+            }
+            
+            updateDuration() {
+                const trackItem = document.querySelector(`.track-item[data-index="${this.currentTrackIndex}"]`);
+                if (trackItem && this.audio.duration && isFinite(this.audio.duration)) {
+                    const duration = this.formatTime(this.audio.duration);
+                    trackItem.querySelector('.track-duration').textContent = duration;
+                } else if (trackItem) {
+                    trackItem.querySelector('.track-duration').textContent = '--:--';
+                }
+            }
+            
+            formatTime(seconds) {
+                if (isNaN(seconds) || !isFinite(seconds) || seconds < 0) {
+                    return '0:00';
+                }
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+        
+        // Initialize playlist when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('playlistAudio')) {
+                new PlaylistPlayer();
+            }
+        });
+        
         // Copy URL to clipboard
         function copyToClipboard() {
             const shareUrl = document.getElementById('shareUrl');
@@ -391,19 +834,19 @@ $pageTitle = $memory['title'] ?: 'Memory Playback';
         // Social sharing functions
         function shareOnFacebook() {
             const url = encodeURIComponent(document.getElementById('shareUrl').value);
-            const title = encodeURIComponent('<?php echo addslashes($memory['title'] ?: 'Check out this memory'); ?>');
+            const title = encodeURIComponent(<?php echo json_encode(html_entity_decode($memory['title'] ?: 'Check out this memory', ENT_QUOTES, 'UTF-8')); ?>);
             window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${title}`, '_blank', 'width=600,height=400');
         }
         
         function shareOnTwitter() {
             const url = encodeURIComponent(document.getElementById('shareUrl').value);
-            const title = encodeURIComponent('<?php echo addslashes($memory['title'] ?: 'Check out this memory'); ?>');
+            const title = encodeURIComponent(<?php echo json_encode(html_entity_decode($memory['title'] ?: 'Check out this memory', ENT_QUOTES, 'UTF-8')); ?>);
             window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank', 'width=600,height=400');
         }
         
         function shareOnWhatsApp() {
             const url = encodeURIComponent(document.getElementById('shareUrl').value);
-            const title = encodeURIComponent('<?php echo addslashes($memory['title'] ?: 'Check out this memory'); ?>');
+            const title = encodeURIComponent(<?php echo json_encode(html_entity_decode($memory['title'] ?: 'Check out this memory', ENT_QUOTES, 'UTF-8')); ?>);
             window.open(`https://wa.me/?text=${title}%20${url}`, '_blank');
         }
         

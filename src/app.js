@@ -488,12 +488,11 @@ async function createMemory() {
             const file = selectedFiles[i];
             const baseName = file.name.replace(/\.[^/.]+$/, '');
             
-            // Generate the final play URL and QR code with the unique_id (secure)
+            // Generate the final play URL - QR code will be generated server-side
             const playPageUrl = `${baseUrl}/play.php?uid=${uniqueId}`;
-            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=1&data=${encodeURIComponent(playPageUrl)}`;
             
-            // Create waveform from audio with correct QR URL
-            const waveformBlob = await createWaveformFromAudio(file, qrApiUrl);
+            // Create waveform from audio with real QR code
+            const waveformBlob = await createWaveformFromAudio(file, playPageUrl);
             
             if (!waveformBlob || waveformBlob.size === 0) {
                 throw new Error('Failed to generate waveform image');
@@ -524,12 +523,11 @@ async function createMemory() {
                 throw new Error(audioResult.error || 'Audio upload failed');
             }
             
-            // Save to database with correct URLs
+            // Save to database with correct URLs (QR code will be generated server-side)
             const saveResult = await saveMemoryToDatabase({
                 title: title,
                 user_id: currentUser.uid,
                 image_url: waveformResult.waveformUrl,
-                qr_url: qrApiUrl, // Final QR URL
                 audio_url: audioResult.audioUrl,
                 original_name: file.name,
                 play_url: playPageUrl, // Final play URL
@@ -583,7 +581,7 @@ async function createMemory() {
 }
 
 // Professional-quality waveform generation with enhanced visual rendering
-async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
+async function createWaveformFromAudio(audioFile, playPageUrl = null) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -616,14 +614,13 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     
     // Calculate precise layout with golden ratio proportions
     const titleHeight = Math.floor(H * 0.13); // 13% for title
-    const qrSize = Math.floor(H * 0.2); // 20% for QR code
     const padding = Math.floor(W * 0.02); // 2% padding
-    const waveformWidth = W * 0.7; // 70% of canvas width
+    const waveformWidth = W * 0.8; // 80% of canvas width (more space without QR)
     const waveformArea = {
         x: (W - waveformWidth) / 2, // Center the waveform
         y: titleHeight + padding,
         width: waveformWidth,
-        height: H - titleHeight - qrSize - (padding * 3)
+        height: H - titleHeight - (padding * 2) // More height without QR section
     };
     
     // Draw professional title with enhanced typography
@@ -711,13 +708,15 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     ctx.lineTo(waveformArea.x + waveformArea.width, centerY);
     ctx.stroke();
     
-    // Draw QR code with enhanced border
-    const qrX = padding;
-    const qrY = H - qrSize - padding;
-    
-    if (qrCodeUrl) {
+    // Draw QR code in bottom left section if play URL is available
+    if (playPageUrl) {
+        const qrSize = Math.floor(H * 0.15); // Smaller QR code
+        const qrPadding = 100; // Minimum 100px padding from edges
+        const qrX = qrPadding; // Left side with padding
+        const qrY = H - qrSize - qrPadding; // Bottom with padding
+        
         try {
-            // Add QR code border/frame
+            // Draw QR code background with professional styling
             const borderWidth = 8;
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(qrX - borderWidth, qrY - borderWidth, qrSize + borderWidth * 2, qrSize + borderWidth * 2);
@@ -726,12 +725,12 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
             ctx.lineWidth = 2;
             ctx.strokeRect(qrX - borderWidth, qrY - borderWidth, qrSize + borderWidth * 2, qrSize + borderWidth * 2);
             
-            await drawQRCode(ctx, qrX, qrY, qrSize, qrCodeUrl);
+            // Generate and draw real QR code
+            await drawQRCode(ctx, qrX, qrY, qrSize, playPageUrl);
         } catch (error) {
+            console.error('QR code generation failed:', error);
             drawEnhancedQRPlaceholder(ctx, qrX, qrY, qrSize);
         }
-    } else {
-        drawEnhancedQRPlaceholder(ctx, qrX, qrY, qrSize);
     }
     
     // Add subtle watermark/branding in corner
@@ -744,6 +743,48 @@ async function createWaveformFromAudio(audioFile, qrCodeUrl = null) {
     return new Promise(resolve => {
         canvas.toBlob(resolve, 'image/png', 1.0); // Maximum quality
     });
+}
+
+// Generate real QR code using qrcode.js library
+async function generateRealQRCode(data, size = 200) {
+    try {
+        // Check if QRCode library is loaded
+        if (typeof QRCode === 'undefined') {
+            console.error('QRCode library not loaded');
+            return null;
+        }
+        
+        // Create a temporary div element for QR code generation
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.left = '-9999px';
+        tempDiv.style.top = '-9999px';
+        document.body.appendChild(tempDiv);
+        
+        // Generate QR code using the davidshimjs/qrcodejs library
+        const qrCode = new QRCode(tempDiv, {
+            text: data,
+            width: size,
+            height: size,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        
+        // Wait for QR code to be generated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Get the canvas from the generated QR code
+        const canvas = tempDiv.querySelector('canvas');
+        
+        // Clean up temporary div
+        document.body.removeChild(tempDiv);
+        
+        return canvas;
+    } catch (error) {
+        console.error('QR code generation failed:', error);
+        return null;
+    }
 }
 
 // Enhanced QR placeholder for professional appearance
@@ -789,18 +830,25 @@ function drawQRPlaceholderOnCanvas(ctx, x, y, size) {
     drawEnhancedQRPlaceholder(ctx, x, y, size);
 }
 
-// Draw QR code
-async function drawQRCode(ctx, x, y, size, qrUrl) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            ctx.drawImage(img, x, y, size, size);
-            resolve();
-        };
-        img.onerror = reject;
-        img.src = qrUrl;
-    });
+// Draw QR code using real QR code generation
+async function drawQRCode(ctx, x, y, size, qrData) {
+    try {
+        // Generate real QR code using qrcode.js library
+        const qrCanvas = await generateRealQRCode(qrData, size);
+        
+        if (qrCanvas) {
+            // Draw the generated QR code onto the main canvas
+            ctx.drawImage(qrCanvas, x, y, size, size);
+            return;
+        }
+        
+        // Fallback to placeholder if QR generation fails
+        drawEnhancedQRPlaceholder(ctx, x, y, size);
+    } catch (error) {
+        console.error('QR code drawing failed:', error);
+        // Fallback to placeholder
+        drawEnhancedQRPlaceholder(ctx, x, y, size);
+    }
 }
 
 // Save memory to database (simplified version for testing)
@@ -811,7 +859,6 @@ async function saveMemoryToDatabase(memoryData) {
         formData.append('title', memoryData.title);
         formData.append('user_id', memoryData.user_id);
         formData.append('image_url', memoryData.image_url);
-        formData.append('qr_url', memoryData.qr_url || '');
         formData.append('audio_url', memoryData.audio_url || '');
         formData.append('original_name', memoryData.original_name || '');
         formData.append('play_url', memoryData.play_url || '');

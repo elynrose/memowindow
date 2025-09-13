@@ -10,6 +10,7 @@ require_once 'config.php';
 require_once 'unified_auth.php';
 require_once 'secure_upload.php';
 require_once 'secure_db.php';
+require_once 'generate_qr_code.php';
 
 // --- CONFIG --- //
 $dbHost = DB_HOST;
@@ -43,11 +44,8 @@ if (!isset($_POST['image_url']) || empty($_POST['image_url'])) {
   exit;
 }
 
-if (!isset($_POST['qr_url']) || empty($_POST['qr_url'])) {
-  http_response_code(400);
-  echo json_encode(['error' => 'QR URL required']);
-  exit;
-}
+// QR URL is now optional - we'll generate it locally
+$qrUrl = isset($_POST['qr_url']) ? sanitizeInput($_POST['qr_url'], 'url') : null;
 
 if (!isset($_POST['title']) || empty(trim($_POST['title']))) {
   http_response_code(400);
@@ -57,7 +55,6 @@ if (!isset($_POST['title']) || empty(trim($_POST['title']))) {
 
 // Get and validate URLs from POST data
 $imageUrl = sanitizeInput($_POST['image_url'], 'url');
-$qrUrl = sanitizeInput($_POST['qr_url'], 'url');
 
 // Validate URLs using secure upload handler
 $uploader = new SecureUpload();
@@ -68,10 +65,16 @@ if (!$uploader->validateFirebaseStorageURL($imageUrl)) {
     exit;
 }
 
-if (!$uploader->validateQRCodeURL($qrUrl)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid QR URL']);
-    exit;
+// Generate play URL and QR code locally if not provided
+$playUrl = isset($_POST['play_url']) ? sanitizeInput($_POST['play_url'], 'url') : null;
+$uniqueId = isset($_POST['unique_id']) ? sanitizeInput($_POST['unique_id']) : null;
+
+// If no QR URL provided, generate one locally
+if (!$qrUrl && $playUrl) {
+    $qrFilePath = generateQRCode($playUrl, 'memory_' . ($uniqueId ?: time()));
+    if ($qrFilePath) {
+        $qrUrl = getQRCodeUrl($qrFilePath);
+    }
 }
 
 // Save to MySQL using secure database helper
@@ -103,14 +106,14 @@ try {
     "INSERT INTO wave_assets (user_id, unique_id, is_public, title, original_name, image_url, qr_url, audio_url, play_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       $userId,
-      isset($_POST['unique_id']) ? sanitizeInput($_POST['unique_id']) : null,
+      $uniqueId,
       isset($_POST['is_public']) ? (bool)$_POST['is_public'] : true, // Default to public
       sanitizeInput(trim($_POST['title'])),
       isset($_POST['original_name']) ? sanitizeInput($_POST['original_name']) : null,
       $imageUrl,
       $qrUrl,
       isset($_POST['audio_url']) ? sanitizeInput($_POST['audio_url'], 'url') : null,
-      isset($_POST['play_url']) ? sanitizeInput($_POST['play_url'], 'url') : null,
+      $playUrl,
     ]);
 
   echo json_encode([

@@ -7,6 +7,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 // Load configuration
 require_once 'config.php';
+require_once 'generate_qr_code.php';
 
 // Simple input validation
 function sanitizeInput($data, $type = 'string') {
@@ -52,6 +53,15 @@ $audioUrl = isset($_POST['audio_url']) ? sanitizeInput($_POST['audio_url'], 'url
 $originalName = isset($_POST['original_name']) ? sanitizeInput($_POST['original_name']) : '';
 $playUrl = isset($_POST['play_url']) ? sanitizeInput($_POST['play_url'], 'url') : '';
 $uniqueId = isset($_POST['unique_id']) ? sanitizeInput($_POST['unique_id']) : '';
+
+// Generate QR code if not provided and play URL exists
+if (!$qrUrl && $playUrl) {
+    $filename = 'memory_' . ($uniqueId ?: time()) . '_' . time();
+    $qrFilePath = generateQRCode($playUrl, $filename);
+    if ($qrFilePath) {
+        $qrUrl = getQRCodeUrl($qrFilePath);
+    }
+}
 
 // Validate URLs (basic check)
 if (!filter_var($imageUrl, FILTER_VALIDATE_URL)) {

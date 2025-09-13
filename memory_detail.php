@@ -34,6 +34,7 @@ try {
             original_name,
             image_url,
             audio_url,
+            custom_url,
             audio_size,
             audio_duration,
             created_at,
@@ -63,6 +64,53 @@ try {
         exit;
     }
     
+    // Fetch approved submissions for this memory owner's invitations
+    $approvedSubmissions = [];
+    try {
+        // Check if this memory owner has any invitations
+        $stmt = $pdo->prepare("
+            SELECT ei.id as invitation_id, ei.invitation_title, ei.owner_user_id
+            FROM email_invitations ei
+            WHERE ei.owner_user_id = ? AND ei.status = 'pending'
+        ");
+        $stmt->execute([$currentUser['uid']]);
+        $invitations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get approved submissions for each invitation
+        foreach ($invitations as $invitation) {
+            $stmt = $pdo->prepare("
+                SELECT ms.*, ei.invitation_title
+                FROM memory_submissions ms
+                JOIN email_invitations ei ON ms.invitation_id = ei.id
+                WHERE ms.invitation_id = ? AND ms.status = 'approved'
+                ORDER BY ms.approved_at DESC
+            ");
+            $stmt->execute([$invitation['invitation_id']]);
+            $submissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $approvedSubmissions = array_merge($approvedSubmissions, $submissions);
+        }
+        
+        // Fetch generated audio for this memory
+        $generatedAudios = [];
+        try {
+            $stmt = $pdo->prepare("
+                SELECT ga.*, vc.voice_name, vc.voice_id
+                FROM generated_audio ga
+                JOIN voice_clones vc ON ga.voice_clone_id = vc.id
+                WHERE vc.source_memory_id = ?
+                ORDER BY ga.created_at DESC
+            ");
+            $stmt->execute([$memoryId]);
+            $generatedAudios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // If there's an error fetching generated audio, continue without them
+            $generatedAudios = [];
+        }
+    } catch (PDOException $e) {
+        // If there's an error fetching submissions, continue without them
+        $approvedSubmissions = [];
+    }
+    
     // Get user information separately to avoid collation issues
     $stmt = $pdo->prepare("SELECT display_name, email FROM users WHERE firebase_uid = ?");
     $stmt->execute([$currentUser['uid']]);
@@ -87,17 +135,6 @@ try {
     $stmt->execute([$memoryId]);
     $backups = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get memory statistics
-    $stmt = $pdo->prepare("
-        SELECT 
-            COUNT(*) as total_memories,
-            SUM(audio_size) as total_size,
-            AVG(audio_duration) as avg_duration
-        FROM wave_assets 
-        WHERE user_id = ?
-    ");
-    $stmt->execute([$currentUser['uid']]);
-    $userStats = $stmt->fetch(PDO::FETCH_ASSOC);
     
 } catch (Exception $e) {
     error_log("Memory detail error: " . $e->getMessage());
@@ -138,7 +175,7 @@ function formatDate($date) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($memory['title'] ?: 'Untitled Memory'); ?> - MemoWindow</title>
+    <title><?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled Memory', ENT_QUOTES, 'UTF-8')); ?> - MemoWindow</title>
     <link rel="stylesheet" href="includes/navigation.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="css/app.css?v=<?php echo time(); ?>">
     <style>
@@ -148,6 +185,7 @@ function formatDate($date) {
             padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding-top: 80px; /* Add top padding to account for fixed navigation */
         }
         
         .memory-detail-container {
@@ -292,12 +330,155 @@ function formatDate($date) {
             font-size: 0.85rem;
         }
         
+        /* Playlist Player Styles */
+        .playlist-player {
+            margin-top: 20px;
+        }
+        
+        .playlist-info {
+            margin-bottom: 20px;
+        }
+        
+        .current-track {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .track-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .track-counter {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .playlist-progress {
+            margin-bottom: 15px;
+        }
+        
+        .playlist-progress .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .playlist-progress .progress-fill {
+            height: 100%;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .playlist-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .playlist-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #333;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .playlist-btn:hover:not(:disabled) {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+        
+        .playlist-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .playlist-btn.primary:hover {
+            background: #5a6fd8;
+        }
+        
+        .playlist-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .playlist-tracks {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .track-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .track-item:hover {
+            background: #e9ecef;
+        }
+        
+        .track-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .track-item.active .track-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .track-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .track-item .track-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .track-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .track-duration {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .track-item.active .track-duration {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
         .memory-stats {
             background: white;
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            display: none; /* Hidden for now */
         }
         
         .stats-grid {
@@ -478,6 +659,87 @@ function formatDate($date) {
             transform: translateY(-2px);
         }
         
+        .custom-url-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        
+        .custom-url-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .url-input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .copy-btn, .save-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .copy-btn {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        
+        .save-btn {
+            background: #10b981;
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .save-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .url-help code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+        }
+        
         @media (max-width: 768px) {
             .memory-content {
                 grid-template-columns: 1fr;
@@ -495,6 +757,21 @@ function formatDate($date) {
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .custom-url-content {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .url-input-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .copy-btn, .save-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -507,7 +784,7 @@ function formatDate($date) {
         </a>
         
         <div class="memory-header">
-            <h1 class="memory-title"><?php echo htmlspecialchars($memory['title'] ?: 'Untitled Memory'); ?></h1>
+            <h1 class="memory-title"><?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled Memory', ENT_QUOTES, 'UTF-8')); ?></h1>
             <div class="memory-meta">
                 <div class="meta-item">
                     <span class="meta-icon">📁</span>
@@ -535,24 +812,60 @@ function formatDate($date) {
                     QR Code
                 </a>
                 <?php endif; ?>
-                <button class="action-btn order-btn" data-memory-id="<?php echo $memory['id']; ?>" data-image-url="<?php echo htmlspecialchars($memory['image_url']); ?>" data-title="<?php echo htmlspecialchars($memory['title'] ?: 'Untitled'); ?>">
+                <button class="action-btn order-btn" data-memory-id="<?php echo $memory['id']; ?>" data-image-url="<?php echo htmlspecialchars($memory['image_url']); ?>" data-title="<?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled', ENT_QUOTES, 'UTF-8')); ?>">
                     <span class="btn-icon">🛒</span>
                     Order Print
                 </button>
                 <?php if ($memory['audio_url']): ?>
-                <button class="action-btn voice-clone-btn" data-memory-id="<?php echo $memory['id']; ?>" data-audio-url="<?php echo htmlspecialchars($memory['audio_url']); ?>" data-title="<?php echo htmlspecialchars($memory['title'] ?: 'Untitled'); ?>">
+                <button class="action-btn voice-clone-btn" data-memory-id="<?php echo $memory['id']; ?>" data-audio-url="<?php echo htmlspecialchars($memory['audio_url']); ?>" data-title="<?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled', ENT_QUOTES, 'UTF-8')); ?>">
                     <span class="btn-icon">🎤</span>
                     Clone Voice
                 </button>
-                <button class="action-btn generate-audio-btn" data-memory-id="<?php echo $memory['id']; ?>" data-title="<?php echo htmlspecialchars($memory['title'] ?: 'Untitled'); ?>">
+                <button class="action-btn generate-audio-btn" data-memory-id="<?php echo $memory['id']; ?>" data-title="<?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled', ENT_QUOTES, 'UTF-8')); ?>">
                     <span class="btn-icon">🎵</span>
                     Generate Audio
                 </button>
                 <?php endif; ?>
-                <button class="action-btn delete-btn" data-memory-id="<?php echo $memory['id']; ?>" data-title="<?php echo htmlspecialchars($memory['title'] ?: 'Untitled'); ?>">
+                <button class="action-btn delete-btn" data-memory-id="<?php echo $memory['id']; ?>" data-title="<?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Untitled', ENT_QUOTES, 'UTF-8')); ?>">
                     <span class="btn-icon">🗑️</span>
                     Delete Memory
                 </button>
+            </div>
+        </div>
+        
+        <!-- Custom URL Section -->
+        <div class="custom-url-section">
+            <h3 style="margin: 0 0 16px 0; color: #2d3748; font-size: 1.25rem;">🔗 Custom URL</h3>
+            <div class="custom-url-content">
+                <div class="url-display">
+                    <label for="currentUrl" style="display: block; margin-bottom: 8px; font-weight: 500; color: #4a5568;">Current URL:</label>
+                    <div class="url-input-group">
+                        <input type="text" id="currentUrl" class="url-input" 
+                               value="<?php echo htmlspecialchars($memory['audio_url']); ?>" 
+                               readonly>
+                        <button id="copyUrlBtn" class="copy-btn" title="Copy URL">
+                            <span class="btn-icon">📋</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="url-edit">
+                    <label for="customUrlInput" style="display: block; margin-bottom: 8px; font-weight: 500; color: #4a5568;">Custom URL (Standard & Premium only):</label>
+                    <div class="url-input-group">
+                        <input type="text" id="customUrlInput" class="url-input" 
+                               placeholder="Enter your custom URL (e.g., my-memory-name)"
+                               value="<?php echo htmlspecialchars($memory['custom_url']); ?>">
+                        <button id="saveCustomUrlBtn" class="save-btn" title="Save Custom URL">
+                            <span class="btn-icon">💾</span>
+                        </button>
+                    </div>
+                    <div class="url-help">
+                        <p style="margin: 8px 0 0 0; font-size: 0.875rem; color: #718096;">
+                            Custom URLs allow you to create memorable links to your memories. 
+                            <br>Examples: <code>my-wedding-day</code>, <code>https://example.com/my-memory</code>, <code>family/reunion/2024</code>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -561,7 +874,7 @@ function formatDate($date) {
                 <h3 style="margin-top: 0; color: #2d3748;">📸 Memory Image</h3>
                 <?php if ($memory['image_url']): ?>
                     <img src="<?php echo htmlspecialchars($memory['image_url']); ?>" 
-                         alt="<?php echo htmlspecialchars($memory['title'] ?: 'Memory image'); ?>"
+                         alt="<?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Memory image', ENT_QUOTES, 'UTF-8')); ?>"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div style="display: none; color: #718096; padding: 40px;">
                         <p>📷 Image not available</p>
@@ -574,29 +887,62 @@ function formatDate($date) {
             </div>
             
             <div class="memory-audio">
-                <h3 style="margin-top: 0; color: #2d3748;">🎵 Audio Recording</h3>
+                <h3 style="margin-top: 0; color: #2d3748;">🎵 Audio Playlist</h3>
                 <?php if ($memory['audio_url']): ?>
-                    <audio id="audioPlayer" class="audio-player" preload="metadata">
-                        <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/mpeg">
-                        <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/wav">
-                        Your browser does not support the audio element.
-                    </audio>
-                    
-                    <div class="audio-controls">
-                        <button id="playButton" class="play-button">▶️</button>
-                        <div class="audio-info">
-                            <div class="audio-title"><?php echo htmlspecialchars($memory['original_name']); ?></div>
-                            <div class="audio-duration"><?php echo formatDuration($memory['audio_duration']); ?></div>
+                    <div class="playlist-player">
+                        <div class="playlist-info">
+                            <div class="current-track">
+                                <span class="track-title">Loading playlist...</span>
+                                <span class="track-counter">1 of <?php echo 1 + count($approvedSubmissions) + count($generatedAudios); ?></span>
+                            </div>
+                            <div class="playlist-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="progress-bar">
-                        <div id="progressFill" class="progress-fill"></div>
-                    </div>
-                    
-                    <div class="time-display">
-                        <span id="currentTime">0:00</span>
-                        <span id="totalTime"><?php echo formatDuration($memory['audio_duration']); ?></span>
+                        
+                        <audio id="playlistAudio" class="audio-player" preload="metadata">
+                            <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/mpeg">
+                            <source src="<?php echo htmlspecialchars($memory['audio_url']); ?>" type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                        
+                        <div class="playlist-controls">
+                            <button id="prevBtn" class="playlist-btn" disabled>⏮️ Previous</button>
+                            <button id="playPauseBtn" class="playlist-btn primary">▶️ Play</button>
+                            <button id="nextBtn" class="playlist-btn">⏭️ Next</button>
+                        </div>
+                        
+                        <div class="playlist-tracks">
+                            <div class="track-item active" data-index="0">
+                                <div class="track-info">
+                                    <span class="track-title"><?php echo htmlspecialchars(html_entity_decode($memory['title'] ?: 'Main Memory', ENT_QUOTES, 'UTF-8')); ?></span>
+                                    <span class="track-subtitle">Original Memory</span>
+                                </div>
+                                <span class="track-duration"><?php echo formatDuration($memory['audio_duration']); ?></span>
+                            </div>
+                            
+                            <?php foreach ($approvedSubmissions as $index => $submission): ?>
+                                <div class="track-item" data-index="<?php echo $index + 1; ?>">
+                                    <div class="track-info">
+                                        <span class="track-title"><?php echo htmlspecialchars(html_entity_decode($submission['memory_title'], ENT_QUOTES, 'UTF-8')); ?></span>
+                                        <span class="track-subtitle">by <?php echo htmlspecialchars($submission['submitter_email']); ?></span>
+                                    </div>
+                                    <span class="track-duration">--:--</span>
+                                </div>
+                            <?php endforeach; ?>
+                            
+                            <?php foreach ($generatedAudios as $index => $generated): ?>
+                                <div class="track-item" data-index="<?php echo $index + 1 + count($approvedSubmissions); ?>">
+                                    <div class="track-info">
+                                        <span class="track-title"><?php echo htmlspecialchars(html_entity_decode($generated['memory_title'], ENT_QUOTES, 'UTF-8')); ?></span>
+                                        <span class="track-subtitle">Generated by AI</span>
+                                    </div>
+                                    <span class="track-duration">--:--</span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php else: ?>
                     <div style="color: #718096; padding: 40px; text-align: center;">
@@ -622,8 +968,8 @@ function formatDate($date) {
                     <div class="stat-label">Backups</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number"><?php echo $userStats['total_memories']; ?></div>
-                    <div class="stat-label">Total Memories</div>
+                    <div class="stat-number"><?php echo date('M j, Y', strtotime($memory['created_at'])); ?></div>
+                    <div class="stat-label">Created</div>
                 </div>
             </div>
         </div>
@@ -665,48 +1011,173 @@ function formatDate($date) {
     </script>
     
     <script>
-        // Audio player functionality
-        const audio = document.getElementById('audioPlayer');
-        const playButton = document.getElementById('playButton');
-        const progressFill = document.getElementById('progressFill');
-        const currentTimeSpan = document.getElementById('currentTime');
-        const totalTimeSpan = document.getElementById('totalTime');
-        
-        if (audio) {
-            let isPlaying = false;
+        // Playlist functionality
+        class PlaylistPlayer {
+            constructor() {
+                this.audio = document.getElementById('playlistAudio');
+                this.tracks = [];
+                this.currentTrackIndex = 0;
+                this.isPlaying = false;
+                
+                // Initialize playlist data
+                this.initializePlaylist();
+                this.setupEventListeners();
+                this.updateUI();
+            }
             
-            playButton.addEventListener('click', () => {
-                if (isPlaying) {
-                    audio.pause();
-                    playButton.textContent = '▶️';
-                    isPlaying = false;
-                } else {
-                    audio.play();
-                    playButton.textContent = '⏸️';
-                    isPlaying = true;
+            initializePlaylist() {
+                // Add main memory as first track
+                this.tracks.push({
+                    title: <?php echo json_encode(html_entity_decode($memory['title'] ?: 'Main Memory', ENT_QUOTES, 'UTF-8')); ?>,
+                    subtitle: 'Original Memory',
+                    url: <?php echo json_encode($memory['audio_url']); ?>
+                });
+                
+                // Add approved submissions
+                <?php foreach ($approvedSubmissions as $submission): ?>
+                this.tracks.push({
+                    title: <?php echo json_encode(html_entity_decode($submission['memory_title'], ENT_QUOTES, 'UTF-8')); ?>,
+                    subtitle: 'by ' + <?php echo json_encode($submission['submitter_email']); ?>,
+                    url: <?php echo json_encode($submission['audio_url']); ?>
+                });
+                <?php endforeach; ?>
+                
+                // Add generated audio
+                <?php foreach ($generatedAudios as $generated): ?>
+                this.tracks.push({
+                    title: <?php echo json_encode(html_entity_decode($generated['memory_title'], ENT_QUOTES, 'UTF-8')); ?>,
+                    subtitle: 'Generated by AI',
+                    url: <?php echo json_encode($generated['audio_url']); ?>
+                });
+                <?php endforeach; ?>
+            }
+            
+            setupEventListeners() {
+                // Audio events
+                this.audio.addEventListener('ended', () => this.nextTrack());
+                this.audio.addEventListener('timeupdate', () => this.updateProgress());
+                this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
+                
+                // Button events
+                document.getElementById('playPauseBtn').addEventListener('click', () => this.togglePlayPause());
+                document.getElementById('prevBtn').addEventListener('click', () => this.previousTrack());
+                document.getElementById('nextBtn').addEventListener('click', () => this.nextTrack());
+                
+                // Track click events
+                document.querySelectorAll('.track-item').forEach((item, index) => {
+                    item.addEventListener('click', () => this.playTrack(index));
+                });
+            }
+            
+            playTrack(index) {
+                if (index >= 0 && index < this.tracks.length) {
+                    this.currentTrackIndex = index;
+                    this.loadTrack();
+                    this.updateUI();
                 }
-            });
+            }
             
-            audio.addEventListener('timeupdate', () => {
-                const progress = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = progress + '%';
-                currentTimeSpan.textContent = formatTime(audio.currentTime);
-            });
+            loadTrack() {
+                const track = this.tracks[this.currentTrackIndex];
+                this.audio.src = track.url;
+                this.audio.load();
+            }
             
-            audio.addEventListener('ended', () => {
-                playButton.textContent = '▶️';
-                isPlaying = false;
-                progressFill.style.width = '0%';
-                currentTimeSpan.textContent = '0:00';
-            });
+            togglePlayPause() {
+                if (this.isPlaying) {
+                    this.audio.pause();
+                    this.isPlaying = false;
+                } else {
+                    this.audio.play();
+                    this.isPlaying = true;
+                }
+                this.updatePlayPauseButton();
+            }
             
-            audio.addEventListener('loadedmetadata', () => {
-                totalTimeSpan.textContent = formatTime(audio.duration);
-            });
+            nextTrack() {
+                if (this.currentTrackIndex < this.tracks.length - 1) {
+                    this.currentTrackIndex++;
+                    this.loadTrack();
+                    this.updateUI();
+                    if (this.isPlaying) {
+                        this.audio.play();
+                    }
+                }
+            }
+            
+            previousTrack() {
+                if (this.currentTrackIndex > 0) {
+                    this.currentTrackIndex--;
+                    this.loadTrack();
+                    this.updateUI();
+                    if (this.isPlaying) {
+                        this.audio.play();
+                    }
+                }
+            }
+            
+            updateUI() {
+                const track = this.tracks[this.currentTrackIndex];
+                
+                // Update current track info
+                document.querySelector('.current-track .track-title').textContent = track.title;
+                document.querySelector('.track-counter').textContent = `${this.currentTrackIndex + 1} of ${this.tracks.length}`;
+                
+                // Update track list
+                document.querySelectorAll('.track-item').forEach((item, index) => {
+                    item.classList.toggle('active', index === this.currentTrackIndex);
+                });
+                
+                // Update buttons
+                document.getElementById('prevBtn').disabled = this.currentTrackIndex === 0;
+                document.getElementById('nextBtn').disabled = this.currentTrackIndex === this.tracks.length - 1;
+                
+                this.updatePlayPauseButton();
+            }
+            
+            updatePlayPauseButton() {
+                const btn = document.getElementById('playPauseBtn');
+                btn.textContent = this.isPlaying ? '⏸️ Pause' : '▶️ Play';
+            }
+            
+            updateProgress() {
+                if (this.audio.duration && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                    const progress = (this.audio.currentTime / this.audio.duration) * 100;
+                    document.querySelector('.playlist-progress .progress-fill').style.width = progress + '%';
+                }
+            }
+            
+            updateDuration() {
+                const trackItem = document.querySelector(`.track-item[data-index="${this.currentTrackIndex}"]`);
+                if (trackItem && this.audio.duration && isFinite(this.audio.duration)) {
+                    const duration = this.formatTime(this.audio.duration);
+                    trackItem.querySelector('.track-duration').textContent = duration;
+                } else if (trackItem) {
+                    trackItem.querySelector('.track-duration').textContent = '--:--';
+                }
+            }
+            
+            formatTime(seconds) {
+                if (isNaN(seconds) || !isFinite(seconds) || seconds < 0) {
+                    return '0:00';
+                }
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
         }
         
+        // Initialize playlist when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('playlistAudio')) {
+                new PlaylistPlayer();
+            }
+        });
+        
         function formatTime(seconds) {
-            if (isNaN(seconds)) return '0:00';
+            if (isNaN(seconds) || !isFinite(seconds) || seconds < 0) {
+                return '0:00';
+            }
             
             const minutes = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
@@ -796,6 +1267,89 @@ function formatDate($date) {
                 alert('Error deleting memory: ' + error.message);
             }
         }
+        
+        // Custom URL functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyUrlBtn = document.getElementById('copyUrlBtn');
+            const saveCustomUrlBtn = document.getElementById('saveCustomUrlBtn');
+            const customUrlInput = document.getElementById('customUrlInput');
+            const currentUrlInput = document.getElementById('currentUrl');
+            
+            // Copy URL functionality
+            if (copyUrlBtn) {
+                copyUrlBtn.addEventListener('click', function() {
+                    const url = currentUrlInput.value;
+                    navigator.clipboard.writeText(url).then(function() {
+                        // Show success feedback
+                        const originalText = copyUrlBtn.innerHTML;
+                        copyUrlBtn.innerHTML = '<span class="btn-icon">✅</span>';
+                        copyUrlBtn.style.background = '#10b981';
+                        
+                        setTimeout(function() {
+                            copyUrlBtn.innerHTML = originalText;
+                            copyUrlBtn.style.background = '#6b7280';
+                        }, 2000);
+                    }).catch(function(err) {
+                        alert('Failed to copy URL: ' + err);
+                    });
+                });
+            }
+            
+            // Save custom URL functionality
+            if (saveCustomUrlBtn) {
+                saveCustomUrlBtn.addEventListener('click', async function() {
+                    const customUrl = customUrlInput.value.trim();
+                    const memoryId = <?php echo $memory['id']; ?>;
+                    
+                    if (!customUrl) {
+                        alert('Please enter a custom URL');
+                        return;
+                    }
+                    
+                    // No validation - accept any custom URL
+                    
+                    // Show loading state
+                    const originalText = saveCustomUrlBtn.innerHTML;
+                    saveCustomUrlBtn.innerHTML = '<span class="btn-icon">⏳</span>';
+                    saveCustomUrlBtn.disabled = true;
+                    
+                    try {
+                        const response = await fetch('save_custom_url.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `memory_id=${memoryId}&custom_url=${encodeURIComponent(customUrl)}`
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            // Update current URL display
+                            currentUrlInput.value = result.new_url;
+                            
+                            // Show success feedback
+                            saveCustomUrlBtn.innerHTML = '<span class="btn-icon">✅</span>';
+                            saveCustomUrlBtn.style.background = '#10b981';
+                            
+                            setTimeout(function() {
+                                saveCustomUrlBtn.innerHTML = originalText;
+                                saveCustomUrlBtn.style.background = '#10b981';
+                                saveCustomUrlBtn.disabled = false;
+                            }, 2000);
+                        } else {
+                            throw new Error(result.error || 'Failed to save custom URL');
+                        }
+                    } catch (error) {
+                        alert('Error saving custom URL: ' + error.message);
+                        
+                        // Reset button state
+                        saveCustomUrlBtn.innerHTML = originalText;
+                        saveCustomUrlBtn.disabled = false;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

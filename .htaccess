@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# Handle custom URLs for play.php
+# Route /play.php/custom-url to play.php with custom URL
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^play\.php/(.*)$ play.php?custom_url=$1 [L,QSA]
+
+# Handle other custom URL patterns if needed
+# Route /custom-url to play.php with custom URL
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)$ play.php?custom_url=$1 [L,QSA]
+
+# Standard play.php with uid parameter
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^play\.php$ play.php [L,QSA]
